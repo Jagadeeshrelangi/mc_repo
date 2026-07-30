@@ -1,0 +1,22 @@
+MECHA CONNECT DASHBOARD WARNING SYMBOL GUIDELINES
+Document Code: DASH-SYM-2026-V1
+
+This guide outlines dashboard warning light indicator systems.
+
+1. RED OIL CAN LIGHT (LOW OIL PRESSURE)
+* Appearance: Red warning symbol of a dripping oil can.
+* Meaning: Engine oil pressure has fallen below the safe threshold of 10 to 15 PSI.
+* Hazard Level: Critical. Continued operation can cause permanent engine seizure.
+* Action: Pull over immediately, shut off the engine, check the dipstick, and top up. If the light remains on after refilling, request a towing service.
+
+2. AMBER CHECK ENGINE LIGHT (MIL - MALFUNCTION INDICATOR LIGHT)
+* Appearance: Amber outline of an engine block.
+* Meaning: The Engine Control Unit (ECU) has recorded a system fault code (OBD code).
+* Hazard Level: Moderate to High.
+* Action: Retrieve the fault code using an OBD-II scanner. If the light flashes, it indicates a severe cylinder misfire (P0300) which can damage the catalytic converter; reduce speed immediately.
+
+3. RED BATTERY CHARGING SYSTEM LIGHT
+* Appearance: Red battery casing containing plus and minus terminals.
+* Meaning: The alternator is not charging the battery or the battery voltage is below 11.5V.
+* Hazard Level: High. The vehicle's ignition and fuel injection will run only until the battery drains.
+* Action: Turn off AC and non-essential electrical systems, drive immediately to a mechanic or pull over.

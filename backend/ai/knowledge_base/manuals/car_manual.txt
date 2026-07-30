@@ -1,0 +1,19 @@
+MECHA CONNECT CAR MANUAL & SERVICE GUIDELINES
+Document Code: CAR-MAN-2026-V1
+
+1. ENGINE COOLING SYSTEM MAINTENANCE
+The engine cooling system is pressurized and designed to operate with a 50/50 mixture of ethylene glycol-based coolant and distilled water. 
+* Normal operating coolant temperature ranges from 85°C to 105°C (185°F to 221°F).
+* If the engine coolant temperature exceeds 110°C, the coolant warning light will illuminate. 
+* Critical Action: Immediately pull the vehicle over in a safe location, idle the engine for 2 minutes to circulate remaining coolant, then turn off the ignition. Wait at least 30 to 45 minutes for the pressurized cooling system to depressurize before checking the expansion tank. Never open the radiator pressure cap while the engine is hot.
+
+2. TYRE PRESSURE AND RATING STANDARDS
+Optimal passenger vehicle tyre pressure depends on load conditions:
+* Standard passenger car tyres (e.g., 205/55R16) should maintain cold inflation pressures of 32 to 35 PSI.
+* Check tyre pressure weekly and before long road trips. Tyres underinflated by more than 5 PSI will experience accelerated tread edge wear, increased rolling resistance, and a 3% decrease in fuel economy.
+* The minimum safe tyre tread depth is 1.6 mm. Tyres measuring below 1.6 mm must be replaced immediately to prevent hydroplaning and braking failure.
+
+3. ENGINE LUBRICATING OIL GUIDELINES
+Always use synthetic engine oils matching API SN Plus or ILSAC GF-6 categories.
+* Viscosity Grade: 5W-30 is recommended for general climates; 0W-20 should be used for cold climates to improve cold starting circulation.
+* Normal operating oil pressure is between 30 and 60 PSI under load, and should not drop below 15 PSI at warm idle.

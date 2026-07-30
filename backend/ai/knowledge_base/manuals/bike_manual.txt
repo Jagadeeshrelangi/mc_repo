@@ -1,0 +1,17 @@
+MECHA CONNECT MOTORCYCLE MAINTENANCE MANUAL
+Document Code: BIKE-MAN-2026-V1
+
+1. MOTORCYCLE DRIVE CHAIN MAINTENANCE
+A motorcycle drive chain transfers engine power directly to the rear wheel. Correct chain slack is vital for transmission health and safety.
+* Slack Tolerance: Drive chain slack should be checked on the side stand and measure between 25 mm and 35 mm at the midpoint of the lower run.
+* Adjustment: If slack exceeds 40 mm, adjust the axle alignment bolts on the swingarm evenly. Ensure index marks align precisely to prevent wheel misalignment.
+* Lubrication: Lubricate every 500 km using specialized O-ring chain spray. Clean with kerosene-based cleaner; never use petrol or wire brushes which damage O-ring seals.
+
+2. IGNITION SPARK PLUG SPECIFICATIONS
+* Clean and inspect spark plugs every 5000 km. Replace plugs every 12000 km.
+* Spark Plug Gap: Standard electrode gap should measure between 0.7 mm and 0.8 mm. Use a wire-type feeler gauge to measure gap.
+* Tightening Torque: For standard M10 threads, torque plugs to 10 to 12 Nm. Over-tightening can crack cylinder head threads.
+
+3. CARBURETOR ADJUSTMENT & TUNING
+* Idle Speed: Adjust the throttle stop screw once the engine is fully warm. Target idle speed is 1400 RPM (+/- 100 RPM).
+* Air-Fuel Mixture Screw: Standard baseline setting is 2.5 turns out from fully closed. Turn clockwise to lean the mixture, and counter-clockwise to richen the mixture.

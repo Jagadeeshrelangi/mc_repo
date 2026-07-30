@@ -1,0 +1,14 @@
+MECHA CONNECT CUSTOMER SUPPORT FAQ
+Document Code: FAQ-SUP-2026-V1
+
+Q1: What are Mecha Connect's operational hours?
+A: Our roadside mechanic dispatch and emergency fuel assistance services are active 24/7, 365 days a year. General spare parts delivery operates from 8:00 AM to 8:00 PM local time.
+
+Q2: How are dispatch costs and service fees calculated?
+A: The dispatch fee for emergency roadside mechanic assistance is a flat rate of ₹300, which includes matching and travel. Diagnostic services and manual repairs are billed separately by the matched service provider at standardized rate cards listed in the app before booking.
+
+Q3: Can I cancel my service request after booking?
+A: Yes. You can cancel a mechanic dispatch or fuel order request within 5 minutes of booking for free. Cancellations made after 5 minutes, or after the technician has arrived at your location, incur a cancellation fee of ₹150.
+
+Q4: What types of payment do you support?
+A: We support UPI (Google Pay, PhonePe, Paytm), net banking, credit/debit cards, and cash payment directly to the dispatched technician.

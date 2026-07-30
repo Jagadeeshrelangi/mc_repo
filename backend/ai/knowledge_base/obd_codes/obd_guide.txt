@@ -1,0 +1,24 @@
+MECHA CONNECT OBD-II FAULT CODE TRANSLATION INDEX
+Document Code: OBD-IDX-2026-V1
+
+This document acts as the primary translation index for diagnostic trouble codes.
+
+1. FAULT CODE: P0300
+* Definition: Random or Multiple Cylinder Misfire Detected.
+* Cause: Unburnt fuel enters the exhaust stroke. Common causes include worn spark plugs, failing ignition coils, fuel injector blockage, or engine vacuum leaks.
+* Action: Inspect ignition coils for carbon tracking. Check spark plug electrode gap (0.7 mm - 0.8 mm). Measure fuel rail pressure.
+
+2. FAULT CODE: P0115
+* Definition: Engine Coolant Temperature (ECT) Circuit Malfunction.
+* Cause: Faulty coolant sensor, corroded connector pins, low coolant levels, or stuck thermostat.
+* Action: Verify sensor resistance using a multimeter (normally 2k to 3k ohms at room temperature). Flush coolant system if dirty.
+
+3. FAULT CODE: P0562
+* Definition: System Voltage Low.
+* Cause: Alternator regulator failure, slipping serpentine belt, worn battery cells, or corroded battery terminals.
+* Action: Check battery terminal potential (engine off should read 12.6V, running should read 13.5V to 14.5V). Check serpentine belt tension.
+
+4. FAULT CODE: P0299
+* Definition: Turbocharger / Supercharger Underboost.
+* Cause: Wastegate solenoid malfunction, vacuum leaks, oil line restriction, or loose boost hoses.
+* Action: Inspect intercooler hoses for splits. Check wastegate diaphragm movement.
