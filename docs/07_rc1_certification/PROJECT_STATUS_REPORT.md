@@ -105,6 +105,7 @@ repository contracts are frozen and documented for the Sprint 2 backend build.
 | QA Certification Report | `QA_CERTIFICATION_REPORT.md` |
 | Project Status Report | `PROJECT_STATUS_REPORT.md` |
 | Sprint 1.9A Profile Report | `docs/05_reports/SPRINT_1_9A_PROFILE_REPORT.md` |
+| Sprint 1.9b Final Review Report | `docs/05_reports/SPRINT_1_9B_FINAL_REVIEW_REPORT.md` |
 | Frontend Architecture | `FRONTEND_ARCHITECTURE.md` |
 | UI Design System | `UI_DESIGN_SYSTEM.md` |
 | Navigation Map | `NAVIGATION_MAP.md` |
