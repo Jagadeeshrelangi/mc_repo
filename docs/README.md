@@ -1,100 +1,147 @@
 # Mecha Connect — Documentation
 
-**Version:** 0.6.0+5 | **Last Updated:** 2026-07-29
+**Version:** 1.9.1 (RC1 + polish) | **Last Updated:** 2026-08-05
 
 ---
 
-## Navigation
+## Project Overview
 
-### Product
-| Document | Description |
-|----------|-------------|
-| [PRODUCT_REQUIREMENTS_DOCUMENT.md](01_product/PRODUCT_REQUIREMENTS_DOCUMENT.md) | Vision, personas, market analysis, MVP scope |
-| [FEATURE_SPECIFICATIONS.md](01_product/FEATURE_SPECIFICATIONS.md) | Per-feature spec with states, priorities, files |
-| [BUSINESS_MODEL.md](01_product/BUSINESS_MODEL.md) | Revenue model, unit economics, growth strategy |
-| [PROJECT_STATUS.md](01_product/PROJECT_STATUS.md) | Overall progress dashboard, quality metrics |
-| [ROADMAP.md](01_product/ROADMAP.md) | Sprint-by-sprint timeline, milestones |
-| [RISK_ANALYSIS.md](01_product/RISK_ANALYSIS.md) | Risk register, tech debt, dependency risks |
+Mecha Connect is a Flutter application that brings every vehicle service into
+one app: a parts marketplace, mechanic booking with live tracking, fuel
+delivery with invoicing, an AI assistant with guided diagnosis, and a profile
+with wallet & rewards.
 
-### Architecture
-| Document | Description |
-|----------|-------------|
-| [SYSTEM_ARCHITECTURE.md](02_architecture/SYSTEM_ARCHITECTURE.md) | C4 diagrams, component architecture, data flow |
-| [PROJECT_ARCHITECTURE.md](02_architecture/PROJECT_ARCHITECTURE.md) | Master blueprint, folder structure, technology stack |
-| [AI_ARCHITECTURE.md](02_architecture/AI_ARCHITECTURE.md) | ML pipeline, RAG, model registry, accuracy metrics |
-| [DATABASE_SCHEMA.md](02_architecture/DATABASE_SCHEMA.md) | ER diagrams, table schemas, indexes, migrations |
-| [DESIGN_SYSTEM.md](02_architecture/DESIGN_SYSTEM.md) | Colors, typography, spacing, elevation, components |
+- **Frontend:** Flutter 3.29.2 (Provider state management)
+- **Data layer (RC1):** in-memory mock repositories with simulated latency
+  and failure injection (`docs/07_rc1_certification/API_CONTRACT.md`)
+- **Next milestone:** Sprint 2 backend integration (FastAPI + PostgreSQL)
+  implementing the frozen `API_CONTRACT.md` + `DATABASE_BLUEPRINT.md`
 
-### Development
-| Document | Description |
-|----------|-------------|
-| [INSTALLATION.md](03_development/INSTALLATION.md) | Local dev setup for backend + Flutter |
-| [CONTRIBUTING.md](03_development/CONTRIBUTING.md) | Git workflow, coding standards, PR process |
-| [TEST_PLAN.md](03_development/TEST_PLAN.md) | Test strategy, coverage targets, acceptance criteria |
-| [DEPLOYMENT.md](03_development/DEPLOYMENT.md) | Build pipelines, CI/CD, release checklist |
-| [CHANGELOG.md](03_development/CHANGELOG.md) | Version history since 0.0.1 |
-
-### Sprints
-| Document | Description |
-|----------|-------------|
-| [SPRINT_1_1.md](04_sprints/SPRINT_1_1.md) | Sprint 1.1 — Splash Screen |
-| [SPRINT_1_2.md](04_sprints/SPRINT_1_2.md) | Sprint 1.2 — Onboarding, Authentication |
-| [SPRINT_1_3.md](04_sprints/SPRINT_1_3.md) | Sprint 1.3 — Home Dashboard |
-| [SPRINT_1_4.md](04_sprints/SPRINT_1_4.md) | Sprint 1.4 — Core UI, Navigation |
-| [SPRINT_1_5.md](04_sprints/SPRINT_1_5.md) | Sprint 1.5 — UI Polish, Dark Mode |
-| [SPRINT_1_6.md](04_sprints/SPRINT_1_6.md) | Sprint 1.6 — Mechanic Booking, Bug Fixes, QA |
-| [SPRINT_1_7.md](04_sprints/SPRINT_1_7.md) | Sprint 1.7 — Fuel Delivery (planned) |
-
-### Reports
-| Document | Description |
-|----------|-------------|
-| [AUDIT_REPORT.md](05_reports/AUDIT_REPORT.md) | Sprint D1 — documentation quality audit |
-| [VERIFICATION_REPORT.md](05_reports/VERIFICATION_REPORT.md) | Sprint D1.1 — code-vs-documentation verification |
-| [MIGRATION_SUMMARY.md](05_reports/MIGRATION_SUMMARY.md) | Sprint D1.1 — changes applied during verification |
-| [REPOSITORY_HEALTH_REPORT.md](05_reports/REPOSITORY_HEALTH_REPORT.md) | Sprint D3 — 10-dimension certification scorecard |
-| [SPRINT_D5_HYGIENE_REPORT.md](05_reports/SPRINT_D5_HYGIENE_REPORT.md) | Sprint D5 — repository hygiene completion |
-| [SPRINT_1_7A_REPORT.md](05_reports/SPRINT_1_7A_REPORT.md) | Sprint 1.7A — Fuel Delivery investigation + foundation |
-
-### Reference
-| Document | Description |
-|----------|-------------|
-| [API_SPEC.md](06_reference/API_SPEC.md) | REST endpoints, request/response schemas |
-| [THIRD_PARTY_SERVICES.md](06_reference/THIRD_PARTY_SERVICES.md) | Service inventory, API keys, rate limits |
-| [MASTER_ENGINEERING_HANDBOOK_v1.0.md](06_reference/MASTER_ENGINEERING_HANDBOOK_v1.0.md) | Engineering standards, coding conventions, best practices |
-| [SPRINT_1_UX_BLUEPRINT.md](06_reference/SPRINT_1_UX_BLUEPRINT.md) | UX research, screen inventory, navigation flows |
-
-### Source Materials
-| File | Type |
-|------|------|
-| `source/MechaConnectAI_Abstract_and_Models.pdf` | Academic paper |
-| `source/MechaConnectAI (2).pptx` | Presentation deck |
-| `source/Mecha Connect PRD.pdf` | Original PRD (PDF) |
-| `source/Mecha Connect Documentation (2).pdf` | Original documentation (PDF) |
-| `source/Mecha_Connect_v2_Development_Workflow.docx` | Development workflow |
-| `source/WhatsApp Video 2025-07-23 at 12.01.12_f95f7df5.mp4` | Demo video |
-| `source/jaggu_mecha_app.docx` | Additional documentation |
-| `source/ui_blueprint.html` | UI blueprint |
+**RC1 status:** certified — `flutter analyze` clean, **162/162 tests passing**.
+See [RC1 Certification](#rc1-certification).
 
 ---
 
-## Stats
+## Folder Structure
 
-| Metric | Count |
-|--------|------:|
-| Product documents | 6 |
-| Architecture documents | 5 |
-| Development documents | 5 |
-| Sprint reports | 7 |
-| Reports | 9 |
-| Reference documents | 4 |
-| Source materials | 8 |
-| **Total** | **44** |
+```
+docs/
+│
+├── README.md                           ← You are here
+├── PROJECT_DOCUMENTATION_INDEX.md      ← Master navigation index
+│
+├── 01_product/                         ← Vision, requirements, business
+├── 03_development/                     ← Installation, deployment, testing, changelog
+├── 05_reports/                         ← Active sprint & QA reports
+├── 07_rc1_certification/               ← Canonical RC1 documentation
+│
+├── archive/                            ← Superseded / historical documents
+├── source/                             ← All non-Markdown assets
+└── design_reference/                   ← Design reference material
+```
+
+---
+
+## Documentation Guide
+
+| Folder | Contents | Status |
+|---|---|---|
+| `01_product/` | Business model, requirements, feature specs, roadmap, risk | Living docs |
+| `03_development/` | Install, contribute, deploy, test plan, changelog | Living docs |
+| `05_reports/` | Active sprint/QA reports | Read-only snapshots |
+| `07_rc1_certification/` | **Canonical RC1 documentation (frozen)** | Frozen |
+| `archive/` | Superseded docs & historical sprint notes | Historical |
+| `source/` | PRD PDFs, decks, images, videos, HTML | Assets |
+
+---
+
+## Reading Order
+
+New developer or evaluator — read in this order:
+
+1. **[PROJECT_DOCUMENTATION_INDEX.md](PROJECT_DOCUMENTATION_INDEX.md)** — master navigation
+2. **[07_rc1_certification/MECHA_CONNECT_MASTER_HANDBOOK.md](07_rc1_certification/MECHA_CONNECT_MASTER_HANDBOOK.md)** — master engineering handbook
+3. **[07_rc1_certification/FRONTEND_LOCK_REPORT.md](07_rc1_certification/FRONTEND_LOCK_REPORT.md)** — what is frozen and why
+4. **[07_rc1_certification/FRONTEND_ARCHITECTURE.md](07_rc1_certification/FRONTEND_ARCHITECTURE.md)** — how the app is built
+5. **[07_rc1_certification/NAVIGATION_MAP.md](07_rc1_certification/NAVIGATION_MAP.md)** — how the user moves through the app
+6. **[07_rc1_certification/UI_DESIGN_SYSTEM.md](07_rc1_certification/UI_DESIGN_SYSTEM.md)** — visual language & tokens
+7. **[07_rc1_certification/API_CONTRACT.md](07_rc1_certification/API_CONTRACT.md)** — the contract Sprint 2 must implement
+8. **[07_rc1_certification/DATABASE_BLUEPRINT.md](07_rc1_certification/DATABASE_BLUEPRINT.md)** — target database schema
+9. **[07_rc1_certification/QA_CERTIFICATION_REPORT.md](07_rc1_certification/QA_CERTIFICATION_REPORT.md)** — test evidence (162/162)
+10. **[03_development/INSTALLATION.md](03_development/INSTALLATION.md)** — run it locally
+
+---
+
+## RC1 Certification
+
+Canonical, frozen documentation for the Release Candidate 1 frontend:
+
+| Document | Description |
+|---|---|
+| [MECHA_CONNECT_MASTER_HANDBOOK.md](07_rc1_certification/MECHA_CONNECT_MASTER_HANDBOOK.md) | Master engineering handbook (v2.0.0) |
+| [FRONTEND_LOCK_REPORT.md](07_rc1_certification/FRONTEND_LOCK_REPORT.md) | Freeze list, governance, change log |
+| [FRONTEND_ARCHITECTURE.md](07_rc1_certification/FRONTEND_ARCHITECTURE.md) | Provider graph, module tree, integration seams |
+| [UI_DESIGN_SYSTEM.md](07_rc1_certification/UI_DESIGN_SYSTEM.md) | Frozen design tokens & patterns |
+| [NAVIGATION_MAP.md](07_rc1_certification/NAVIGATION_MAP.md) | 5-tab shell + all flow maps |
+| [API_CONTRACT.md](07_rc1_certification/API_CONTRACT.md) | Frozen mock API contract (Sprint 2 spec) |
+| [DATABASE_BLUEPRINT.md](07_rc1_certification/DATABASE_BLUEPRINT.md) | PostgreSQL schema blueprint |
+| [QA_CERTIFICATION_REPORT.md](07_rc1_certification/QA_CERTIFICATION_REPORT.md) | Certification evidence (162/162) |
+| [PROJECT_STATUS_REPORT.md](07_rc1_certification/PROJECT_STATUS_REPORT.md) | RC1 status, next steps, risks |
+
+---
+
+## Development Workflow
+
+1. Feature work happens in modules under `lib/features/`.
+2. Every change is verified with `flutter analyze` (0 issues) and
+   `flutter test` (162/162).
+3. Repositories are the only data source — the UI never calls the network
+   directly (see `FRONTEND_ARCHITECTURE.md`).
+4. Sprint reports go to `05_reports/` (active) or `archive/` (superseded).
+5. Changelog: append to `03_development/CHANGELOG.md` (see
+   [CONTRIBUTING.md](03_development/CONTRIBUTING.md)).
+
+---
+
+## Backend Preparation (Sprint 2)
+
+Sprint 2 replaces the mock repository internals with a real backend. The
+frontend is contract-frozen, so no UI changes are required:
+
+| Requirement | Reference |
+|---|---|
+| API surface | `07_rc1_certification/API_CONTRACT.md` |
+| Database schema | `07_rc1_certification/DATABASE_BLUEPRINT.md` |
+| ID schemes, latency, failure conventions | `API_CONTRACT.md` §1 |
+| Repository seams | `FRONTEND_ARCHITECTURE.md` §8 |
+
+---
+
+## Archive
+
+Historical and superseded documents are preserved in `archive/`:
+
+- Legacy architecture (AI_ARCHITECTURE, DATABASE_SCHEMA, DESIGN_SYSTEM,
+  PROJECT_ARCHITECTURE, SYSTEM_ARCHITECTURE)
+- Legacy API draft (`API_SPEC`)
+- Sprint reports 1.1–1.7 and legacy QA/hygiene reports
+- Historical engineering sprint notes (sprint-1.3 … sprint-1.8.3)
+
+See [PROJECT_DOCUMENTATION_INDEX.md](PROJECT_DOCUMENTATION_INDEX.md) → Archive.
+
+---
+
+## References
+
+- Source assets (PRD PDFs, decks, images, videos): `source/`
+- Full navigation: [PROJECT_DOCUMENTATION_INDEX.md](PROJECT_DOCUMENTATION_INDEX.md)
+- Root repository README: [`../README.md`](../README.md)
 
 ---
 
 ## Conventions
 
-- All documents use SCREAMING_SNAKE_CASE filenames
-- Cross-references use relative paths from the `docs/` root
-- Each document has: Version, Status, Last Updated, Related Documents
-- Reports are read-only snapshots; all other docs are living documents
+- Markdown folders contain **Markdown only**; all assets live in `source/`.
+- Cross-references use relative paths from the file's own folder.
+- Reports are read-only snapshots; all other docs are living documents.
+- Canonical RC1 docs are frozen — changes require sprint sign-off.
