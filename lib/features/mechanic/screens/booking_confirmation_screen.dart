@@ -1,49 +1,41 @@
 import 'package:flutter/material.dart';
+import 'package:mecha_connect/features/mechanic/models/models.dart';
+import 'package:mecha_connect/features/mechanic/screens/live_tracking_screen.dart';
 import 'package:mecha_connect/theme/app_colors.dart';
 import 'package:mecha_connect/theme/app_responsive.dart';
 import 'package:mecha_connect/theme/app_spacing.dart';
 import 'package:mecha_connect/theme/app_theme_helpers.dart';
-import 'package:mecha_connect/mechanic/mock_data.dart';
-import 'package:mecha_connect/mechanic/screens/live_tracking_screen.dart';
 
 class BookingConfirmationScreen extends StatelessWidget {
-  final MechanicInfo mechanic;
-  final MechanicService service;
-  final double totalCost;
+  final Booking booking;
 
-  const BookingConfirmationScreen({
-    super.key,
-    required this.mechanic,
-    required this.service,
-    required this.totalCost,
-  });
+  const BookingConfirmationScreen({super.key, required this.booking});
 
   @override
   Widget build(BuildContext context) {
-    final bookingId = 'MEC${DateTime.now().millisecondsSinceEpoch.toString().substring(5, 12)}';
     return Scaffold(
       backgroundColor: context.bgPrimary,
       body: ConstrainedContent(
         child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(AppResponsive.horizontalPadding(context)),
-          child: Column(
-            children: [
-              const Spacer(flex: 2),
-              _buildSuccessIcon(context),
-              SizedBox(height: AppSpacing.xl),
-              Text('Booking Confirmed!', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, fontFamily: 'Space Grotesk', color: context.textPrimary)),
-              SizedBox(height: AppSpacing.sm),
-              Text('Your mechanic is on the way', style: TextStyle(fontSize: 15, color: context.textTertiary)),
-              SizedBox(height: AppSpacing.xxxl),
-              _buildDetailsCard(context, bookingId),
-              const Spacer(flex: 2),
-              _buildActions(context),
-              SizedBox(height: AppSpacing.base),
-            ],
+          child: SingleChildScrollView(
+            padding: EdgeInsets.all(AppResponsive.horizontalPadding(context)),
+            child: Column(
+              children: [
+                const SizedBox(height: 24),
+                _buildSuccessIcon(context),
+                SizedBox(height: AppSpacing.xl),
+                Text('Booking Confirmed!', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, fontFamily: 'Space Grotesk', color: context.textPrimary)),
+                SizedBox(height: AppSpacing.sm),
+                Text('Your mechanic is on the way', style: TextStyle(fontSize: 15, color: context.textTertiary)),
+                SizedBox(height: AppSpacing.xxxl),
+                _buildDetailsCard(context, booking),
+                SizedBox(height: AppSpacing.xxxl),
+                _buildActions(context),
+                SizedBox(height: AppSpacing.base),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -61,7 +53,7 @@ class BookingConfirmationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDetailsCard(BuildContext context, String bookingId) {
+  Widget _buildDetailsCard(BuildContext context, Booking booking) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(AppSpacing.xl),
@@ -75,17 +67,17 @@ class BookingConfirmationScreen extends StatelessWidget {
         children: [
           Text('Booking ID', style: TextStyle(fontSize: 12, color: context.textTertiary)),
           SizedBox(height: 4),
-          Text(bookingId, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: context.textPrimary)),
+          Text(booking.bookingId, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: context.textPrimary)),
           SizedBox(height: AppSpacing.lg),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildDetailItem(context, 'Mechanic', mechanic.name),
-              _buildDetailItem(context, 'Service', service.name),
+              _buildDetailItem(context, 'Mechanic', booking.mechanic.name),
+              _buildDetailItem(context, 'Service', booking.service.name),
             ],
           ),
           SizedBox(height: AppSpacing.base),
-          _buildDetailItem(context, 'Estimated Arrival', '${mechanic.etaMinutes} minutes'),
+          _buildDetailItem(context, 'Estimated Arrival', '${booking.mechanic.etaMinutes} minutes'),
           SizedBox(height: AppSpacing.base),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -129,7 +121,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Calling ${mechanic.name}...'), behavior: SnackBarBehavior.floating),
+                      SnackBar(content: Text('Calling ${booking.mechanic.name}...'), behavior: SnackBarBehavior.floating),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -156,11 +148,7 @@ class BookingConfirmationScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (_) => LiveTrackingScreen(
-                        mechanic: mechanic,
-                        service: service,
-                        totalCost: totalCost,
-                      ),
+                      builder: (_) => LiveTrackingScreen(bookingId: booking.bookingId),
                     ));
                   },
                   style: ElevatedButton.styleFrom(

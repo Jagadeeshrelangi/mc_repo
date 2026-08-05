@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart' as geo;
 import 'package:permission_handler/permission_handler.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:mecha_connect/services/geocoding_service.dart';
 
 enum LocationPermissionState { initial, granted, denied, deniedForever, serviceDisabled }
 
@@ -42,6 +42,8 @@ class LocationProvider extends ChangeNotifier {
   LatLng? _selectedLatLng;
   String _currentAddress = '';
   String _selectedAddress = '';
+  GeocodingResult? _currentAddressDetails;
+  GeocodingResult? _selectedAddressDetails;
   bool _isLoadingLocation = false;
   bool _isFetchingAddress = false;
   bool _isInitializing = false;
@@ -58,6 +60,8 @@ class LocationProvider extends ChangeNotifier {
   LatLng? get selectedLatLng => _selectedLatLng ?? _currentLatLng;
   String get currentAddress => _currentAddress;
   String get selectedAddress => _selectedAddress.isNotEmpty ? _selectedAddress : _currentAddress;
+  GeocodingResult? get currentAddressDetails => _currentAddressDetails;
+  GeocodingResult? get selectedAddressDetails => _selectedAddressDetails;
   bool get isLoadingLocation => _isLoadingLocation;
   bool get isFetchingAddress => _isFetchingAddress;
   List<SavedAddress> get savedAddresses => List.unmodifiable(_savedAddresses);
@@ -110,33 +114,47 @@ class LocationProvider extends ChangeNotifier {
   Future<void> _initLocation() async {
     if (_isInitializing) return;
     _isInitializing = true;
-    await checkAndRequestPermission();
-    if (_permissionState == LocationPermissionState.granted) {
-      await getCurrentLocation();
+    try {
+      await checkAndRequestPermission();
+      if (_permissionState == LocationPermissionState.granted) {
+        await getCurrentLocation();
+      }
+    } catch (_) {
+      // Startup detection must never throw an unhandled async error (e.g. when
+      // the geolocation plugin is unavailable on the current platform/webview).
+    } finally {
+      _isInitializing = false;
     }
-    _isInitializing = false;
   }
 
   Future<void> checkAndRequestPermission() async {
-    if (!await geo.Geolocator.isLocationServiceEnabled()) {
+    try {
+      if (!await geo.Geolocator.isLocationServiceEnabled()) {
+        _permissionState = LocationPermissionState.serviceDisabled;
+        notifyListeners();
+        return;
+      }
+
+      var permission = await geo.Geolocator.checkPermission();
+      if (permission == geo.LocationPermission.denied) {
+        permission = await geo.Geolocator.requestPermission();
+      }
+
+      if (permission == geo.LocationPermission.denied) {
+        _permissionState = LocationPermissionState.denied;
+      } else if (permission == geo.LocationPermission.deniedForever) {
+        _permissionState = LocationPermissionState.deniedForever;
+      } else {
+        _permissionState = LocationPermissionState.granted;
+      }
+      notifyListeners();
+    } catch (_) {
+      // Geolocation unavailable (unsupported platform, blocked webview/iframe,
+      // non-HTTPS web origin, plugin missing in tests). Surface as a resolvable
+      // state instead of throwing out of the constructor-triggered detection.
       _permissionState = LocationPermissionState.serviceDisabled;
       notifyListeners();
-      return;
     }
-
-    var permission = await geo.Geolocator.checkPermission();
-    if (permission == geo.LocationPermission.denied) {
-      permission = await geo.Geolocator.requestPermission();
-    }
-
-    if (permission == geo.LocationPermission.denied) {
-      _permissionState = LocationPermissionState.denied;
-    } else if (permission == geo.LocationPermission.deniedForever) {
-      _permissionState = LocationPermissionState.deniedForever;
-    } else {
-      _permissionState = LocationPermissionState.granted;
-    }
-    notifyListeners();
   }
 
   Future<bool> getCurrentLocation() async {
@@ -181,27 +199,14 @@ class LocationProvider extends ChangeNotifier {
     _isFetchingAddress = true;
     notifyListeners();
 
-    try {
-      final response = await http.get(
-        Uri.parse(
-          'https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.latitude}&lon=${location.longitude}',
-        ),
-        headers: {'User-Agent': 'MechaConnect/1.0'},
-      );
+    final details = await GeocodingService().reverseGeocode(location);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final address = data['display_name'] as String? ?? '';
-        final shortAddress = _shortenAddress(address);
-
-        if (isCurrent) {
-          _currentAddress = shortAddress;
-        } else {
-          _selectedAddress = shortAddress;
-        }
-      }
-    } catch (e) {
-      debugPrint('Reverse geocoding error: $e');
+    if (isCurrent) {
+      _currentAddressDetails = details;
+      _currentAddress = details?.shortAddress ?? _shortenAddress(details?.displayName ?? '');
+    } else {
+      _selectedAddressDetails = details;
+      _selectedAddress = details?.shortAddress ?? _shortenAddress(details?.displayName ?? '');
     }
 
     _isFetchingAddress = false;
@@ -223,27 +228,7 @@ class LocationProvider extends ChangeNotifier {
       return;
     }
 
-    try {
-      final response = await http.get(
-        Uri.parse(
-          'https://nominatim.openstreetmap.org/search?q=${Uri.encodeComponent(query)}&format=json&limit=8&countrycodes=in',
-        ),
-        headers: {'User-Agent': 'MechaConnect/1.0'},
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as List;
-        _searchResults = data.map<Map<String, dynamic>>((item) => {
-          'name': item['display_name'] as String? ?? '',
-          'shortName': _shortenAddress(item['display_name'] as String? ?? ''),
-          'lat': double.parse(item['lat'] as String),
-          'lng': double.parse(item['lon'] as String),
-        }).toList();
-      }
-    } catch (e) {
-      debugPrint('Search error: $e');
-      _searchResults = [];
-    }
+    _searchResults = await GeocodingService().searchLocations(query);
     notifyListeners();
   }
 

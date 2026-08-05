@@ -1,17 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:mecha_connect/features/mechanic/models/models.dart';
+import 'package:mecha_connect/features/mechanic/providers/mechanic_provider.dart';
+import 'package:mecha_connect/features/mechanic/screens/select_service_screen.dart';
+import 'package:mecha_connect/features/mechanic/widgets/mechanic_card.dart';
+import 'package:mecha_connect/features/mechanic/widgets/primary_action_button.dart';
 import 'package:mecha_connect/theme/app_colors.dart';
 import 'package:mecha_connect/theme/app_responsive.dart';
 import 'package:mecha_connect/theme/app_spacing.dart';
 import 'package:mecha_connect/theme/app_theme_helpers.dart';
-import 'package:mecha_connect/mechanic/mock_data.dart';
-import 'package:mecha_connect/mechanic/widgets/mechanic_card.dart';
-import 'package:mecha_connect/mechanic/widgets/primary_action_button.dart';
-import 'package:mecha_connect/mechanic/screens/select_service_screen.dart';
+import 'package:mecha_connect/widgets/app_loading.dart';
+import 'package:provider/provider.dart';
 
-class MechanicDetailsScreen extends StatelessWidget {
+class MechanicDetailsScreen extends StatefulWidget {
   final MechanicInfo mechanic;
 
   const MechanicDetailsScreen({super.key, required this.mechanic});
+
+  @override
+  State<MechanicDetailsScreen> createState() => _MechanicDetailsScreenState();
+}
+
+class _MechanicDetailsScreenState extends State<MechanicDetailsScreen> {
+  MechanicInfo get mechanic => widget.mechanic;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<MechanicProvider>().loadReviews(mechanic.id);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +52,7 @@ class MechanicDetailsScreen extends StatelessWidget {
                   SliverToBoxAdapter(child: _buildSection(context, 'Available Services', _buildServicesList(context))),
                   SliverToBoxAdapter(child: _buildSection(context, 'Service Charges', _buildCharges(context))),
                   SliverToBoxAdapter(child: _buildSection(context, 'Working Hours', _buildHours(context))),
+                  SliverToBoxAdapter(child: _buildSection(context, 'Reviews', _buildReviews(context))),
                   const SliverToBoxAdapter(child: SizedBox(height: 100)),
                 ],
               ),
@@ -291,6 +311,67 @@ class MechanicDetailsScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildReviews(BuildContext context) {
+    final provider = context.watch<MechanicProvider>();
+    if (provider.reviews.isEmpty) {
+      if (provider.state == MechanicScreenState.loading) {
+        return const AppLoading(message: 'Loading reviews...');
+      }
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: context.cardBg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: context.borderSoft),
+        ),
+        child: Text(
+          'No reviews yet',
+          style: TextStyle(fontSize: 13, color: context.textTertiary),
+        ),
+      );
+    }
+    return Column(
+      children: List.generate(provider.reviews.length, (i) {
+        final review = provider.reviews[i];
+        return Padding(
+          padding: EdgeInsets.only(bottom: i < provider.reviews.length - 1 ? AppSpacing.sm : 0),
+          child: Container(
+            padding: const EdgeInsets.all(AppSpacing.base),
+            decoration: BoxDecoration(
+              color: context.cardBg,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: context.borderSoft),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(review.reviewerName, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: context.textPrimary)),
+                    ),
+                    RatingBadge(rating: review.rating, compact: true),
+                  ],
+                ),
+                if (review.vehicle.isNotEmpty) ...[
+                  SizedBox(height: 2),
+                  Text(review.vehicle, style: TextStyle(fontSize: 11, color: context.textTertiary)),
+                ],
+                if (review.comment.isNotEmpty) ...[
+                  SizedBox(height: AppSpacing.sm),
+                  Text(review.comment, style: TextStyle(fontSize: 13, color: context.textSecondary, height: 1.4)),
+                ],
+                SizedBox(height: AppSpacing.sm),
+                Text(review.date, style: TextStyle(fontSize: 11, color: context.textTertiary)),
+              ],
+            ),
+          ),
+        );
+      }),
+    );
+  }
+
   Widget _buildBottomBar(BuildContext context) {
     return Container(
       padding: EdgeInsets.fromLTRB(AppResponsive.horizontalPadding(context), AppSpacing.base, AppResponsive.horizontalPadding(context), MediaQuery.of(context).padding.bottom + AppSpacing.base),
@@ -326,6 +407,7 @@ class MechanicDetailsScreen extends StatelessWidget {
             child: PrimaryActionButton(
               label: 'Book Mechanic',
               onPressed: () {
+                context.read<MechanicProvider>().selectMechanic(mechanic);
                 Navigator.of(context).push(MaterialPageRoute(
                   builder: (_) => SelectServiceScreen(mechanic: mechanic),
                 ));

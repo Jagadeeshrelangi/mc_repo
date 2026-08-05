@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:mecha_connect/auth/login_screen.dart';
+import 'package:mecha_connect/features/auth/screens/login_screen.dart';
+import 'package:mecha_connect/features/auth/providers/auth_provider.dart';
+import 'package:mecha_connect/features/profile/navigation.dart';
+import 'package:provider/provider.dart';
 import 'package:mecha_connect/theme/app_colors.dart';
 import 'package:mecha_connect/theme/app_theme_helpers.dart';
-import 'package:mecha_connect/bottom_bar/profile_screen.dart';
-import 'package:mecha_connect/bottom_bar/OrderScreen.dart';
+import 'package:mecha_connect/bottom_bar/order_screen.dart';
 
 class ProfileDrawer extends StatelessWidget {
   const ProfileDrawer({super.key});
@@ -46,7 +48,7 @@ class ProfileDrawer extends StatelessWidget {
                     ),
                     child: const Center(
                       child: Text(
-                        'AM',
+                        'JG',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
@@ -57,7 +59,7 @@ class ProfileDrawer extends StatelessWidget {
                   ),
                   const SizedBox(height: 14),
                   const Text(
-                    'Arjun Mehta',
+                    'Jagadeesh Gowda',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
@@ -67,7 +69,7 @@ class ProfileDrawer extends StatelessWidget {
                   ),
                   const SizedBox(height: 3),
                   Text(
-                    'arjun@mechaconnect.in',
+                    'jagadeesh@mechaconnect.ai',
                     style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.7)),
                   ),
                   const SizedBox(height: 10),
@@ -96,27 +98,25 @@ class ProfileDrawer extends StatelessWidget {
                     Navigator.pop(context);
                     Navigator.push(context, MaterialPageRoute(builder: (_) => const Orderscreen()));
                   }),
-                  _buildMenuItem(context, icon: Icons.account_balance_wallet_rounded, title: 'Wallet', onTap: () => Navigator.pop(context)),
+                  _buildMenuItem(context, icon: Icons.account_balance_wallet_rounded, title: 'Wallet', onTap: () {
+                    Navigator.pop(context);
+                    openWallet(context);
+                  }),
                   _buildMenuItem(context, icon: Icons.directions_car_rounded, title: 'My Vehicles', onTap: () {
                     Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
+                    openMyVehicles(context);
                   }),
                   _buildMenuItem(context, icon: Icons.notifications_rounded, title: 'Notifications', onTap: () {
                     Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
+                    openNotificationSettings(context);
                   }),
                   _buildMenuItem(context, icon: Icons.settings_rounded, title: 'Settings', onTap: () {
                     Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfileScreen()));
+                    openPrivacySecurity(context);
                   }),
                   _buildMenuItem(context, icon: Icons.help_outline_rounded, title: 'Help & Support', onTap: () {
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Help & Support coming soon!'),
-                        behavior: SnackBarBehavior.floating,
-                      ),
-                    );
+                    openSupport(context);
                   }),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -128,6 +128,8 @@ class ProfileDrawer extends StatelessWidget {
                     title: 'Logout',
                     color: AppColors.error,
                     onTap: () {
+                      // ignore: use_build_context_synchronously
+                      Provider.of<AuthProvider>(context, listen: false).logout();
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (_) => const LoginScreen()),

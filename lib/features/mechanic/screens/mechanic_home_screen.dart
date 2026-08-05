@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:mecha_connect/features/mechanic/models/models.dart';
+import 'package:mecha_connect/features/mechanic/providers/mechanic_provider.dart';
+import 'package:mecha_connect/features/mechanic/screens/booking_history_screen.dart';
+import 'package:mecha_connect/features/mechanic/screens/mechanic_details_screen.dart';
+import 'package:mecha_connect/features/mechanic/screens/nearby_mechanics_screen.dart';
+import 'package:mecha_connect/features/mechanic/screens/vehicle_form_screen.dart';
+import 'package:mecha_connect/features/mechanic/widgets/mechanic_card.dart';
+import 'package:mecha_connect/features/mechanic/widgets/service_chip.dart';
 import 'package:mecha_connect/theme/app_colors.dart';
 import 'package:mecha_connect/theme/app_responsive.dart';
 import 'package:mecha_connect/theme/app_spacing.dart';
 import 'package:mecha_connect/theme/app_theme_helpers.dart';
-import 'package:mecha_connect/mechanic/mock_data.dart';
-import 'package:mecha_connect/mechanic/widgets/service_chip.dart';
-import 'package:mecha_connect/mechanic/widgets/mechanic_card.dart';
-import 'package:mecha_connect/mechanic/screens/nearby_mechanics_screen.dart';
-import 'package:mecha_connect/mechanic/screens/mechanic_details_screen.dart';
 import 'package:mecha_connect/widgets/app_loading.dart';
+import 'package:provider/provider.dart';
 
 class MechanicHomeScreen extends StatefulWidget {
   const MechanicHomeScreen({super.key});
@@ -18,64 +22,68 @@ class MechanicHomeScreen extends StatefulWidget {
 }
 
 class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
-  String _selectedVehicle = 'Honda Activa 6G';
   int? _selectedCategory;
-  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 800), () {
-      if (mounted) setState(() => _isLoading = false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<MechanicProvider>().loadHome();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDark;
+    final provider = context.watch<MechanicProvider>();
     return Scaffold(
       backgroundColor: context.bgPrimary,
       appBar: _buildAppBar(context, isDark),
       body: ConstrainedContent(
-        child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSearchBar(context, isDark),
-            SizedBox(height: AppSpacing.sm),
-            _buildLocationRow(context, isDark),
-            SizedBox(height: AppSpacing.base),
-            _buildVehicleSelector(context, isDark),
-            SizedBox(height: AppSpacing.xl),
-            _buildSectionTitle('Categories'),
-            SizedBox(height: AppSpacing.sm),
-            _buildCategoriesGrid(context, isDark),
-            SizedBox(height: AppSpacing.xl),
-            _buildEmergencyBanner(context),
-            SizedBox(height: AppSpacing.xl),
-            _buildSectionTitle('Featured Mechanics'),
-            SizedBox(height: AppSpacing.sm),
-            _isLoading ? _buildFeaturedSkeleton() : _buildFeaturedMechanics(context, isDark),
-            SizedBox(height: AppSpacing.xl),
-            _buildSectionTitle('Nearby Mechanics'),
-            Row(
+        child: RefreshIndicator(
+          onRefresh: () => provider.refresh(),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Spacer(),
-                Padding(
-                  padding: EdgeInsets.only(right: AppResponsive.horizontalPadding(context)),
-                  child: TextButton(
-                    onPressed: () => _navigateToNearby(context),
-                    child: Text('View All', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.brandOrange)),
-                  ),
+                _buildSearchBar(context, isDark),
+                SizedBox(height: AppSpacing.sm),
+                _buildLocationRow(context, isDark),
+                SizedBox(height: AppSpacing.base),
+                _buildVehicleSelector(context, isDark),
+                SizedBox(height: AppSpacing.xl),
+                _buildSectionTitle('Categories'),
+                SizedBox(height: AppSpacing.sm),
+                _buildCategoriesGrid(context, isDark),
+                SizedBox(height: AppSpacing.xl),
+                _buildEmergencyBanner(context),
+                SizedBox(height: AppSpacing.xl),
+                _buildSectionTitle('Featured Mechanics'),
+                SizedBox(height: AppSpacing.sm),
+                _buildFeaturedSection(context, isDark, provider),
+                SizedBox(height: AppSpacing.xl),
+                _buildSectionTitle('Nearby Mechanics'),
+                Row(
+                  children: [
+                    const Spacer(),
+                    Padding(
+                      padding: EdgeInsets.only(right: AppResponsive.horizontalPadding(context)),
+                      child: TextButton(
+                        onPressed: () => _navigateToNearby(context),
+                        child: Text('View All', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.brandOrange)),
+                      ),
+                    ),
+                  ],
                 ),
+                SizedBox(height: AppSpacing.xs),
+                _buildNearbySection(context, isDark, provider),
+                SizedBox(height: AppSpacing.xxxl),
               ],
             ),
-            SizedBox(height: AppSpacing.xs),
-            _isLoading ? _buildNearbySkeleton() : _buildNearbyMechanics(context, isDark),
-            SizedBox(height: AppSpacing.xxxl),
-          ],
+          ),
         ),
-      ),
       ),
     );
   }
@@ -91,7 +99,20 @@ class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
       ),
       actions: [
         IconButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => const BookingHistoryScreen(),
+            ));
+          },
+          icon: Icon(Icons.history_rounded, color: context.textSecondary),
+          tooltip: 'Booking History',
+        ),
+        IconButton(
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('No new notifications'), behavior: SnackBarBehavior.floating),
+            );
+          },
           icon: Icon(Icons.notifications_outlined, color: context.textSecondary),
           tooltip: 'Notifications',
         ),
@@ -122,7 +143,7 @@ class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
           ),
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Mechanic search coming soon!'), behavior: SnackBarBehavior.floating),
+              const SnackBar(content: Text('Mechanic search coming in Sprint 2!'), behavior: SnackBarBehavior.floating),
             );
           },
         ),
@@ -164,6 +185,8 @@ class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
   }
 
   Widget _buildVehicleSelector(BuildContext context, bool isDark) {
+    final provider = context.read<MechanicProvider>();
+    final vehicle = provider.selectedVehicle ?? 'Honda Activa 6G';
     return Padding(
       padding: EdgeInsets.fromLTRB(AppResponsive.horizontalPadding(context), 0, AppResponsive.horizontalPadding(context), 0),
       child: Container(
@@ -179,23 +202,34 @@ class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
             SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
-                _selectedVehicle,
+                vehicle,
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: context.textPrimary),
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.brandOrangeSoft,
+            Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => const VehicleFormPage(),
+                  ));
+                },
                 borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Change', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.brandOrange)),
-                  SizedBox(width: 2),
-                  Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.brandOrange),
-                ],
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.brandOrangeSoft,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('Change', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.brandOrange)),
+                      SizedBox(width: 2),
+                      Icon(Icons.chevron_right_rounded, size: 16, color: AppColors.brandOrange),
+                    ],
+                  ),
+                ),
               ),
             ),
           ],
@@ -220,13 +254,15 @@ class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
   }
 
   Widget _buildCategoriesGrid(BuildContext context, bool isDark) {
+    final categories = context.watch<MechanicProvider>().categories;
+    if (categories.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppResponsive.horizontalPadding(context) - 4),
       child: Wrap(
         spacing: 8,
         runSpacing: 8,
-        children: List.generate(mechanicCategories.length, (i) {
-          final cat = mechanicCategories[i];
+        children: List.generate(categories.length, (i) {
+          final cat = categories[i];
           return ServiceChip(
             label: cat.name,
             icon: cat.icon,
@@ -295,7 +331,27 @@ class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
     );
   }
 
-  Widget _buildFeaturedMechanics(BuildContext context, bool isDark) {
+  Widget _buildFeaturedSection(BuildContext context, bool isDark, MechanicProvider provider) {
+    if (provider.state == MechanicScreenState.loading) return _buildFeaturedSkeleton();
+    if (provider.state == MechanicScreenState.error || provider.state == MechanicScreenState.empty) {
+      return _buildErrorInline(context, provider);
+    }
+    final featured = provider.featuredMechanics;
+    if (featured.isEmpty) return _buildEmptyInline(context);
+    return _buildFeaturedMechanics(context, isDark, featured);
+  }
+
+  Widget _buildNearbySection(BuildContext context, bool isDark, MechanicProvider provider) {
+    if (provider.state == MechanicScreenState.loading) return _buildNearbySkeleton();
+    if (provider.state == MechanicScreenState.error || provider.state == MechanicScreenState.empty) {
+      return _buildErrorInline(context, provider);
+    }
+    final nearby = provider.mechanics.take(3).toList();
+    if (nearby.isEmpty) return _buildEmptyInline(context);
+    return _buildNearbyMechanics(context, isDark, nearby);
+  }
+
+  Widget _buildFeaturedMechanics(BuildContext context, bool isDark, List<MechanicInfo> featured) {
     final screenWidth = MediaQuery.sizeOf(context).width;
     final hPad = AppResponsive.horizontalPadding(context);
     final cardWidth = screenWidth <= 480 ? screenWidth - hPad * 2 - 16 : 260.0;
@@ -304,10 +360,10 @@ class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.symmetric(horizontal: hPad),
-        itemCount: featuredMechanics.length,
+        itemCount: featured.length,
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
-          final mech = featuredMechanics[index];
+          final mech = featured[index];
           return SizedBox(
             width: cardWidth,
             child: MechanicCard(
@@ -323,8 +379,7 @@ class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
     );
   }
 
-  Widget _buildNearbyMechanics(BuildContext context, bool isDark) {
-    final nearby = mockMechanics.take(3).toList();
+  Widget _buildNearbyMechanics(BuildContext context, bool isDark, List<MechanicInfo> nearby) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: AppResponsive.horizontalPadding(context)),
       child: Column(
@@ -340,6 +395,57 @@ class _MechanicHomeScreenState extends State<MechanicHomeScreen> {
             ),
           );
         }),
+      ),
+    );
+  }
+
+  Widget _buildErrorInline(BuildContext context, MechanicProvider provider) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppResponsive.horizontalPadding(context)),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        decoration: BoxDecoration(
+          color: AppColors.errorLight,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.cloud_off_rounded, color: AppColors.error, size: 20),
+            const SizedBox(width: AppSpacing.sm),
+            Expanded(
+              child: Text(
+                provider.errorMessage ?? 'Could not load mechanics.',
+                style: const TextStyle(fontSize: 13, color: AppColors.error),
+              ),
+            ),
+            TextButton(
+              onPressed: () => provider.refresh(),
+              child: const Text('Retry', style: TextStyle(color: AppColors.error, fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyInline(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: AppResponsive.horizontalPadding(context)),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        decoration: BoxDecoration(
+          color: context.cardBg,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          border: Border.all(color: context.borderSoft),
+        ),
+        child: Column(
+          children: [
+            Icon(Icons.build_circle_outlined, size: 40, color: context.textTertiary),
+            const SizedBox(height: AppSpacing.sm),
+            Text('No mechanics available', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: context.textPrimary)),
+          ],
+        ),
       ),
     );
   }

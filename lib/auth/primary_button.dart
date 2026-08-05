@@ -17,6 +17,7 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
       width: double.infinity,
       height: AppResponsive.responsive(context, mobile: 56.0, tablet: 58.0, desktop: 60.0),
@@ -25,8 +26,10 @@ class PrimaryButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.brandOrange,
           foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.grey300,
-          disabledForegroundColor: AppColors.grey500,
+          disabledBackgroundColor:
+              isDark ? AppColors.darkBorder : AppColors.grey300,
+          disabledForegroundColor:
+              isDark ? AppColors.darkTextTertiary : AppColors.grey500,
           elevation: 2,
           shadowColor: AppColors.brandOrange.withValues(alpha: 0.3),
           surfaceTintColor: Colors.transparent,

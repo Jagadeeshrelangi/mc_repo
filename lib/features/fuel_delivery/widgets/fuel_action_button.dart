@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class FuelActionButton extends StatelessWidget {
   final String label;
   final IconData icon;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final bool isPrimary;
   final bool isLoading;
 

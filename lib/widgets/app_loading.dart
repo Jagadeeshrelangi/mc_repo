@@ -8,6 +8,7 @@ class AppLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -24,7 +25,10 @@ class AppLoading extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               message!,
-              style: const TextStyle(fontSize: 13, color: AppColors.grey400),
+              style: TextStyle(
+                fontSize: 13,
+                color: isDark ? AppColors.darkTextTertiary : AppColors.grey400,
+              ),
             ),
           ],
         ],
@@ -69,6 +73,10 @@ class _AppShimmerState extends State<AppShimmer> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final shimmerColors = isDark
+        ? [AppColors.darkBorder, AppColors.darkCard, AppColors.darkBorder]
+        : [AppColors.grey200, AppColors.grey100, AppColors.grey200];
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
@@ -80,7 +88,7 @@ class _AppShimmerState extends State<AppShimmer> with SingleTickerProviderStateM
             gradient: LinearGradient(
               begin: const Alignment(-1.0, 0),
               end: const Alignment(1.0, 0),
-              colors: [AppColors.grey200, AppColors.grey100, AppColors.grey200],
+              colors: shimmerColors,
               stops: [
                 (_animation.value - 0.3).clamp(0.0, 1.0),
                 _animation.value,

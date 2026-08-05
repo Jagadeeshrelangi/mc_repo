@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mecha_connect/homescreen/drawerscreen.dart';
-import 'package:mecha_connect/homescreen/mechanic_screen.dart';
-import 'package:mecha_connect/homescreen/petrol_page.dart';
+import 'package:mecha_connect/features/ai/navigation.dart';
+import 'package:mecha_connect/features/home/models/home_models.dart';
+import 'package:mecha_connect/features/home/screens/home_search_screen.dart';
+import 'package:mecha_connect/features/mechanic/screens/vehicle_form_screen.dart';
+import 'package:mecha_connect/features/fuel_delivery/screens/fuel_home_screen.dart';
+import 'package:mecha_connect/features/marketplace/screens/marketplace_home_screen.dart';
+import 'package:mecha_connect/features/profile/navigation.dart';
 import 'package:mecha_connect/theme/app_colors.dart';
 import 'package:mecha_connect/theme/app_spacing.dart';
 import 'package:mecha_connect/widgets/location_header.dart';
-import 'package:mecha_connect/bottom_bar/chatboard.dart';
 
 class ServiceSelectionScreen extends StatefulWidget {
   const ServiceSelectionScreen({super.key});
@@ -103,12 +107,15 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
+                    color:
+                        isDark
+                            ? AppColors.darkTextTertiary
+                            : AppColors.textTertiary,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Arjun',
+                  'Jagadeesh',
                   style: TextStyle(
                     fontFamily: 'Space Grotesk',
                     fontSize: 28,
@@ -122,38 +129,36 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
           ),
           _buildIconButton(
             icon: Icons.notifications_outlined,
-            onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('No new notifications'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
+            label: 'Notifications',
+            onTap: () => openNotificationSettings(context),
             isDark: isDark,
           ),
           const SizedBox(width: 10),
           GestureDetector(
             onTap: () => Scaffold.of(context).openEndDrawer(),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [AppColors.brandOrange, AppColors.brandOrangeDark],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+            child: Semantics(
+              button: true,
+              label: 'Open profile menu',
+              child: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppColors.brandOrange, AppColors.brandOrangeDark],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: AppElevation.shadowBrandLight,
                 ),
-                shape: BoxShape.circle,
-                boxShadow: AppElevation.shadowBrandLight,
-              ),
-              child: const Center(
-                child: Text(
-                  'AM',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                child: const Center(
+                  child: Text(
+                    'JG',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -167,118 +172,189 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
   Widget _buildSearchBar(BuildContext context, bool isDark) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: GestureDetector(
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Search feature coming soon!'),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        },
-        child: Container(
-          height: 50,
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurface : AppColors.white,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-            border: Border.all(
-              color: isDark ? AppColors.darkBorder : AppColors.grey200,
-              width: 1,
-            ),
-            boxShadow: isDark ? AppElevation.shadowDarkLow : AppElevation.shadowLow,
-          ),
-          child: Row(
-            children: [
-              const Padding(
-                padding: EdgeInsets.only(left: 16),
-                child: Icon(Icons.search_rounded, size: 22, color: AppColors.grey400),
+      child: Semantics(
+        button: true,
+        label: 'Search services',
+        child: GestureDetector(
+          onTap: () => _openSearch(context),
+          child: Container(
+            height: 50,
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSurface : AppColors.white,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+              border: Border.all(
+                color: isDark ? AppColors.darkBorder : AppColors.grey200,
+                width: 1,
               ),
-              const SizedBox(width: 12),
-              Text(
-                'What do you need today?',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? AppColors.darkTextTertiary : AppColors.grey400,
+              boxShadow:
+                  isDark ? AppElevation.shadowDarkLow : AppElevation.shadowLow,
+            ),
+            child: Row(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.only(left: 16),
+                  child: Icon(
+                    Icons.search_rounded,
+                    size: 22,
+                    color: AppColors.grey400,
+                  ),
                 ),
-              ),
-            ],
+                const SizedBox(width: 12),
+                Text(
+                  'What do you need today?',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color:
+                        isDark ? AppColors.darkTextTertiary : AppColors.grey400,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
+  void _openSearch(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder:
+            (_) => HomeSearchScreen(
+              onQuickServiceTap:
+                  (service) => _handleQuickServiceTap(context, service),
+              onNearbyTap: (service) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${service.name} details coming soon!'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+            ),
+      ),
+    );
+  }
+
+  void _handleQuickServiceTap(BuildContext context, QuickService service) {
+    switch (service.label) {
+      case 'Mechanic':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const VehicleFormPage()),
+        );
+        return;
+      case 'Fuel':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const FuelHomeScreen()),
+        );
+        return;
+      case 'AI Diagnosis':
+        openAiChat(context);
+        return;
+      case 'Parts':
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const MarketplaceHomeScreen()),
+        );
+        return;
+      default:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${service.label} service coming soon!'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    }
+  }
+
   Widget _buildSosCard(BuildContext context, bool isDark) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: GestureDetector(
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Connecting you to emergency roadside assistance...'),
-              backgroundColor: Color(0xFFEF4444),
-              behavior: SnackBarBehavior.floating,
+      child: Semantics(
+        button: true,
+        label: 'Emergency SOS — immediate roadside assistance',
+        child: GestureDetector(
+          onTap: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Connecting you to emergency roadside assistance...',
+                ),
+                backgroundColor: Color(0xFFEF4444),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(18),
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.all(Radius.circular(18)),
             ),
-          );
-        },
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(18),
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: const Icon(
+                    Icons.emergency_rounded,
+                    size: 26,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Emergency SOS',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                      SizedBox(height: 3),
+                      Text(
+                        'Immediate roadside assistance',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 20,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
-            borderRadius: BorderRadius.all(Radius.circular(18)),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(Icons.emergency_rounded, size: 26, color: Colors.white),
-              ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Emergency SOS',
-                      style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        letterSpacing: -0.2,
-                      ),
-                    ),
-                    SizedBox(height: 3),
-                    Text(
-                      'Immediate roadside assistance',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.white70,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(Icons.arrow_forward_rounded, size: 20, color: Colors.white),
-              ),
-            ],
           ),
         ),
       ),
@@ -298,7 +374,8 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
             color: isDark ? AppColors.darkBorder : AppColors.borderLight,
             width: 0.5,
           ),
-          boxShadow: isDark ? AppElevation.shadowDarkLow : AppElevation.shadowLow,
+          boxShadow:
+              isDark ? AppElevation.shadowDarkLow : AppElevation.shadowLow,
         ),
         child: Row(
           children: [
@@ -307,11 +384,18 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
               height: 52,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [AppColors.success.withValues(alpha: 0.15), AppColors.success.withValues(alpha: 0.05)],
+                  colors: [
+                    AppColors.success.withValues(alpha: 0.15),
+                    AppColors.success.withValues(alpha: 0.05),
+                  ],
                 ),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(Icons.directions_car_rounded, size: 26, color: AppColors.success),
+              child: const Icon(
+                Icons.directions_car_rounded,
+                size: 26,
+                color: AppColors.success,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -323,7 +407,8 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: isDark ? AppColors.darkText : AppColors.textPrimary,
+                      color:
+                          isDark ? AppColors.darkText : AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -331,7 +416,10 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
                     'Honda Activa 6G — 92% healthy',
                     style: TextStyle(
                       fontSize: 12,
-                      color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
+                      color:
+                          isDark
+                              ? AppColors.darkTextTertiary
+                              : AppColors.textTertiary,
                     ),
                   ),
                 ],
@@ -350,8 +438,11 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
                     child: CircularProgressIndicator(
                       value: 0.92,
                       strokeWidth: 4,
-                      backgroundColor: (isDark ? AppColors.darkBorder : AppColors.grey200),
-                      valueColor: const AlwaysStoppedAnimation<Color>(AppColors.success),
+                      backgroundColor:
+                          (isDark ? AppColors.darkBorder : AppColors.grey200),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        AppColors.success,
+                      ),
                       strokeCap: StrokeCap.round,
                     ),
                   ),
@@ -360,7 +451,8 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: isDark ? AppColors.darkText : AppColors.textPrimary,
+                      color:
+                          isDark ? AppColors.darkText : AppColors.textPrimary,
                     ),
                   ),
                 ],
@@ -374,30 +466,79 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
 
   Widget _buildQuickServices(BuildContext context, bool isDark) {
     final services = [
-      _ServiceItem(Icons.build_rounded, 'Mechanic', AppColors.brandOrange, AppColors.brandOrangeSoft, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => VehicleFormPage()));
-      }),
-      _ServiceItem(Icons.local_gas_station_rounded, 'Fuel', AppColors.brandBlue, AppColors.brandBlueSoft, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => FuelSelectionPage()));
-      }),
-      _ServiceItem(Icons.psychology_rounded, 'AI Diagnosis', AppColors.brandBlue, AppColors.brandBlueSoft, () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => const ChatBot()));
-      }),
-      _ServiceItem(Icons.settings_suggest_rounded, 'Parts', AppColors.success, AppColors.successLight, () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Parts marketplace coming soon!'), behavior: SnackBarBehavior.floating),
-        );
-      }),
-      _ServiceItem(Icons.battery_charging_full_rounded, 'Battery', AppColors.warning, AppColors.warningLight, () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Battery service coming soon!'), behavior: SnackBarBehavior.floating),
-        );
-      }),
-      _ServiceItem(Icons.local_shipping_rounded, 'Towing', AppColors.grey500, AppColors.grey100, () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Towing service coming soon!'), behavior: SnackBarBehavior.floating),
-        );
-      }),
+      _ServiceItem(
+        Icons.build_rounded,
+        'Mechanic',
+        AppColors.brandOrange,
+        AppColors.brandOrangeSoft,
+        () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => VehicleFormPage()),
+          );
+        },
+      ),
+      _ServiceItem(
+        Icons.local_gas_station_rounded,
+        'Fuel',
+        AppColors.brandBlue,
+        AppColors.brandBlueSoft,
+        () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const FuelHomeScreen()),
+          );
+        },
+      ),
+      _ServiceItem(
+        Icons.psychology_rounded,
+        'AI Diagnosis',
+        AppColors.brandBlue,
+        AppColors.brandBlueSoft,
+        () {
+          openAiChat(context);
+        },
+      ),
+      _ServiceItem(
+        Icons.settings_suggest_rounded,
+        'Parts',
+        AppColors.success,
+        AppColors.successLight,
+        () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const MarketplaceHomeScreen()),
+          );
+        },
+      ),
+      _ServiceItem(
+        Icons.battery_charging_full_rounded,
+        'Battery',
+        AppColors.warning,
+        AppColors.warningLight,
+        () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Battery service coming soon!'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
+      ),
+      _ServiceItem(
+        Icons.local_shipping_rounded,
+        'Towing',
+        AppColors.grey500,
+        AppColors.grey100,
+        () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Towing service coming soon!'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
+      ),
     ];
 
     return Padding(
@@ -420,21 +561,32 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
             'Select the service you need',
             style: TextStyle(
               fontSize: 13,
-              color: isDark ? AppColors.darkTextTertiary : AppColors.textSecondary,
+              color:
+                  isDark ? AppColors.darkTextTertiary : AppColors.textSecondary,
             ),
           ),
           const SizedBox(height: 16),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 0.95,
-            ),
-            itemCount: services.length,
-            itemBuilder: (context, index) => _buildServiceCard(services[index], isDark),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final columns =
+                  constraints.maxWidth >= 600
+                      ? 4
+                      : (constraints.maxWidth >= 360 ? 3 : 2);
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: columns,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 0.95,
+                ),
+                itemCount: services.length,
+                itemBuilder:
+                    (context, index) =>
+                        _buildServiceCard(services[index], isDark),
+              );
+            },
           ),
         ],
       ),
@@ -453,7 +605,8 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
             color: isDark ? AppColors.darkBorder : AppColors.grey100,
             width: 0.5,
           ),
-          boxShadow: isDark ? AppElevation.shadowDarkLow : AppElevation.shadowLow,
+          boxShadow:
+              isDark ? AppElevation.shadowDarkLow : AppElevation.shadowLow,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -586,7 +739,10 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
                   subtitle,
                   style: TextStyle(
                     fontSize: 12,
-                    color: isDark ? AppColors.darkTextTertiary : AppColors.textSecondary,
+                    color:
+                        isDark
+                            ? AppColors.darkTextTertiary
+                            : AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -619,7 +775,7 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
         onTap: () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Promo code MECHA20 applied! Discount will reflect at checkout.'),
+              content: Text('Coupon MECHA20 will apply at checkout.'),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -642,7 +798,10 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
@@ -683,7 +842,11 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
                   color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.arrow_forward_rounded, size: 22, color: Colors.white),
+                child: const Icon(
+                  Icons.arrow_forward_rounded,
+                  size: 22,
+                  color: Colors.white,
+                ),
               ),
             ],
           ),
@@ -692,21 +855,34 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
     );
   }
 
-  Widget _buildIconButton({required IconData icon, required VoidCallback onTap, required bool isDark}) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 44,
-        height: 44,
-        decoration: BoxDecoration(
-          color: isDark ? AppColors.darkSurface : AppColors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isDark ? AppColors.darkBorder : AppColors.grey100,
-            width: 0.5,
+  Widget _buildIconButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
+    return Semantics(
+      button: true,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkSurface : AppColors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDark ? AppColors.darkBorder : AppColors.grey100,
+              width: 0.5,
+            ),
+          ),
+          child: Icon(
+            icon,
+            size: 22,
+            color: isDark ? AppColors.darkTextSecondary : AppColors.grey600,
           ),
         ),
-        child: Icon(icon, size: 22, color: isDark ? AppColors.darkTextSecondary : AppColors.grey600),
       ),
     );
   }
@@ -726,6 +902,11 @@ class _ServiceItem {
   final Color bgColor;
   final VoidCallback onTap;
 
-  const _ServiceItem(this.icon, this.label, this.color, this.bgColor, this.onTap);
+  const _ServiceItem(
+    this.icon,
+    this.label,
+    this.color,
+    this.bgColor,
+    this.onTap,
+  );
 }
-

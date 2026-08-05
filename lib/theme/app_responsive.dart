@@ -96,41 +96,6 @@ class AppResponsive {
 
 enum DeviceType { mobile, tablet, desktop }
 
-// ── Responsive Builder Widget ──
-class ResponsiveBuilder extends StatelessWidget {
-  final Widget Function(BuildContext context, DeviceType deviceType) builder;
-  final Widget Function(BuildContext context)? mobileBuilder;
-  final Widget Function(BuildContext context)? tabletBuilder;
-  final Widget Function(BuildContext context)? desktopBuilder;
-
-  const ResponsiveBuilder({
-    super.key,
-    required this.builder,
-    this.mobileBuilder,
-    this.tabletBuilder,
-    this.desktopBuilder,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    if (mobileBuilder != null || tabletBuilder != null || desktopBuilder != null) {
-      final deviceType = AppResponsive.getDeviceType(context);
-      switch (deviceType) {
-        case DeviceType.desktop:
-          if (desktopBuilder != null) return desktopBuilder!(context);
-          if (tabletBuilder != null) return tabletBuilder!(context);
-          return mobileBuilder?.call(context) ?? builder(context, deviceType);
-        case DeviceType.tablet:
-          if (tabletBuilder != null) return tabletBuilder!(context);
-          return mobileBuilder?.call(context) ?? builder(context, deviceType);
-        case DeviceType.mobile:
-          return mobileBuilder?.call(context) ?? builder(context, deviceType);
-      }
-    }
-    return builder(context, AppResponsive.getDeviceType(context));
-  }
-}
-
 // ── Constrained Content Wrapper (centers + max-width on large screens) ──
 class ConstrainedContent extends StatelessWidget {
   final Widget child;
@@ -158,18 +123,4 @@ class ConstrainedContent extends StatelessWidget {
       ),
     );
   }
-}
-
-// ── Responsive Spacing ──
-class ResponsiveSpacing {
-  ResponsiveSpacing._();
-
-  static double horizontal(BuildContext context) =>
-      AppResponsive.horizontalPadding(context);
-
-  static double vertical(BuildContext context) =>
-      AppResponsive.scale(context, 16);
-
-  static double sectionGap(BuildContext context) =>
-      AppResponsive.scale(context, 24);
 }

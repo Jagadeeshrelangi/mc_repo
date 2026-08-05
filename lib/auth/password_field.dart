@@ -8,6 +8,7 @@ class PasswordField extends StatefulWidget {
   final TextInputAction textInputAction;
   final String? Function(String?)? validator;
   final void Function(String)? onFieldSubmitted;
+  final void Function(String)? onChanged;
 
   const PasswordField({
     super.key,
@@ -16,6 +17,7 @@ class PasswordField extends StatefulWidget {
     this.textInputAction = TextInputAction.done,
     this.validator,
     this.onFieldSubmitted,
+    this.onChanged,
   });
 
   @override
@@ -34,6 +36,7 @@ class _PasswordFieldState extends State<PasswordField> {
       obscureText: _obscured,
       textInputAction: widget.textInputAction,
       onFieldSubmitted: widget.onFieldSubmitted,
+      onChanged: widget.onChanged,
       style: TextStyle(
         color: isDark ? AppColors.darkText : AppColors.textPrimary,
         fontSize: 15,
@@ -44,9 +47,13 @@ class _PasswordFieldState extends State<PasswordField> {
           color: isDark ? AppColors.darkTextTertiary : AppColors.grey400,
           fontSize: 15,
         ),
-        prefixIcon: Icon(Icons.lock_outline_rounded, size: 22,
-            color: isDark ? AppColors.darkTextTertiary : AppColors.grey400),
+        prefixIcon: Icon(
+          Icons.lock_outline_rounded,
+          size: 22,
+          color: isDark ? AppColors.darkTextTertiary : AppColors.grey400,
+        ),
         suffixIcon: IconButton(
+          tooltip: _obscured ? 'Show password' : 'Hide password',
           icon: Icon(
             _obscured ? Icons.visibility_off_rounded : Icons.visibility_rounded,
             size: 22,
@@ -56,18 +63,30 @@ class _PasswordFieldState extends State<PasswordField> {
         ),
         filled: true,
         fillColor: isDark ? AppColors.darkSurface : AppColors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: 18),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.base,
+          vertical: 18,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.borderLight, width: 1),
+          borderSide: BorderSide(
+            color: isDark ? AppColors.darkBorder : AppColors.borderLight,
+            width: 1,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          borderSide: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.borderLight, width: 1),
+          borderSide: BorderSide(
+            color: isDark ? AppColors.darkBorder : AppColors.borderLight,
+            width: 1,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          borderSide: const BorderSide(color: AppColors.brandOrange, width: 1.5),
+          borderSide: const BorderSide(
+            color: AppColors.brandOrange,
+            width: 1.5,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),

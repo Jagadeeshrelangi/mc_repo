@@ -11,7 +11,15 @@ class LocationHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final location = context.watch<LocationProvider>();
+    final location = context.select<LocationProvider,
+        ({String address, bool isLoading, bool isFetching, LocationPermissionState permission})>(
+      (l) => (
+        address: l.selectedAddress,
+        isLoading: l.isLoadingLocation,
+        isFetching: l.isFetchingAddress,
+        permission: l.permissionState,
+      ),
+    );
     final isDark = context.isDark;
 
     return GestureDetector(
@@ -62,7 +70,7 @@ class LocationHeader extends StatelessWidget {
                 ],
               ),
             ),
-            if (location.isLoadingLocation)
+            if (location.isLoading)
               const SizedBox(
                 width: 16,
                 height: 16,
@@ -83,10 +91,13 @@ class LocationHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildAddressText(LocationProvider location, bool isDark) {
-    final address = location.selectedAddress;
+  Widget _buildAddressText(
+    ({String address, bool isLoading, bool isFetching, LocationPermissionState permission}) location,
+    bool isDark,
+  ) {
+    final address = location.address;
 
-    if (location.isFetchingAddress && address.isEmpty) {
+    if (location.isFetching && address.isEmpty) {
       return Row(
         children: [
           SizedBox(
@@ -98,20 +109,24 @@ class LocationHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          Text(
-            'Detecting location...',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+          Flexible(
+            child: Text(
+              'Detecting location...',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+              ),
             ),
           ),
         ],
       );
     }
 
-    if (location.permissionState == LocationPermissionState.denied ||
-        location.permissionState == LocationPermissionState.deniedForever) {
+    if (location.permission == LocationPermissionState.denied ||
+        location.permission == LocationPermissionState.deniedForever) {
       return Row(
         children: [
           Icon(Icons.location_off_rounded, size: 13, color: AppColors.warning),
@@ -162,14 +177,6 @@ class LocationHeader extends StatelessWidget {
   }
 
   void _showLocationPicker(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => ChangeNotifierProvider.value(
-        value: context.read<LocationProvider>(),
-        child: const LocationPickerSheet(),
-      ),
-    );
+    showLocationPickerSheet(context);
   }
 }

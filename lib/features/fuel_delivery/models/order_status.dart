@@ -1,16 +1,20 @@
 enum OrderStatus {
-  created('Created'),
-  searching('Searching'),
-  partnerAssigned('Partner Assigned'),
+  requested('Requested'),
   accepted('Accepted'),
-  headingToStation('Heading to Station'),
-  fuelPicked('Fuel Picked'),
+  fuelPacked('Fuel Packed'),
+  partnerAssigned('Delivery Partner Assigned'),
   enRoute('En Route'),
   arrived('Arrived'),
   delivered('Delivered'),
-  completed('Completed'),
   cancelled('Cancelled');
 
   final String label;
   const OrderStatus(this.label);
+
+  bool get isTerminal => this == delivered || this == cancelled;
+
+  int get stepIndex {
+    if (this == cancelled) return 0;
+    return index;
+  }
 }

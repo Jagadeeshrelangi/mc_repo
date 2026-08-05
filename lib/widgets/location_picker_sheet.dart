@@ -6,6 +6,22 @@ import 'package:mecha_connect/theme/app_colors.dart';
 import 'package:mecha_connect/theme/app_spacing.dart';
 import 'package:mecha_connect/theme/app_theme_helpers.dart';
 
+/// Opens the shared location picker above the app's root [LocationProvider].
+/// Used by every screen that lets the user choose/set the delivery location
+/// (Home, header bar, …) so there is exactly one picker implementation.
+void showLocationPickerSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder:
+        (_) => ChangeNotifierProvider.value(
+          value: context.read<LocationProvider>(),
+          child: const LocationPickerSheet(),
+        ),
+  );
+}
+
 class LocationPickerSheet extends StatefulWidget {
   const LocationPickerSheet({super.key});
 
@@ -86,7 +102,10 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                           'No results found. Try a different search.',
                           style: TextStyle(
                             fontSize: 13,
-                            color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
+                            color:
+                                isDark
+                                    ? AppColors.darkTextTertiary
+                                    : AppColors.textTertiary,
                           ),
                         ),
                       ),
@@ -202,21 +221,30 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
               size: 20,
               color: isDark ? AppColors.darkTextTertiary : AppColors.grey400,
             ),
-            suffixIcon: _searchController.text.isNotEmpty
-                ? GestureDetector(
-                    onTap: () {
-                      _searchController.clear();
-                      location.clearSearch();
-                    },
-                    child: Icon(
-                      Icons.close_rounded,
-                      size: 18,
-                      color: isDark ? AppColors.darkTextTertiary : AppColors.grey400,
-                    ),
-                  )
-                : null,
+            suffixIcon:
+                _searchController.text.isNotEmpty
+                    ? IconButton(
+                      tooltip: 'Clear search',
+                      visualDensity: VisualDensity.compact,
+                      icon: Icon(
+                        Icons.close_rounded,
+                        size: 18,
+                        color:
+                            isDark
+                                ? AppColors.darkTextTertiary
+                                : AppColors.grey400,
+                      ),
+                      onPressed: () {
+                        _searchController.clear();
+                        location.clearSearch();
+                      },
+                    )
+                    : null,
             border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
           ),
         ),
       ),
@@ -224,7 +252,8 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
   }
 
   Widget _buildUseCurrentLocation(LocationProvider location, bool isDark) {
-    final isUsing = location.hasSelection &&
+    final isUsing =
+        location.hasSelection &&
         location.selectedLatLng != null &&
         location.currentLatLng != null &&
         location.selectedLatLng!.latitude == location.currentLatLng!.latitude;
@@ -243,14 +272,16 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
         child: Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: isUsing
-                ? AppColors.brandOrange.withValues(alpha: 0.08)
-                : (isDark ? AppColors.darkSurface : AppColors.grey50),
+            color:
+                isUsing
+                    ? AppColors.brandOrange.withValues(alpha: 0.08)
+                    : (isDark ? AppColors.darkSurface : AppColors.grey50),
             borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
             border: Border.all(
-              color: isUsing
-                  ? AppColors.brandOrange.withValues(alpha: 0.3)
-                  : (isDark ? AppColors.darkBorder : AppColors.grey200),
+              color:
+                  isUsing
+                      ? AppColors.brandOrange.withValues(alpha: 0.3)
+                      : (isDark ? AppColors.darkBorder : AppColors.grey200),
               width: 1,
             ),
           ),
@@ -263,7 +294,11 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                   color: AppColors.brandBlue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.my_location_rounded, size: 20, color: AppColors.brandBlue),
+                child: const Icon(
+                  Icons.my_location_rounded,
+                  size: 20,
+                  color: AppColors.brandBlue,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -275,7 +310,8 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? AppColors.darkText : AppColors.textPrimary,
+                        color:
+                            isDark ? AppColors.darkText : AppColors.textPrimary,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -285,7 +321,10 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                           : 'Tap to detect your position',
                       style: TextStyle(
                         fontSize: 12,
-                        color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
+                        color:
+                            isDark
+                                ? AppColors.darkTextTertiary
+                                : AppColors.textTertiary,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -294,7 +333,11 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                 ),
               ),
               if (isUsing)
-                const Icon(Icons.check_circle_rounded, size: 18, color: AppColors.brandOrange),
+                const Icon(
+                  Icons.check_circle_rounded,
+                  size: 18,
+                  color: AppColors.brandOrange,
+                ),
             ],
           ),
         ),
@@ -330,14 +373,18 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.brandOrange.withValues(alpha: 0.08)
-                      : (isDark ? AppColors.darkSurface : AppColors.grey50),
+                  color:
+                      isSelected
+                          ? AppColors.brandOrange.withValues(alpha: 0.08)
+                          : (isDark ? AppColors.darkSurface : AppColors.grey50),
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   border: Border.all(
-                    color: isSelected
-                        ? AppColors.brandOrange.withValues(alpha: 0.3)
-                        : (isDark ? AppColors.darkBorderLight : AppColors.grey100),
+                    color:
+                        isSelected
+                            ? AppColors.brandOrange.withValues(alpha: 0.3)
+                            : (isDark
+                                ? AppColors.darkBorderLight
+                                : AppColors.grey100),
                     width: 0.5,
                   ),
                 ),
@@ -348,8 +395,8 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                       height: 36,
                       decoration: BoxDecoration(
                         color: (addr.label == 'Home'
-                            ? AppColors.brandOrange
-                            : addr.label == 'Work'
+                                ? AppColors.brandOrange
+                                : addr.label == 'Work'
                                 ? AppColors.brandBlue
                                 : AppColors.success)
                             .withValues(alpha: 0.1),
@@ -359,12 +406,13 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                         addr.label == 'Home'
                             ? Icons.home_rounded
                             : addr.label == 'Work'
-                                ? Icons.work_rounded
-                                : Icons.place_rounded,
+                            ? Icons.work_rounded
+                            : Icons.place_rounded,
                         size: 18,
-                        color: addr.label == 'Home'
-                            ? AppColors.brandOrange
-                            : addr.label == 'Work'
+                        color:
+                            addr.label == 'Home'
+                                ? AppColors.brandOrange
+                                : addr.label == 'Work'
                                 ? AppColors.brandBlue
                                 : AppColors.success,
                       ),
@@ -379,7 +427,10 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                             style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: isDark ? AppColors.darkText : AppColors.textPrimary,
+                              color:
+                                  isDark
+                                      ? AppColors.darkText
+                                      : AppColors.textPrimary,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -387,7 +438,10 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                             addr.address,
                             style: TextStyle(
                               fontSize: 12,
-                              color: isDark ? AppColors.darkTextTertiary : AppColors.textTertiary,
+                              color:
+                                  isDark
+                                      ? AppColors.darkTextTertiary
+                                      : AppColors.textTertiary,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -396,7 +450,11 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                       ),
                     ),
                     if (isSelected)
-                      const Icon(Icons.check_circle_rounded, size: 16, color: AppColors.brandOrange),
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        size: 16,
+                        color: AppColors.brandOrange,
+                      ),
                   ],
                 ),
               ),
@@ -438,7 +496,8 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                   color: isDark ? AppColors.darkSurface : AppColors.grey50,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
                   border: Border.all(
-                    color: isDark ? AppColors.darkBorderLight : AppColors.grey100,
+                    color:
+                        isDark ? AppColors.darkBorderLight : AppColors.grey100,
                     width: 0.5,
                   ),
                 ),
@@ -451,16 +510,23 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                         color: AppColors.brandOrange.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Icon(Icons.place_rounded, size: 18, color: AppColors.brandOrange),
+                      child: const Icon(
+                        Icons.place_rounded,
+                        size: 18,
+                        color: AppColors.brandOrange,
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        result['shortName'] as String,
+                        '${result['shortName'] ?? ''}',
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
-                          color: isDark ? AppColors.darkText : AppColors.textPrimary,
+                          color:
+                              isDark
+                                  ? AppColors.darkText
+                                  : AppColors.textPrimary,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -469,7 +535,10 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
                     Icon(
                       Icons.arrow_forward_ios_rounded,
                       size: 14,
-                      color: isDark ? AppColors.darkTextTertiary : AppColors.grey400,
+                      color:
+                          isDark
+                              ? AppColors.darkTextTertiary
+                              : AppColors.grey400,
                     ),
                   ],
                 ),
@@ -495,19 +564,22 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
     switch (location.permissionState) {
       case LocationPermissionState.denied:
         title = 'Location Access Needed';
-        description = 'Mecha Connect uses your location to find nearby services and mechanics.';
+        description =
+            'Mecha Connect uses your location to find nearby services and mechanics.';
         actionLabel = 'Grant Access';
         action = () => location.checkAndRequestPermission();
         break;
       case LocationPermissionState.deniedForever:
         title = 'Location Permission Blocked';
-        description = 'Please enable location access in your device settings to use this feature.';
+        description =
+            'Please enable location access in your device settings to use this feature.';
         actionLabel = 'Open Settings';
         action = () => location.openSettings();
         break;
       case LocationPermissionState.serviceDisabled:
         title = 'Location Services Off';
-        description = 'Turn on location services in your device settings to find nearby mechanics and fuel.';
+        description =
+            'Turn on location services in your device settings to find nearby mechanics and fuel.';
         actionLabel = 'Enable Services';
         action = () => location.checkAndRequestPermission();
         break;
@@ -531,7 +603,11 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
         children: [
           Row(
             children: [
-              Icon(Icons.info_outline_rounded, size: 18, color: AppColors.warning),
+              Icon(
+                Icons.info_outline_rounded,
+                size: 18,
+                color: AppColors.warning,
+              ),
               const SizedBox(width: 8),
               Text(
                 title,
@@ -548,7 +624,10 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
             description,
             style: TextStyle(
               fontSize: 13,
-              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+              color:
+                  isDark
+                      ? AppColors.darkTextSecondary
+                      : AppColors.textSecondary,
               height: 1.4,
             ),
           ),
@@ -618,14 +697,19 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
             height: 42,
             child: ElevatedButton(
               onPressed: () {
-                if (_addLabelController.text.isEmpty || _addAddressController.text.isEmpty) return;
+                if (_addLabelController.text.isEmpty ||
+                    _addAddressController.text.isEmpty) {
+                  return;
+                }
                 if (location.selectedLatLng == null) return;
-                location.addSavedAddress(SavedAddress(
-                  label: _addLabelController.text.trim(),
-                  address: _addAddressController.text.trim(),
-                  latitude: location.selectedLatLng!.latitude,
-                  longitude: location.selectedLatLng!.longitude,
-                ));
+                location.addSavedAddress(
+                  SavedAddress(
+                    label: _addLabelController.text.trim(),
+                    address: _addAddressController.text.trim(),
+                    latitude: location.selectedLatLng!.latitude,
+                    longitude: location.selectedLatLng!.longitude,
+                  ),
+                );
                 _addLabelController.clear();
                 _addAddressController.clear();
                 setState(() => _showAddForm = false);
@@ -633,7 +717,9 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.brandOrange,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               child: const Text(
                 'Save Address',
@@ -681,9 +767,15 @@ class _LocationPickerSheetState extends State<LocationPickerSheet> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: const BorderSide(color: AppColors.brandOrange, width: 1.5),
+          borderSide: const BorderSide(
+            color: AppColors.brandOrange,
+            width: 1.5,
+          ),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
       ),
     );
   }

@@ -1,24 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:mecha_connect/features/mechanic/models/models.dart';
+import 'package:mecha_connect/features/mechanic/screens/rating_review_screen.dart';
+import 'package:mecha_connect/features/mechanic/widgets/invoice_card.dart';
+import 'package:mecha_connect/features/mechanic/widgets/primary_action_button.dart';
 import 'package:mecha_connect/theme/app_colors.dart';
 import 'package:mecha_connect/theme/app_responsive.dart';
 import 'package:mecha_connect/theme/app_spacing.dart';
 import 'package:mecha_connect/theme/app_theme_helpers.dart';
-import 'package:mecha_connect/mechanic/mock_data.dart';
-import 'package:mecha_connect/mechanic/widgets/invoice_card.dart';
-import 'package:mecha_connect/mechanic/widgets/primary_action_button.dart';
-import 'package:mecha_connect/mechanic/screens/rating_review_screen.dart';
 
 class JobCompletedScreen extends StatelessWidget {
-  final MechanicInfo mechanic;
-  final MechanicService service;
-  final double totalCost;
+  final Booking booking;
 
-  const JobCompletedScreen({
-    super.key,
-    required this.mechanic,
-    required this.service,
-    required this.totalCost,
-  });
+  const JobCompletedScreen({super.key, required this.booking});
 
   @override
   Widget build(BuildContext context) {
@@ -27,46 +20,46 @@ class JobCompletedScreen extends StatelessWidget {
       body: ConstrainedContent(
         child: SafeArea(
           child: SingleChildScrollView(
-          padding: EdgeInsets.all(AppResponsive.horizontalPadding(context)),
-          child: Column(
-            children: [
-              SizedBox(height: AppSpacing.xxxl),
-              _buildCompletedIcon(context),
-              SizedBox(height: AppSpacing.lg),
-              Text('Service Completed!', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700, fontFamily: 'Space Grotesk', color: context.textPrimary)),
-              SizedBox(height: AppSpacing.xs),
-              Text('${mechanic.name} has completed the service', style: TextStyle(fontSize: 14, color: context.textTertiary)),
-              SizedBox(height: AppSpacing.xxxl),
-              _buildInvoice(context),
-              SizedBox(height: AppSpacing.xl),
-              _buildPaymentStatus(context),
-              SizedBox(height: AppSpacing.xl),
-              PrimaryActionButton(
-                label: 'Download Invoice',
-                icon: Icons.download_rounded,
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Invoice download coming soon!'), behavior: SnackBarBehavior.floating),
-                  );
-                },
-              ),
-              SizedBox(height: AppSpacing.md),
-              PrimaryActionButton(
-                label: 'Rate Service',
-                backgroundColor: context.cardBg,
-                onPressed: () {
-                  Navigator.of(context).pushReplacement(MaterialPageRoute(
-                    builder: (_) => RatingReviewScreen(
-                      mechanic: mechanic,
-                    ),
-                  ));
-                },
-              ),
-              SizedBox(height: AppSpacing.xxxl),
-            ],
+            padding: EdgeInsets.all(AppResponsive.horizontalPadding(context)),
+            child: Column(
+              children: [
+                SizedBox(height: AppSpacing.xxxl),
+                _buildCompletedIcon(context),
+                SizedBox(height: AppSpacing.lg),
+                Text('Service Completed!', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700, fontFamily: 'Space Grotesk', color: context.textPrimary)),
+                SizedBox(height: AppSpacing.xs),
+                Text('${booking.mechanic.name} has completed the service', style: TextStyle(fontSize: 14, color: context.textTertiary)),
+                SizedBox(height: AppSpacing.xxxl),
+                _buildInvoice(context),
+                SizedBox(height: AppSpacing.xl),
+                _buildPaymentStatus(context),
+                SizedBox(height: AppSpacing.xl),
+                PrimaryActionButton(
+                  label: 'Download Invoice',
+                  icon: Icons.download_rounded,
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Invoice download coming in Sprint 2!'), behavior: SnackBarBehavior.floating),
+                    );
+                  },
+                ),
+                SizedBox(height: AppSpacing.md),
+                PrimaryActionButton(
+                  label: 'Rate Service',
+                  backgroundColor: context.cardBg,
+                  onPressed: () {
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                      builder: (_) => RatingReviewScreen(
+                        mechanic: booking.mechanic,
+                      ),
+                    ));
+                  },
+                ),
+                SizedBox(height: AppSpacing.xxxl),
+              ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -85,14 +78,15 @@ class JobCompletedScreen extends StatelessWidget {
   }
 
   Widget _buildInvoice(BuildContext context) {
-    final gst = totalCost * 0.18;
+    final total = booking.estimatedCost;
+    final gst = total * 0.18;
     return InvoiceCard(
       items: [
-        InvoiceItem(label: service.name, amount: service.price),
+        InvoiceItem(label: booking.service.name, amount: booking.service.price),
         InvoiceItem(label: 'Platform Fee', amount: 0),
         InvoiceItem(label: 'GST (18%)', amount: gst),
       ],
-      total: totalCost,
+      total: total,
       paymentStatus: 'Paid',
       paymentMethod: 'Cash',
     );
@@ -114,7 +108,7 @@ class JobCompletedScreen extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Payment Successful', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.successDark)),
-                Text('Amount: ₹${totalCost.toStringAsFixed(0)} • Cash', style: TextStyle(fontSize: 13, color: AppColors.successDark)),
+                Text('Amount: ₹${booking.estimatedCost.toStringAsFixed(0)} • Cash', style: TextStyle(fontSize: 13, color: AppColors.successDark)),
               ],
             ),
           ),

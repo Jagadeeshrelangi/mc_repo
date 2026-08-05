@@ -23,38 +23,43 @@ class ServiceChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDark;
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.sm),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.brandOrange
-              : isDark ? AppColors.darkCard : AppColors.white,
-          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-          border: Border.all(
-            color: isSelected ? AppColors.brandOrange : context.border,
-            width: isSelected ? 0 : 1,
-          ),
-          boxShadow: isSelected ? AppElevation.shadowBrandLight : (isDark ? null : AppElevation.shadowLow),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: AppResponsive.scaleIcon(context, 16), color: isSelected ? Colors.white : (iconColor ?? context.textSecondary)),
-              SizedBox(width: AppSpacing.xs),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: AppResponsive.scaleFont(context, 13),
-                fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white : context.textPrimary,
-              ),
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.base, vertical: AppSpacing.sm),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.brandOrange
+                : isDark ? AppColors.darkCard : AppColors.white,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+            border: Border.all(
+              color: isSelected ? AppColors.brandOrange : context.border,
+              width: isSelected ? 0 : 1,
             ),
-          ],
+            boxShadow: isSelected ? AppElevation.shadowBrandLight : (isDark ? null : AppElevation.shadowLow),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (icon != null) ...[
+                Icon(icon, size: AppResponsive.scaleIcon(context, 16), color: isSelected ? Colors.white : (iconColor ?? context.textSecondary)),
+                SizedBox(width: AppSpacing.xs),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: AppResponsive.scaleFont(context, 13),
+                  fontWeight: FontWeight.w600,
+                  color: isSelected ? Colors.white : context.textPrimary,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

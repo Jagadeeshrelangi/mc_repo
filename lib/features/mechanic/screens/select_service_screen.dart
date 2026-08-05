@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:mecha_connect/features/mechanic/models/models.dart';
+import 'package:mecha_connect/features/mechanic/providers/mechanic_provider.dart';
+import 'package:mecha_connect/features/mechanic/screens/booking_summary_screen.dart';
+import 'package:mecha_connect/features/mechanic/widgets/primary_action_button.dart';
 import 'package:mecha_connect/theme/app_colors.dart';
 import 'package:mecha_connect/theme/app_responsive.dart';
 import 'package:mecha_connect/theme/app_spacing.dart';
 import 'package:mecha_connect/theme/app_theme_helpers.dart';
-import 'package:mecha_connect/mechanic/mock_data.dart';
-import 'package:mecha_connect/mechanic/widgets/primary_action_button.dart';
-import 'package:mecha_connect/mechanic/screens/booking_summary_screen.dart';
+import 'package:provider/provider.dart';
 
 class SelectServiceScreen extends StatefulWidget {
   final MechanicInfo mechanic;
@@ -107,38 +109,96 @@ class _SelectServiceScreenState extends State<SelectServiceScreen> {
   }
 
   Widget _buildCustomIssueCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.base),
-      decoration: BoxDecoration(
-        color: context.cardBg,
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+      child: InkWell(
+        onTap: () => _showCustomIssueDialog(),
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(color: context.borderSoft, width: 0.5, style: BorderStyle.solid),
+        child: Container(
+          padding: const EdgeInsets.all(AppSpacing.base),
+          decoration: BoxDecoration(
+            color: context.cardBg,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            border: Border.all(color: context.borderSoft, width: 0.5, style: BorderStyle.solid),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48, height: 48,
+                decoration: BoxDecoration(
+                  color: context.bgTertiary,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                ),
+                child: Icon(Icons.edit_note_rounded, size: 24, color: context.textSecondary),
+              ),
+              SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Custom Issue', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: context.textPrimary)),
+                    SizedBox(height: 2),
+                    Text('Describe your problem', style: TextStyle(fontSize: 12, color: context.textTertiary)),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, size: 22, color: context.textTertiary),
+            ],
+          ),
+        ),
       ),
-      child: Row(
-        children: [
-          Container(
-            width: 48, height: 48,
-            decoration: BoxDecoration(
-              color: context.bgTertiary,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-            ),
-            child: Icon(Icons.edit_note_rounded, size: 24, color: context.textSecondary),
+    );
+  }
+
+  Future<void> _showCustomIssueDialog() async {
+    final controller = TextEditingController();
+    final description = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Describe your issue'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLines: 3,
+          decoration: const InputDecoration(hintText: 'e.g., Strange noise from engine...'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () {
+              final text = controller.text.trim();
+              if (text.isEmpty) return;
+              Navigator.pop(ctx, text);
+            },
+            child: const Text('Continue', style: TextStyle(color: AppColors.brandOrange, fontWeight: FontWeight.w700)),
           ),
-          SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Custom Issue', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: context.textPrimary)),
-                SizedBox(height: 2),
-                Text('Describe your problem', style: TextStyle(fontSize: 12, color: context.textTertiary)),
-              ],
-            ),
-          ),
-          Icon(Icons.chevron_right_rounded, size: 22, color: context.textTertiary),
         ],
       ),
     );
+    controller.dispose();
+    if (description == null) return;
+    if (!mounted) return;
+    _bookCustomIssue(context, description);
+  }
+
+  void _bookCustomIssue(BuildContext context, String description) {
+    final provider = context.read<MechanicProvider>();
+    final customService = MechanicService(
+      id: 'svc_custom',
+      name: 'Custom Issue',
+      icon: Icons.edit_note_rounded,
+      price: widget.mechanic.priceStarting,
+      estimatedMinutes: 30,
+      description: description,
+    );
+    provider.selectService(customService);
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (_) => BookingSummaryScreen(
+        mechanic: widget.mechanic,
+        service: customService,
+      ),
+    ));
   }
 
   Widget _buildBottomBar(BuildContext context) {
@@ -152,10 +212,12 @@ class _SelectServiceScreenState extends State<SelectServiceScreen> {
         label: _selectedIndex != null ? 'Continue' : 'Select a Service',
         onPressed: _selectedIndex != null
             ? () {
+                final service = _services[_selectedIndex!];
+                context.read<MechanicProvider>().selectService(service);
                 Navigator.of(context).push(MaterialPageRoute(
                   builder: (_) => BookingSummaryScreen(
                     mechanic: widget.mechanic,
-                    service: _services[_selectedIndex!],
+                    service: service,
                   ),
                 ));
               }

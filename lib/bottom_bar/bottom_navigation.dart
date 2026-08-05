@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
-import 'package:mecha_connect/bottom_bar/OrderScreen.dart';
+import 'package:mecha_connect/bottom_bar/order_screen.dart';
+import 'package:mecha_connect/features/ai/screens/ai_home_screen.dart';
+import 'package:mecha_connect/features/home/screens/home_screen.dart';
+import 'package:mecha_connect/features/profile/screens/profile_screen.dart';
 import 'package:mecha_connect/starting_screen/home.dart';
-import 'package:mecha_connect/bottom_bar/chatboard.dart';
-import 'package:mecha_connect/bottom_bar/profile_screen.dart';
-import 'package:mecha_connect/home/home_screen.dart';
 import 'package:mecha_connect/theme/app_theme_helpers.dart';
 
 class BottomNavigation extends StatefulWidget {
@@ -32,7 +32,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
       const HomeDashboard(),
       const ServiceSelectionScreen(),
       Orderscreen(onExploreServices: () => _switchToTab(1)),
-      const ChatBot(),
+      const AiHomeScreen(),
       const ProfileScreen(),
     ];
   }
@@ -40,16 +40,11 @@ class _BottomNavigationState extends State<BottomNavigation> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _navItems[_currentIndex],
+      body: IndexedStack(index: _currentIndex, children: _navItems),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: context.cardBg,
-          border: Border(
-            top: BorderSide(
-              color: context.border,
-              width: 0.5,
-            ),
-          ),
+          border: Border(top: BorderSide(color: context.border, width: 0.5)),
         ),
         child: SafeArea(
           child: Padding(
@@ -73,27 +68,42 @@ class _BottomNavigationState extends State<BottomNavigation> {
                 GButton(
                   icon: Icons.home_rounded,
                   text: 'Home',
-                  textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                  textStyle: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 GButton(
                   icon: Icons.build_rounded,
                   text: 'Services',
-                  textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                  textStyle: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 GButton(
                   icon: Icons.receipt_long_rounded,
                   text: 'Orders',
-                  textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                  textStyle: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 GButton(
                   icon: Icons.auto_awesome_rounded,
                   text: 'AI',
-                  textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                  textStyle: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 GButton(
                   icon: Icons.person_rounded,
                   text: 'Profile',
-                  textStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                  textStyle: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
@@ -103,4 +113,3 @@ class _BottomNavigationState extends State<BottomNavigation> {
     );
   }
 }
-

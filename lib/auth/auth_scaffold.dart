@@ -40,58 +40,62 @@ class AuthScaffold extends StatelessWidget {
           ),
         ),
         child: SafeArea(
-          child: Stack(
-            children: [
-              Center(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(
-                    AppResponsive.responsive(context, mobile: 24.0, tablet: 48.0, desktop: 0.0),
-                    0,
-                    AppResponsive.responsive(context, mobile: 24.0, tablet: 48.0, desktop: 0.0),
-                    MediaQuery.of(context).viewInsets.bottom + 24,
-                  ),
-                  child: AppResponsive.isDesktop(context)
-                      ? SizedBox(
-                          width: 480,
-                          child: child,
-                        )
-                      : child,
-                ),
+          child: Center(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(
+                AppResponsive.responsive(context, mobile: 24.0, tablet: 48.0, desktop: 0.0),
+                0,
+                AppResponsive.responsive(context, mobile: 24.0, tablet: 48.0, desktop: 0.0),
+                MediaQuery.of(context).viewInsets.bottom + 24,
               ),
-              if (showBack)
-                Positioned(
-                  top: 8,
-                  left: 4,
-                  child: TextButton(
-                    onPressed: onBack ?? () => Navigator.of(context).pop(),
-                    style: TextButton.styleFrom(
-                      minimumSize: const Size(44, 44),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      foregroundColor: isDark
-                          ? const Color(0xFFC4B6A8).withValues(alpha: 0.82)
-                          : const Color(0xFF7A6B60).withValues(alpha: 0.82),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.arrow_back_rounded, size: 22),
-                        SizedBox(width: 4),
-                        Text(
-                          'Back',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
+              child: AppResponsive.isDesktop(context)
+                  ? SizedBox(width: 480, child: _buildBody(context, isDark))
+                  : _buildBody(context, isDark),
+            ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBody(BuildContext context, bool isDark) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (showBack)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: TextButton(
+                onPressed: onBack ?? () => Navigator.of(context).pop(),
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(44, 44),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  foregroundColor: isDark
+                      ? const Color(0xFFC4B6A8).withValues(alpha: 0.82)
+                      : const Color(0xFF7A6B60).withValues(alpha: 0.82),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.arrow_back_rounded, size: 22),
+                    SizedBox(width: 4),
+                    Text(
+                      'Back',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        child,
+      ],
     );
   }
 }

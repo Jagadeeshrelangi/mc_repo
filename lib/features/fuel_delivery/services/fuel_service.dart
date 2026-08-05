@@ -2,9 +2,19 @@ import '../models/models.dart';
 import '../constants/fuel_constants.dart';
 
 class FuelService {
-  PriceEstimate calculatePrice(FuelType fuelType, double quantity) {
+  /// Calculates the price estimate for the given fuel and quantity.
+  ///
+  /// [pricePerLitre] defaults to the fuel type's base rate; pass a station's
+  /// rate to reflect that pump's pricing.
+  PriceEstimate calculatePrice(
+    FuelType fuelType,
+    double quantity, {
+    double? pricePerLitre,
+    int? etaMinutes,
+  }) {
     final validatedQuantity = quantity.clamp(FuelConstants.minLitres, FuelConstants.maxLitres);
-    final fuelCost = fuelType.pricePerLitre * validatedQuantity;
+    final rate = pricePerLitre ?? fuelType.pricePerLitre;
+    final fuelCost = rate * validatedQuantity;
     final deliveryCharge = FuelConstants.deliveryCharge;
     final platformFee = FuelConstants.platformFee;
     final taxes = (fuelCost + deliveryCharge + platformFee) * FuelConstants.taxRate;
@@ -16,7 +26,7 @@ class FuelService {
       platformFee: platformFee,
       taxes: taxes,
       grandTotal: grandTotal,
-      etaMinutes: 15,
+      etaMinutes: etaMinutes ?? 15,
     );
   }
 

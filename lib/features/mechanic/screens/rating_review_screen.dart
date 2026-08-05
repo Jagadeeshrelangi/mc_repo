@@ -3,9 +3,9 @@ import 'package:mecha_connect/theme/app_colors.dart';
 import 'package:mecha_connect/theme/app_responsive.dart';
 import 'package:mecha_connect/theme/app_spacing.dart';
 import 'package:mecha_connect/theme/app_theme_helpers.dart';
-import 'package:mecha_connect/mechanic/mock_data.dart';
-import 'package:mecha_connect/mechanic/widgets/review_star.dart';
-import 'package:mecha_connect/mechanic/widgets/primary_action_button.dart';
+import 'package:mecha_connect/features/mechanic/models/models.dart';
+import 'package:mecha_connect/features/mechanic/widgets/review_star.dart';
+import 'package:mecha_connect/features/mechanic/widgets/primary_action_button.dart';
 
 class RatingReviewScreen extends StatefulWidget {
   final MechanicInfo mechanic;

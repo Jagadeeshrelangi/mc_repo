@@ -3,7 +3,7 @@ import 'package:mecha_connect/theme/app_colors.dart';
 import 'package:mecha_connect/theme/app_responsive.dart';
 import 'package:mecha_connect/theme/app_spacing.dart';
 import 'package:mecha_connect/theme/app_theme_helpers.dart';
-import 'package:mecha_connect/mechanic/mock_data.dart';
+import 'package:mecha_connect/features/mechanic/models/models.dart';
 
 enum MechanicCardVariant { full, compact }
 
@@ -122,11 +122,16 @@ class MechanicCard extends StatelessWidget {
         SizedBox(height: AppSpacing.xxs),
         Row(
           children: [
-            RatingBadge(rating: mechanic.rating, reviewCount: mechanic.reviewCount, compact: variant == MechanicCardVariant.compact),
+            Flexible(
+              child: RatingBadge(rating: mechanic.rating, reviewCount: mechanic.reviewCount, compact: variant == MechanicCardVariant.compact),
+            ),
             SizedBox(width: AppSpacing.sm),
-            Text(
-              '${mechanic.experienceYears}yrs',
-              style: TextStyle(fontSize: 11, color: context.textSecondary),
+            Flexible(
+              child: Text(
+                '${mechanic.experienceYears}yrs',
+                style: TextStyle(fontSize: 11, color: context.textSecondary),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),
@@ -213,15 +218,21 @@ class RatingBadge extends StatelessWidget {
       children: [
         Icon(Icons.star_rounded, size: compact ? 14 : AppResponsive.scaleIcon(context, 16), color: Color(0xFFF59E0B)),
         SizedBox(width: 2),
-        Text(
-          rating.toStringAsFixed(1),
-          style: TextStyle(fontSize: compact ? 12 : AppResponsive.scaleFont(context, 13), fontWeight: FontWeight.w700, color: context.textPrimary),
+        Flexible(
+          child: Text(
+            rating.toStringAsFixed(1),
+            style: TextStyle(fontSize: compact ? 12 : AppResponsive.scaleFont(context, 13), fontWeight: FontWeight.w700, color: context.textPrimary),
+            overflow: TextOverflow.ellipsis,
+          ),
         ),
         if (reviewCount > 0) ...[
           SizedBox(width: 2),
-          Text(
-            '($reviewCount)',
-            style: TextStyle(fontSize: 10, color: context.textTertiary),
+          Flexible(
+            child: Text(
+              '($reviewCount)',
+              style: TextStyle(fontSize: 10, color: context.textTertiary),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ],

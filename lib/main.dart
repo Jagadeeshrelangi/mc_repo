@@ -1,23 +1,20 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mecha_connect/starting_screen/screens.dart';
-import 'package:mecha_connect/auth/login_screen.dart';
+import 'package:mecha_connect/features/auth/screens/login_screen.dart';
+import 'package:mecha_connect/bottom_bar/bottom_navigation.dart';
 import 'package:mecha_connect/theme/app_theme.dart';
 import 'package:mecha_connect/theme/theme_provider.dart';
 import 'package:mecha_connect/theme/app_responsive.dart';
 import 'package:mecha_connect/services/location_provider.dart';
+import 'package:mecha_connect/features/fuel_delivery/providers/fuel_provider.dart';
+import 'package:mecha_connect/features/marketplace/providers/marketplace_provider.dart';
+import 'package:mecha_connect/app_wiring.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-// ── Sprint 1.2 Development Flag ───────────────────────────────────────
-// When true, onboarding always shows after splash regardless of
-// onboarding_completed. Set to false before production lock.
-// This is only for development/QA while Sprint 1.2 is in progress.
-const bool forceShowOnboarding = false;
-// ──────────────────────────────────────────────────────────────────────
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,41 +24,52 @@ void main() async {
     debugPrint("ENV LOAD FAILED: $e");
   }
 
+  final locationProvider = LocationProvider();
+  final fuelProvider = FuelProvider(locationProvider: locationProvider);
+  final marketplaceProvider = MarketplaceProvider();
+
   runApp(
     MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => LocationProvider()),
-      ],
+      providers: buildRootProviders(
+        locationProvider: locationProvider,
+        fuelProvider: fuelProvider,
+        marketplaceProvider: marketplaceProvider,
+      ),
       child: const MyApp(),
     ),
   );
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({
+    super.key,
+    this.enableDevicePreview = kDebugMode,
+    this.navigatorObservers = const [],
+  });
+
+  final bool enableDevicePreview;
+  final List<NavigatorObserver> navigatorObservers;
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     return DevicePreview(
-      enabled: kDebugMode,
-      builder: (context) => MaterialApp(
-        // ignore: deprecated_member_use — required by DevicePreview
-        useInheritedMediaQuery: true,
-        locale: DevicePreview.locale(context),
-        builder: DevicePreview.appBuilder,
-        debugShowCheckedModeBanner: false,
-        title: 'Mecha Connect',
-        theme: AppTheme.light,
-        darkTheme: AppTheme.dark,
-        themeMode: themeProvider.themeMode,
-        initialRoute: '/',
-        routes: {
-          '/': (context) => const SplashScreen(),
-          '/home': (context) => const OnboardingScreen(),
-        },
-      ),
+      enabled: enableDevicePreview,
+      builder:
+          (context) => MaterialApp(
+            // ignore: deprecated_member_use — required by DevicePreview
+            useInheritedMediaQuery: true,
+            locale: DevicePreview.locale(context),
+            builder: DevicePreview.appBuilder,
+            debugShowCheckedModeBanner: false,
+            title: 'Mecha Connect',
+            theme: AppTheme.light,
+            darkTheme: AppTheme.dark,
+            themeMode: themeProvider.themeMode,
+            navigatorObservers: navigatorObservers,
+            initialRoute: '/',
+            routes: {'/': (context) => const SplashScreen()},
+          ),
     );
   }
 }
@@ -107,13 +115,15 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 2000),
     );
 
-    _bgFade = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _bgController, curve: Curves.easeOut),
-    );
+    _bgFade = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _bgController, curve: Curves.easeOut));
 
-    _logoFade = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _logoController, curve: Curves.easeOut),
-    );
+    _logoFade = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _logoController, curve: Curves.easeOut));
 
     _logoScale = Tween<double>(begin: 0.94, end: 1.0).animate(
       CurvedAnimation(parent: _logoController, curve: Curves.easeOutCubic),
@@ -141,8 +151,7 @@ class _SplashScreenState extends State<SplashScreen>
   //
   Future<void> _startAnimationSequence() async {
     final prefs = await SharedPreferences.getInstance();
-    final onboardingCompleted =
-        prefs.getBool('onboarding_completed') ?? false;
+    final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
 
     _bgController.forward();
     await Future.delayed(const Duration(milliseconds: 100));
@@ -152,9 +161,10 @@ class _SplashScreenState extends State<SplashScreen>
 
     _glowController.repeat(reverse: true);
 
-    final Duration holdDuration = onboardingCompleted
-        ? const Duration(milliseconds: 950)
-        : const Duration(milliseconds: 1450);
+    final Duration holdDuration =
+        onboardingCompleted
+            ? const Duration(milliseconds: 950)
+            : const Duration(milliseconds: 1450);
 
     await Future.delayed(holdDuration);
 
@@ -165,13 +175,18 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _navigateToNext() async {
     final prefs = await SharedPreferences.getInstance();
-    final onboardingCompleted =
-        prefs.getBool('onboarding_completed') ?? false;
+    final onboardingCompleted = prefs.getBool('onboarding_completed') ?? false;
 
     if (!mounted) return;
 
+    final bool isLoggedIn = prefs.getBool('is_logged_in') ?? false;
+
     final Widget target =
-        onboardingCompleted && !forceShowOnboarding ? const LoginScreen() : const OnboardingScreen();
+        isLoggedIn
+            ? const BottomNavigation()
+            : onboardingCompleted
+            ? const LoginScreen()
+            : const OnboardingScreen();
 
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
@@ -209,7 +224,8 @@ class _SplashScreenState extends State<SplashScreen>
     final screenHeight = MediaQuery.sizeOf(context).height;
     final screenWidth = MediaQuery.sizeOf(context).width;
 
-    final logoSize = AppResponsive.responsive<double>(context,
+    final logoSize = AppResponsive.responsive<double>(
+      context,
       mobile: screenHeight * 0.33,
       tablet: screenHeight * 0.30,
       desktop: screenHeight * 0.24,
@@ -300,9 +316,7 @@ class _SplashScreenState extends State<SplashScreen>
       child: Opacity(
         opacity: _bgFade.value,
         child: CustomPaint(
-          painter: _AmbientGlowPainter(
-            opacity: opacity,
-          ),
+          painter: _AmbientGlowPainter(opacity: opacity),
           size: Size(screenWidth, screenHeight),
         ),
       ),
@@ -323,13 +337,11 @@ class _RadialLightPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height * 0.38);
     final radius = size.height * 0.55;
 
-    final paint = Paint()
-      ..shader = const RadialGradient(
-        colors: [
-          Color(0x0AFFFFFF),
-          Color(0x00FFFFFF),
-        ],
-      ).createShader(Rect.fromCircle(center: center, radius: radius));
+    final paint =
+        Paint()
+          ..shader = const RadialGradient(
+            colors: [Color(0x0AFFFFFF), Color(0x00FFFFFF)],
+          ).createShader(Rect.fromCircle(center: center, radius: radius));
 
     canvas.drawCircle(center, radius, paint);
   }
@@ -355,15 +367,16 @@ class _AmbientGlowPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height * 0.40);
     final radius = size.height * 0.45;
 
-    final glowPaint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFFF15A22).withValues(alpha: opacity),
-          const Color(0xFFF15A22).withValues(alpha: opacity * 0.4),
-          const Color(0xFFF15A22).withValues(alpha: 0.0),
-        ],
-        stops: const [0.0, 0.3, 1.0],
-      ).createShader(Rect.fromCircle(center: center, radius: radius));
+    final glowPaint =
+        Paint()
+          ..shader = RadialGradient(
+            colors: [
+              const Color(0xFFF15A22).withValues(alpha: opacity),
+              const Color(0xFFF15A22).withValues(alpha: opacity * 0.4),
+              const Color(0xFFF15A22).withValues(alpha: 0.0),
+            ],
+            stops: const [0.0, 0.3, 1.0],
+          ).createShader(Rect.fromCircle(center: center, radius: radius));
 
     canvas.drawCircle(center, radius, glowPaint);
   }
@@ -373,4 +386,3 @@ class _AmbientGlowPainter extends CustomPainter {
     return oldDelegate.opacity != opacity;
   }
 }
-
