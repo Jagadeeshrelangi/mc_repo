@@ -1,7 +1,7 @@
 # Mecha Connect — Project Documentation Index
 
 > Master navigation for the Mecha Connect documentation set.
-> Version: 1.9.1 (RC1 + polish) · Last updated: 2026-08-05
+> Version: 1.9.1 (Frontend Lock Candidate) · Last updated: 2026-08-05
 
 ---
 
@@ -16,7 +16,7 @@
 | [01_product/ROADMAP.md](01_product/ROADMAP.md) | Sprint-by-sprint timeline, milestones |
 | [01_product/RISK_ANALYSIS.md](01_product/RISK_ANALYSIS.md) | Risk register, tech debt, dependency risks |
 
-## Architecture (RC1 canonical)
+## Architecture (frontend canonical)
 
 | Document | Description |
 |---|---|
@@ -36,13 +36,13 @@
 | [03_development/DEPLOYMENT.md](03_development/DEPLOYMENT.md) | Build pipelines, CI/CD, release checklist |
 | [03_development/CHANGELOG.md](03_development/CHANGELOG.md) | Version history |
 
-## RC1 Certification
+## Frontend Certification
 
 | Document | Description |
 |---|---|
 | [07_rc1_certification/FRONTEND_LOCK_REPORT.md](07_rc1_certification/FRONTEND_LOCK_REPORT.md) | Freeze list, governance, change log |
 | [07_rc1_certification/QA_CERTIFICATION_REPORT.md](07_rc1_certification/QA_CERTIFICATION_REPORT.md) | Certification evidence (162/162 tests) |
-| [07_rc1_certification/PROJECT_STATUS_REPORT.md](07_rc1_certification/PROJECT_STATUS_REPORT.md) | RC1 status, next steps, risks |
+| [07_rc1_certification/PROJECT_STATUS_REPORT.md](07_rc1_certification/PROJECT_STATUS_REPORT.md) | Frontend Lock status, next steps, risks |
 | [07_rc1_certification/API_CONTRACT.md](07_rc1_certification/API_CONTRACT.md) | Frozen API contract (Sprint 2 spec) |
 
 ## Reports (active)

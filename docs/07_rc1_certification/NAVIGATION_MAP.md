@@ -1,4 +1,4 @@
-# Navigation Map — Mecha Connect RC1
+# Navigation Map — Mecha Connect (Frontend Lock Candidate)
 
 > Sprint 1.9b · Frozen navigation reference
 > Style: imperative `Navigator.push` with `MaterialPageRoute` or module fade

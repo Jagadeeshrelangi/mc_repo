@@ -1,13 +1,39 @@
 # Changelog
 
-**Version:** 1.9.1 (RC1 + final polish)  
+**Version:** 1.9.2 (Frontend Lock Candidate)  
 **Last Updated:** 2026-08-05  
 
 All notable changes to Mecha Connect will be documented in this file.
 
 ---
 
-## [1.9.1] — 2026-08-05 — Sprint 1.9b close (Frontend Lock polish)
+## [1.9.2] — 2026-08-05 — Sprint 1.9b final review (frontend audit)
+
+### Fixed
+- **Reduced motion:** home loading skeleton, marketplace shimmer, AI pulse,
+  typing indicator now gate `repeat()` behind a post-frame
+  `MediaQuery.disableAnimationsOf(context)` check (pattern from hero carousel)
+- **Accessibility:** profile avatar chooser wrapped in `Tooltip` + `Semantics`
+  (`button`, `selected`, per-option label)
+- **Design tokens:** star color unified to `AppColors.warning` in
+  `ReviewStar`, `RatingBadge`, nearby service card, and rating confirmation
+  (removes duplicate hardcoded `Color(0xFFF59E0B)`)
+
+### Changed
+- `MECHA_CONNECT_MASTER_HANDBOOK.md` §20 records audit outcome — intentional
+  home teaser placeholders, accepted brand contrast limits (white on orange
+  ≈3.37:1), P3 visual debt list, rating-shorthand guard
+- `PROJECT_STATUS_REPORT.md` — new §5c "Final Review", risk register rows for
+  brand contrast + home teasers
+
+### Frontend Certification
+- `flutter analyze` — **No issues found!**
+- `flutter test` — **162/162 passing**
+- Certification docs keep "Frontend Lock Candidate" wording (no RC1 tag issued)
+
+---
+
+## [1.9.1] — 2026-08-05 — Sprint 1.9b close (Frontend Lock Candidate polish)
 
 ### Added
 - `MECHA_CONNECT_MASTER_HANDBOOK.md` (v2.0.0) — master engineering handbook superseding `docs/archive/MASTER_ENGINEERING_HANDBOOK_v1.0.md`
@@ -27,7 +53,7 @@ All notable changes to Mecha Connect will be documented in this file.
 ### Changed
 - `test/integration/runtime_marketplace_flow_test.dart` uses a local `_TestNavigatorObserver` (same hash/push/pop tracking)
 
-### Certified
+### Frontend Certification
 - `flutter analyze` — **No issues found!**
 - `flutter test` — **162/162 passing** (AI 25, Fuel 37, Marketplace 43, Profile 30, Mechanic 10, Vehicle Location 8, Home 3, Runtime Flow 2, Widget 4)
 

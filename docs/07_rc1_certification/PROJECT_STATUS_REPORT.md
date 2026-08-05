@@ -1,17 +1,17 @@
-# Project Status Report — Mecha Connect RC1
+# Project Status Report — Mecha Connect (Frontend Lock Candidate)
 
-> Sprint 1.9b · Frontend Release Candidate 1
-> Date: 2026-08-05 (certified 2026-08-02) · Flutter 3.29.2
+> Sprint 1.9b · Frontend Lock Candidate
+> Date: 2026-08-05 (candidate verified 2026-08-02) · Flutter 3.29.2
 
 ## 1. Executive Summary
 
-Mecha Connect frontend reaches **Release Candidate 1 (RC1) certified**. The
+Mecha Connect frontend reaches **Frontend Lock Candidate** status. The
 app is feature-complete across all modules (Home, AI, Marketplace, Mechanic,
 Fuel Delivery, Profile, Vehicle Location, Orders) with a **clean static
 analysis (0 issues)** and a **162/162 passing test suite**. All mock data and
 repository contracts are frozen and documented for the Sprint 2 backend build.
 
-## 2. RC1 Status
+## 2. Frontend Lock Candidate Status
 
 | Area | Status |
 |---|---|
@@ -82,6 +82,20 @@ repository contracts are frozen and documented for the Sprint 2 backend build.
 - **Master handbook:** `MECHA_CONNECT_MASTER_HANDBOOK.md` (v2.0.0) published,
   superseding the archived v1.0 handbook.
 
+## 5c. Final Review (Sprint 1.9b close)
+
+- **Runtime audit:** 0 P0/P1/P2 defects across all modules — ship-ready.
+- **Module walkthrough:** Auth, Home, Marketplace, AI, Profile, Orders,
+  Logout all PASS. Home marketplace/nearby/activity teasers are intentional
+  static placeholders (no entity IDs; wiring is Sprint 2 scope).
+- **A11y + responsive:** loading skeletons, marketplace shimmer, AI pulse and
+  typing indicator now honor reduced-motion (post-frame
+  `MediaQuery.disableAnimationsOf` gate); profile avatar chooser gained
+  semantics + tooltip; star color unified to `AppColors.warning` across
+  review widgets.
+- **Known limits recorded** in handbook §20 (accepted brand contrast limits,
+  P3 visual debt, rating-shorthand guard).
+
 ## 6. Deliverables Index
 
 | Doc | Location |
@@ -115,3 +129,5 @@ repository contracts are frozen and documented for the Sprint 2 backend build.
 | Simulated tracking ≠ real geo | Low | Tracking payload shape already frozen |
 | Debug flags leaking into prod | Low | Runtime trace + `forceShowOnboarding` wiring deleted |
 | On-device login state only | Low | Sprint 2 real auth; no data-loss impact at RC1 |
+| Brand contrast < WCAG AA on orange | Low (accepted) | UI body text uses darker tokens; revisit at Sprint 2 design sign-off |
+| Home teaser cards static | Low (accepted) | Intentional placeholders; Sprint 2 wiring |

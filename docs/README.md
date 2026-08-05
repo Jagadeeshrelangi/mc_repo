@@ -1,6 +1,6 @@
 # Mecha Connect — Documentation
 
-**Version:** 1.9.1 (RC1 + polish) | **Last Updated:** 2026-08-05
+**Version:** 1.9.1 (Frontend Lock Candidate) | **Last Updated:** 2026-08-05
 
 ---
 
@@ -17,8 +17,9 @@ with wallet & rewards.
 - **Next milestone:** Sprint 2 backend integration (FastAPI + PostgreSQL)
   implementing the frozen `API_CONTRACT.md` + `DATABASE_BLUEPRINT.md`
 
-**RC1 status:** certified — `flutter analyze` clean, **162/162 tests passing**.
-See [RC1 Certification](#rc1-certification).
+**Status:** Frontend Lock Candidate — `flutter analyze` clean, **162/162 tests
+passing**.
+See [Frontend Certification](#frontend-certification).
 
 ---
 
@@ -33,7 +34,7 @@ docs/
 ├── 01_product/                         ← Vision, requirements, business
 ├── 03_development/                     ← Installation, deployment, testing, changelog
 ├── 05_reports/                         ← Active sprint & QA reports
-├── 07_rc1_certification/               ← Canonical RC1 documentation
+├── 07_rc1_certification/               ← Canonical frontend documentation
 │
 ├── archive/                            ← Superseded / historical documents
 ├── source/                             ← All non-Markdown assets
@@ -49,7 +50,7 @@ docs/
 | `01_product/` | Business model, requirements, feature specs, roadmap, risk | Living docs |
 | `03_development/` | Install, contribute, deploy, test plan, changelog | Living docs |
 | `05_reports/` | Active sprint/QA reports | Read-only snapshots |
-| `07_rc1_certification/` | **Canonical RC1 documentation (frozen)** | Frozen |
+| `07_rc1_certification/` | **Canonical frontend documentation (frozen)** | Frozen |
 | `archive/` | Superseded docs & historical sprint notes | Historical |
 | `source/` | PRD PDFs, decks, images, videos, HTML | Assets |
 
@@ -72,9 +73,9 @@ New developer or evaluator — read in this order:
 
 ---
 
-## RC1 Certification
+## Frontend Certification
 
-Canonical, frozen documentation for the Release Candidate 1 frontend:
+Canonical, frozen documentation for the Frontend Lock Candidate frontend:
 
 | Document | Description |
 |---|---|
@@ -86,7 +87,7 @@ Canonical, frozen documentation for the Release Candidate 1 frontend:
 | [API_CONTRACT.md](07_rc1_certification/API_CONTRACT.md) | Frozen mock API contract (Sprint 2 spec) |
 | [DATABASE_BLUEPRINT.md](07_rc1_certification/DATABASE_BLUEPRINT.md) | PostgreSQL schema blueprint |
 | [QA_CERTIFICATION_REPORT.md](07_rc1_certification/QA_CERTIFICATION_REPORT.md) | Certification evidence (162/162) |
-| [PROJECT_STATUS_REPORT.md](07_rc1_certification/PROJECT_STATUS_REPORT.md) | RC1 status, next steps, risks |
+| [PROJECT_STATUS_REPORT.md](07_rc1_certification/PROJECT_STATUS_REPORT.md) | Frontend Lock status, next steps, risks |
 
 ---
 
@@ -144,4 +145,4 @@ See [PROJECT_DOCUMENTATION_INDEX.md](PROJECT_DOCUMENTATION_INDEX.md) → Archive
 - Markdown folders contain **Markdown only**; all assets live in `source/`.
 - Cross-references use relative paths from the file's own folder.
 - Reports are read-only snapshots; all other docs are living documents.
-- Canonical RC1 docs are frozen — changes require sprint sign-off.
+- Canonical frontend docs are frozen — changes require sprint sign-off.

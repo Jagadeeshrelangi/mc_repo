@@ -1,4 +1,4 @@
-# API Contract — Mecha Connect (Mock Backend) RC1
+# API Contract — Mecha Connect (Mock Backend)
 
 > Sprint 1.9b · Frozen contract for the in-memory repositories
 > This contract defines exactly what the real FastAPI backend must implement

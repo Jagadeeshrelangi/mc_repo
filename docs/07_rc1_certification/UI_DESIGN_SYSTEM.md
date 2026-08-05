@@ -1,4 +1,4 @@
-# UI Design System — Mecha Connect RC1
+# UI Design System — Mecha Connect (Frontend Lock Candidate)
 
 > Sprint 1.9b · Frozen design tokens · Source of truth: `lib/theme/`
 

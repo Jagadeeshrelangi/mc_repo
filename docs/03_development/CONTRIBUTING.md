@@ -84,7 +84,7 @@ lib/<module>/
 5. Run `flutter build web` — must succeed
 6. Verify runtime (no overflows, dead buttons, unreachable screens)
 7. Generate sprint report in `docs/05_reports/` (archive superseded reports to `docs/archive/`)
-8. Update `docs/07_rc1_certification/` (canonical RC1 docs), `docs/03_development/CHANGELOG.md`, `docs/01_product/PROJECT_STATUS.md`
+8. Update `docs/07_rc1_certification/` (canonical frontend docs), `docs/03_development/CHANGELOG.md`, `docs/01_product/PROJECT_STATUS.md`
 9. Mark sprint as LOCKED
 
 ---

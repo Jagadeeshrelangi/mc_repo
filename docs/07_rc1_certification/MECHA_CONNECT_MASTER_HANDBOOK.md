@@ -1,8 +1,8 @@
 # Mecha Connect — Master Engineering Handbook
 
 > **Project**: Mecha Connect — AI-Powered Roadside Assistance & Vehicle Services Platform
-> **Document**: Master Engineering Handbook (RC1 Certified)
-> **Status**: LOCKED — Release Candidate 1 (Sprint 1.9b)
+> **Document**: Master Engineering Handbook (Frontend Lock Candidate)
+> **Status**: LOCKED — Frontend Lock Candidate (Sprint 1.9b)
 > **Version**: 2.0.0 (supersedes `docs/archive/MASTER_ENGINEERING_HANDBOOK_v1.0.md`)
 > **Date**: 2026-08-05 · Flutter 3.29.2
 > **Classification**: Internal — All Engineers
@@ -46,7 +46,7 @@ typical consumer app — failure paths are first-class features.
 
 ### 1.2 Project Reality at RC1
 
-At Release Candidate 1 the entire client is a **Flutter frontend** running on
+As the Frontend Lock Candidate, the entire client is a **Flutter frontend** running on
 **mock repositories** that faithfully simulate production latency and failure
 so the UI behaves exactly like it will against the real backend. Sprint 2
 swaps repository internals for FastAPI/PostgreSQL without touching the UI.
@@ -440,8 +440,8 @@ flutter test        # MUST report: All tests passed! (162)
 - **Master navigation**: `docs/PROJECT_DOCUMENTATION_INDEX.md` + `docs/README.md`.
 - **Changelog**: `docs/03_development/CHANGELOG.md` — every change gets a
   versioned entry.
-- Handbooks: this document is the RC1 master handbook; the v1.0 handbook is
-  archived as superseded.
+- Handbooks: this document is the Frontend Lock Candidate master handbook; the
+  v1.0 handbook is archived as superseded.
 
 ---
 
@@ -503,8 +503,22 @@ Per `FRONTEND_LOCK_REPORT.md`, the following are **frozen** as of Sprint 1.9b:
 - No real **auth backend** (login state persisted on-device only).
 - Roadmap features intentionally showing "coming soon": Battery service,
   Towing, full activity history, nearby service details.
+- Home teaser cards (marketplace / nearby / activity) are **intentional static
+  placeholders** with no entity IDs; wiring them to real screens is Sprint 2
+  scope, not a defect.
 - Backend (FastAPI + PostgreSQL) does not exist yet — it is the Sprint 2 build
   target behind the frozen repository interfaces.
+- **Accepted contrast limits** (final-review audit): white on `brandOrange`
+  ≈ 3.37:1 and `darkPrimary` ≈ 2.86:1 fall below WCAG AA for body text. Kept
+  as brand-mandated; UI screen text already uses darker tokens on light
+  backgrounds. Approved for RC1, revisit with design sign-off in Sprint 2.
+- **P3 visual debt** (does not block RC1): a few legacy screens still carry
+  hardcoded hex colors or off-scale radii (`main.dart`, `auth_scaffold.dart`,
+  `starting_screen/`, `emergency_card.dart`, `mechanic_home_screen.dart`);
+  audit replaced star colors (`Color(0xFFF59E0B)` → `AppColors.warning`).
+- **Rating-shorthand guard**: review stars derive initials via
+  `review.author.substring(0, 1)`; safe with current mock data, guard required
+  once real backend data arrives (P3).
 
 ---
 

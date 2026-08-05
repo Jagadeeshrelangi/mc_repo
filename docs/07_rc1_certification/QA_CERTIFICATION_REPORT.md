@@ -1,12 +1,12 @@
-# QA Certification Report — Mecha Connect RC1
+# QA Certification Report — Mecha Connect (Frontend Lock Candidate)
 
-> Sprint 1.9b · Release Candidate 1 certification
-> Date: 2026-08-05 (certified 2026-08-02) · Flutter 3.29.2
+> Sprint 1.9b · Frontend Lock Candidate certification
+> Date: 2026-08-05 (candidate verified 2026-08-02) · Flutter 3.29.2
 
 ## 1. Result
 
-**CERTIFIED — PASS.** `flutter analyze` reports **No issues found!**
-`flutter test` passes **162 / 162** tests. All RC1 gates green.
+**Frontend Certification — PASS.** `flutter analyze` reports **No issues found!**
+`flutter test` passes **162 / 162** tests. All frontend certification gates green.
 
 ## 2. Test Inventory (162 total)
 
@@ -84,6 +84,6 @@ Counted per file via `testWidgets`/`test` declarations.
 
 ## 7. Certification Statement
 
-All RC1 certification gates pass on 2026-08-02 (final polish re-verified
+All frontend certification gates pass on 2026-08-02 (final polish re-verified
 2026-08-05). The frontend is frozen per `FRONTEND_LOCK_REPORT.md`; any
 post-lock change must re-run `flutter analyze` and the full 162-test suite.

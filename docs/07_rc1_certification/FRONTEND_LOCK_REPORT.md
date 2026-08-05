@@ -1,15 +1,16 @@
-# Frontend Lock Report — Release Candidate 1 (RC1)
+# Frontend Lock Report — Frontend Lock Candidate
 
 > Sprint 1.9b · Frontend Freeze Certification
 > Date: 2026-08-05 (final lock 2026-08-02) · Flutter 3.29.2
 
 ## 1. Purpose
 
-This report freezes the frontend for Release Candidate 1 (RC1). From the date
-of this report, the UI, data models, navigation, and app architecture are
+This report freezes the frontend as the **Frontend Lock Candidate**. From the
+date of this report, the UI, data models, navigation, and app architecture are
 frozen. No redesign, no color/typography/icon/card/layout/animation changes,
 and no navigation-philosophy changes are permitted without a new sprint
 authorization. Only bug fixes and documentation updates are allowed until RC1
+is approved.
 ships.
 
 ## 2. Certification Gates
@@ -190,6 +191,6 @@ fixes applied in the final lock pass:
 
 | Role | Decision |
 |---|---|
-| Frontend freeze | RC1 surfaces frozen as of 2026-08-02 |
+| Frontend freeze | Candidate surfaces frozen as of 2026-08-02 |
 | Static analysis | PASS (0 issues) |
 | Test suite | PASS (162/162) |
