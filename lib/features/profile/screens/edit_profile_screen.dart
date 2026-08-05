@@ -204,27 +204,36 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     String? current,
   ) {
     final isSelected = key == current;
-    return InkWell(
-      onTap: () => Navigator.pop(context, key),
-      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-      child: Container(
-        width: 52,
-        height: 52,
-        decoration: BoxDecoration(
-          color:
-              isSelected
-                  ? context.accent.withValues(alpha: 0.15)
-                  : context.bgTertiary,
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isSelected ? context.accent : context.border,
-            width: isSelected ? 2 : 1,
+    final label = 'Choose ${key.replaceAll('avatar-', '')} avatar';
+    return Tooltip(
+      message: label,
+      child: Semantics(
+        button: true,
+        selected: isSelected,
+        label: label,
+        child: InkWell(
+          onTap: () => Navigator.pop(context, key),
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          child: Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color:
+                  isSelected
+                      ? context.accent.withValues(alpha: 0.15)
+                      : context.bgTertiary,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isSelected ? context.accent : context.border,
+                width: isSelected ? 2 : 1,
+              ),
+            ),
+            child: Icon(
+              icon,
+              size: 26,
+              color: isSelected ? context.accent : context.textSecondary,
+            ),
           ),
-        ),
-        child: Icon(
-          icon,
-          size: 26,
-          color: isSelected ? context.accent : context.textSecondary,
         ),
       ),
     );

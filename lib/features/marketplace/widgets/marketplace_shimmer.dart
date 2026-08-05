@@ -16,10 +16,21 @@ class MarketplaceShimmer extends StatefulWidget {
 
 class _MarketplaceShimmerState extends State<MarketplaceShimmer>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1300),
-  )..repeat();
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1300),
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !MediaQuery.disableAnimationsOf(context)) {
+        _controller.repeat();
+      }
+    });
+  }
 
   @override
   void dispose() {

@@ -20,7 +20,12 @@ class _HomeLoadingSkeletonState extends State<HomeLoadingSkeleton>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1100),
-    )..repeat(reverse: true);
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !MediaQuery.disableAnimationsOf(context)) {
+        _controller.repeat(reverse: true);
+      }
+    });
   }
 
   @override

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mecha_connect/theme/app_colors.dart';
 import 'package:mecha_connect/theme/app_responsive.dart';
 
 class ReviewStar extends StatelessWidget {
@@ -30,7 +31,7 @@ class ReviewStar extends StatelessWidget {
             size: AppResponsive.scaleIcon(context, 44),
             color:
                 isFilled
-                    ? const Color(0xFFF59E0B)
+                    ? AppColors.warning
                     : (Theme.of(context).brightness == Brightness.dark
                         ? Colors.white38
                         : const Color(0xFFD1D5DB)),

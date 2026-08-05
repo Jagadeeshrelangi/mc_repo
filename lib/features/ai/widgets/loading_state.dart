@@ -65,10 +65,15 @@ class _AiLoadingPulseState extends State<AiLoadingPulse>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
-    )..repeat(reverse: true);
+    );
     _opacity = Tween<double>(begin: 1, end: 0.45).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !MediaQuery.disableAnimationsOf(context)) {
+        _controller.repeat(reverse: true);
+      }
+    });
   }
 
   @override

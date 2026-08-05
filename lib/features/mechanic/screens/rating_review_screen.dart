@@ -158,7 +158,7 @@ class _RatingReviewScreenState extends State<RatingReviewScreen> with SingleTick
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(_rating, (i) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: Icon(Icons.star_rounded, size: 28, color: const Color(0xFFF59E0B)),
+                      child: Icon(Icons.star_rounded, size: 28, color: AppColors.warning),
                     )),
                   ),
                   SizedBox(height: AppSpacing.base),

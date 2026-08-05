@@ -20,7 +20,12 @@ class _TypingIndicatorState extends State<TypingIndicator>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
-    )..repeat();
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !MediaQuery.disableAnimationsOf(context)) {
+        _controller.repeat();
+      }
+    });
   }
 
   @override

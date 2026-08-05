@@ -216,7 +216,7 @@ class RatingBadge extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.star_rounded, size: compact ? 14 : AppResponsive.scaleIcon(context, 16), color: Color(0xFFF59E0B)),
+        Icon(Icons.star_rounded, size: compact ? 14 : AppResponsive.scaleIcon(context, 16), color: AppColors.warning),
         SizedBox(width: 2),
         Flexible(
           child: Text(

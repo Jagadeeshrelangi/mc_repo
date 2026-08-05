@@ -62,7 +62,11 @@ class _AppShimmerState extends State<AppShimmer> with SingleTickerProviderStateM
     super.initState();
     _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
     _animation = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: _controller, curve: Curves.linear));
-    _controller.repeat();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted && !MediaQuery.disableAnimationsOf(context)) {
+        _controller.repeat();
+      }
+    });
   }
 
   @override
