@@ -1,9 +1,41 @@
 # Changelog
 
-**Version:** 1.9.2 (Frontend Lock Candidate)  
+**Version:** 1.9.3 (RC1 Release Sprint)  
 **Last Updated:** 2026-08-05  
 
 All notable changes to Mecha Connect will be documented in this file.
+
+---
+
+## [1.9.3] — 2026-08-05 — RC1 Release Sprint
+
+### Changed
+- `pubspec.yaml` version bumped to **`1.0.0+1`** (RC1 release build)
+- All 9 canonical certification docs re-verified and re-synced at
+  **1.0.0 / 162 tests / 2026-08-05** ("Frontend Lock Candidate" wording kept —
+  no RC1 tag issued; release tag commands documented in `RC1_CHECKLIST.md`)
+- **Master Handbook rewritten as the official 21-chapter book** (v1.0.0),
+  superseding the v2.0.0 doc-bundle: Executive Summary, Abstract, Vision,
+  Problem, Solution, Business Model, PRD, Architecture, Tech Stack, Modules,
+  Workflows, Navigation, UI Design System, DB Blueprint, API Contract, Testing,
+  Sprint History, Deployment Roadmap, Future Scope, Known Limitations + Risk
+  Register, Appendix (glossary, packages, licenses, version history)
+- Handbook rendered to **PDF (39 pages)** and **DOCX (21 chapters + TOC field)**
+  from the single Markdown source (`MECHA_CONNECT_MASTER_HANDBOOK.{md,pdf,docx}`)
+- Stale details fixed: `FRONTEND_ARCHITECTURE.md` "Provider (6.x)",
+  `QA_CERTIFICATION_REPORT.md` test paths, `RISK_ANALYSIS.md` "Sprint 1.6.3",
+  `FEATURE_SPECIFICATIONS.md` section numbering
+- `docs/README.md` + `PROJECT_DOCUMENTATION_INDEX.md` re-synced to v1.9.2 with
+  release artifacts listed
+
+### Added
+- Release documents in `docs/07_rc1_certification/`:
+  `RC1_RELEASE_REPORT.md`, `RELEASE_NOTES_RC1.md`, `RC1_CHECKLIST.md`,
+  `VERSION_HISTORY.md`, `LICENSE_GUIDE.md`, `COPYRIGHT_NOTICE.md`
+
+### Frontend Certification
+- `flutter analyze` — **No issues found!**
+- `flutter test` — **162/162 passing**
 
 ---
 

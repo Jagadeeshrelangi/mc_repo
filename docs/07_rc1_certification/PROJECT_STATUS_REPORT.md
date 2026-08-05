@@ -1,17 +1,19 @@
-# Project Status Report — Mecha Connect (Frontend Lock Candidate)
+# Project Status Report — Mecha Connect (RC1 · Frontend Lock Candidate)
 
-> Sprint 1.9b · Frontend Lock Candidate
+> Sprint 1.9.3 · RC1 Release Sprint (on top of Frontend Lock Candidate)
 > Date: 2026-08-05 (candidate verified 2026-08-02) · Flutter 3.29.2
 
 ## 1. Executive Summary
 
-Mecha Connect frontend reaches **Frontend Lock Candidate** status. The
-app is feature-complete across all modules (Home, AI, Marketplace, Mechanic,
-Fuel Delivery, Profile, Vehicle Location, Orders) with a **clean static
-analysis (0 issues)** and a **162/162 passing test suite**. All mock data and
-repository contracts are frozen and documented for the Sprint 2 backend build.
+Mecha Connect frontend reaches **RC1 release** status on top of the **Frontend
+Lock Candidate**. The app is feature-complete across all modules (Home, AI,
+Marketplace, Mechanic, Fuel Delivery, Profile, Vehicle Location, Orders) with a
+**clean static analysis (0 issues)**, a **162/162 passing test suite**, and a
+full release documentation set (handbook book + PDF/DOCX, release notes,
+checklist, version history, licensing). All mock data and repository contracts
+are frozen and documented for the Sprint 2 backend build.
 
-## 2. Frontend Lock Candidate Status
+## 2. RC1 Release Status
 
 | Area | Status |
 |---|---|
@@ -21,6 +23,11 @@ repository contracts are frozen and documented for the Sprint 2 backend build.
 | Dead code / legacy HTTP seams / debug flags | REMOVED |
 | Certification docs | 9/9 WRITTEN |
 | API contract + DB blueprint | WRITTEN |
+| Master Handbook (21-chapter book, v1.0.0) | WRITTEN |
+| Handbook PDF / DOCX renders | GENERATED (39 pages / 21 chapters) |
+| Release documents (notes, checklist, versions, license) | WRITTEN |
+| Release report (RC1_RELEASE_REPORT.md) | WRITTEN |
+| Git tag `v1.0.0-rc1` | **PENDING** — commands documented, not executed |
 
 ## 3. Sprint History (module delivery)
 
@@ -35,6 +42,7 @@ repository contracts are frozen and documented for the Sprint 2 backend build.
 | 1.9A | Profile module (vehicles, addresses, wallet, rewards, settings) | ✅ 30/30 tests, report in `docs/05_reports/SPRINT_1_9A_PROFILE_REPORT.md` |
 | 1.9B | RC1 certification — fixes + freeze + docs | ✅ **162/162, analyze clean** |
 | 1.9b-close | Final polish (nav, perf, a11y, responsive, code quality) | ✅ **162/162, analyze clean** |
+| 1.9.3 | RC1 release sprint — handbook book + PDF/DOCX, release docs | ✅ **162/162, analyze clean** |
 
 ## 4. Module Status
 
@@ -96,11 +104,33 @@ repository contracts are frozen and documented for the Sprint 2 backend build.
 - **Known limits recorded** in handbook §20 (accepted brand contrast limits,
   P3 visual debt, rating-shorthand guard).
 
+## 5d. RC1 Release Sprint (1.9.3)
+
+1. **Handbook book rewrite** — `MECHA_CONNECT_MASTER_HANDBOOK.md` rewritten as a
+   single continuous 21-chapter book (v1.0.0), superseding the v2.0.0 doc
+   bundle. Chapters: Executive Summary → Appendix.
+2. **Handbook renders** — PDF (39 pages) + DOCX (21 chapters, TOC field)
+   generated from the single Markdown source.
+3. **Version bump** — `pubspec.yaml` → `1.0.0+1`.
+4. **Release documents** — `RC1_RELEASE_REPORT.md`, `RELEASE_NOTES_RC1.md`,
+   `RC1_CHECKLIST.md` (manual `git tag -a v1.0.0-rc1` commands, not executed),
+   `VERSION_HISTORY.md`, `LICENSE_GUIDE.md`, `COPYRIGHT_NOTICE.md`.
+5. **Doc sync** — all 9 canonical docs re-verified at 1.0.0 / 162 / 2026-08-05;
+   stale details fixed (Provider 6.x, QA test paths, Sprint 1.6.3, feature-spec
+   numbering); docs index + README re-synced.
+
 ## 6. Deliverables Index
 
 | Doc | Location |
 |---|---|
-| Master Handbook (v2.0.0) | `MECHA_CONNECT_MASTER_HANDBOOK.md` |
+| Master Handbook (v1.0.0, 21 chapters) | `MECHA_CONNECT_MASTER_HANDBOOK.md` |
+| Handbook PDF / DOCX | `MECHA_CONNECT_MASTER_HANDBOOK.pdf` / `.docx` |
+| Release Report | `RC1_RELEASE_REPORT.md` |
+| Release Notes | `RELEASE_NOTES_RC1.md` |
+| Release Checklist (+ tag commands) | `RC1_CHECKLIST.md` |
+| Version History | `VERSION_HISTORY.md` |
+| License Guide | `LICENSE_GUIDE.md` |
+| Copyright Notice | `COPYRIGHT_NOTICE.md` |
 | Frontend Lock Report | `FRONTEND_LOCK_REPORT.md` |
 | QA Certification Report | `QA_CERTIFICATION_REPORT.md` |
 | Project Status Report | `PROJECT_STATUS_REPORT.md` |
@@ -112,15 +142,18 @@ repository contracts are frozen and documented for the Sprint 2 backend build.
 | Database Blueprint | `DATABASE_BLUEPRINT.md` |
 | API Contract | `API_CONTRACT.md` |
 
-## 7. Next Steps (Sprint 2)
+## 7. Next Steps
 
-1. **Backend (FastAPI + PostgreSQL)** implementing `API_CONTRACT.md` +
+1. **Release execution (manual)** — review `RC1_RELEASE_REPORT.md` + `RC1_CHECKLIST.md`,
+   then run the documented `git tag -a v1.0.0-rc1 …` + `git push origin v1.0.0-rc1`
+   commands when the release owner approves.
+2. **Backend (FastAPI + PostgreSQL)** implementing `API_CONTRACT.md` +
    `DATABASE_BLUEPRINT.md` behind the frozen repository interfaces.
-2. Swap repository internals from in-memory mocks to the real client; the UI
+3. Swap repository internals from in-memory mocks to the real client; the UI
    and tests do not change (contract-driven).
-3. Real auth (JWT), server-validated coupons, and real-time tracking
+4. Real auth (JWT), server-validated coupons, and real-time tracking
    (WebSocket) replacing simulated behavior.
-4. Post-lock regression runs (analyze + 162 tests) after every change.
+5. Post-lock regression runs (analyze + 162 tests) after every change.
 
 ## 8. Risk Register
 

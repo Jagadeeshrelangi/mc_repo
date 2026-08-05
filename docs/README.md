@@ -1,6 +1,6 @@
 # Mecha Connect — Documentation
 
-**Version:** 1.9.1 (Frontend Lock Candidate) | **Last Updated:** 2026-08-05
+**Version:** 1.9.2 (RC1 · Frontend Lock Candidate) | **Last Updated:** 2026-08-05
 
 ---
 
@@ -79,7 +79,9 @@ Canonical, frozen documentation for the Frontend Lock Candidate frontend:
 
 | Document | Description |
 |---|---|
-| [MECHA_CONNECT_MASTER_HANDBOOK.md](07_rc1_certification/MECHA_CONNECT_MASTER_HANDBOOK.md) | Master engineering handbook (v2.0.0) |
+| [MECHA_CONNECT_MASTER_HANDBOOK.md](07_rc1_certification/MECHA_CONNECT_MASTER_HANDBOOK.md) | **Official Master Handbook (v1.0.0, 21 chapters)** |
+| [MECHA_CONNECT_MASTER_HANDBOOK.pdf](07_rc1_certification/MECHA_CONNECT_MASTER_HANDBOOK.pdf) | Handbook PDF (submission-ready) |
+| [MECHA_CONNECT_MASTER_HANDBOOK.docx](07_rc1_certification/MECHA_CONNECT_MASTER_HANDBOOK.docx) | Handbook DOCX (Word, editable) |
 | [FRONTEND_LOCK_REPORT.md](07_rc1_certification/FRONTEND_LOCK_REPORT.md) | Freeze list, governance, change log |
 | [FRONTEND_ARCHITECTURE.md](07_rc1_certification/FRONTEND_ARCHITECTURE.md) | Provider graph, module tree, integration seams |
 | [UI_DESIGN_SYSTEM.md](07_rc1_certification/UI_DESIGN_SYSTEM.md) | Frozen design tokens & patterns |
@@ -87,7 +89,13 @@ Canonical, frozen documentation for the Frontend Lock Candidate frontend:
 | [API_CONTRACT.md](07_rc1_certification/API_CONTRACT.md) | Frozen mock API contract (Sprint 2 spec) |
 | [DATABASE_BLUEPRINT.md](07_rc1_certification/DATABASE_BLUEPRINT.md) | PostgreSQL schema blueprint |
 | [QA_CERTIFICATION_REPORT.md](07_rc1_certification/QA_CERTIFICATION_REPORT.md) | Certification evidence (162/162) |
-| [PROJECT_STATUS_REPORT.md](07_rc1_certification/PROJECT_STATUS_REPORT.md) | Frontend Lock status, next steps, risks |
+| [PROJECT_STATUS_REPORT.md](07_rc1_certification/PROJECT_STATUS_REPORT.md) | RC1 status, next steps, risks |
+| [RC1_RELEASE_REPORT.md](07_rc1_certification/RC1_RELEASE_REPORT.md) | Full RC1 release report |
+| [RELEASE_NOTES_RC1.md](07_rc1_certification/RELEASE_NOTES_RC1.md) | RC1 release notes |
+| [RC1_CHECKLIST.md](07_rc1_certification/RC1_CHECKLIST.md) | Release gates + tag/push commands |
+| [VERSION_HISTORY.md](07_rc1_certification/VERSION_HISTORY.md) | Release-level version summary |
+| [LICENSE_GUIDE.md](07_rc1_certification/LICENSE_GUIDE.md) | Project + dependency licensing |
+| [COPYRIGHT_NOTICE.md](07_rc1_certification/COPYRIGHT_NOTICE.md) | Copyright & confidentiality notice |
 
 ---
 

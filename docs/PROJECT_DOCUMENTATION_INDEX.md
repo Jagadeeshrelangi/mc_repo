@@ -1,7 +1,7 @@
 # Mecha Connect — Project Documentation Index
 
 > Master navigation for the Mecha Connect documentation set.
-> Version: 1.9.1 (Frontend Lock Candidate) · Last updated: 2026-08-05
+> Version: 1.9.2 (RC1 · Frontend Lock Candidate) · Last updated: 2026-08-05
 
 ---
 
@@ -20,7 +20,9 @@
 
 | Document | Description |
 |---|---|
-| [07_rc1_certification/MECHA_CONNECT_MASTER_HANDBOOK.md](07_rc1_certification/MECHA_CONNECT_MASTER_HANDBOOK.md) | Master engineering handbook (v2.0.0) — architecture, standards, governance |
+| [07_rc1_certification/MECHA_CONNECT_MASTER_HANDBOOK.md](07_rc1_certification/MECHA_CONNECT_MASTER_HANDBOOK.md) | **Official Master Handbook (v1.0.0, 21 chapters)** — the complete technical reference book |
+| [07_rc1_certification/MECHA_CONNECT_MASTER_HANDBOOK.pdf](07_rc1_certification/MECHA_CONNECT_MASTER_HANDBOOK.pdf) | Handbook PDF (submission-ready) |
+| [07_rc1_certification/MECHA_CONNECT_MASTER_HANDBOOK.docx](07_rc1_certification/MECHA_CONNECT_MASTER_HANDBOOK.docx) | Handbook DOCX (Word, editable) |
 | [07_rc1_certification/FRONTEND_ARCHITECTURE.md](07_rc1_certification/FRONTEND_ARCHITECTURE.md) | Provider graph, module tree, integration seams |
 | [07_rc1_certification/NAVIGATION_MAP.md](07_rc1_certification/NAVIGATION_MAP.md) | 5-tab shell + all flow maps |
 | [07_rc1_certification/UI_DESIGN_SYSTEM.md](07_rc1_certification/UI_DESIGN_SYSTEM.md) | Frozen design tokens & patterns |
@@ -44,6 +46,17 @@
 | [07_rc1_certification/QA_CERTIFICATION_REPORT.md](07_rc1_certification/QA_CERTIFICATION_REPORT.md) | Certification evidence (162/162 tests) |
 | [07_rc1_certification/PROJECT_STATUS_REPORT.md](07_rc1_certification/PROJECT_STATUS_REPORT.md) | Frontend Lock status, next steps, risks |
 | [07_rc1_certification/API_CONTRACT.md](07_rc1_certification/API_CONTRACT.md) | Frozen API contract (Sprint 2 spec) |
+
+## Release (RC1)
+
+| Document | Description |
+|---|---|
+| [07_rc1_certification/RC1_RELEASE_REPORT.md](07_rc1_certification/RC1_RELEASE_REPORT.md) | Full release report (status, files, next sprint) |
+| [07_rc1_certification/RELEASE_NOTES_RC1.md](07_rc1_certification/RELEASE_NOTES_RC1.md) | What's in the RC1 release + how to run |
+| [07_rc1_certification/RC1_CHECKLIST.md](07_rc1_certification/RC1_CHECKLIST.md) | Release gates + manual tag/push commands |
+| [07_rc1_certification/VERSION_HISTORY.md](07_rc1_certification/VERSION_HISTORY.md) | Release-level version summary |
+| [07_rc1_certification/LICENSE_GUIDE.md](07_rc1_certification/LICENSE_GUIDE.md) | Project + dependency licensing |
+| [07_rc1_certification/COPYRIGHT_NOTICE.md](07_rc1_certification/COPYRIGHT_NOTICE.md) | Copyright and confidentiality notice |
 
 ## Reports (active)
 
@@ -100,7 +113,7 @@ For a new developer, QA engineer, backend engineer, or investor:
 
 | Metric | Count |
 |---|---|
-| Active Markdown documents | 26 |
+| Active Markdown documents | 32 |
 | Archived Markdown documents | 43 |
 | Source assets (non-MD) | 12 |
 | Folders created | 1 (`07_rc1_certification/`) |
