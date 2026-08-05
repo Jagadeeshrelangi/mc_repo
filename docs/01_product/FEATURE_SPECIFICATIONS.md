@@ -168,7 +168,7 @@
 ## 10. Related Documents
 
 - [PRODUCT_REQUIREMENTS_DOCUMENT.md](PRODUCT_REQUIREMENTS_DOCUMENT.md)
-- [DESIGN_SYSTEM.md](../02_architecture/DESIGN_SYSTEM.md)
-- [API_SPEC.md](../06_reference/API_SPEC.md)
+- [UI_DESIGN_SYSTEM.md](../07_rc1_certification/UI_DESIGN_SYSTEM.md)
+- [API_CONTRACT.md](../07_rc1_certification/API_CONTRACT.md)
 - [TEST_PLAN.md](../03_development/TEST_PLAN.md)
 

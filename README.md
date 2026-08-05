@@ -61,8 +61,8 @@ mecha_connect/
 ## 🔌 Technical Manuals
 For detailed setup instructions, API contracts, and architecture workflows, explore these resources:
 - 📥 **[Local Installation Guide](docs/03_development/INSTALLATION.md)**: Setup guides for FastAPI and Flutter environments.
-- 🏗️ **[System Architecture Guide](docs/02_architecture/SYSTEM_ARCHITECTURE.md)**: Details the design patterns, databases, and ML pipelines.
-- 🔌 **[API Endpoint Reference](docs/06_reference/API_SPEC.md)**: Complete guide to endpoints, parameters, and schemas.
+- 🏗️ **[Frontend Architecture Guide](docs/07_rc1_certification/FRONTEND_ARCHITECTURE.md)**: How the app is built — provider graph, module tree, backend integration seams.
+- 🔌 **[API Contract Reference](docs/07_rc1_certification/API_CONTRACT.md)**: The frozen API contract that Sprint 2 backend must implement.
 - 📖 **[Documentation Index](docs/README.md)**: Full navigation map of all project documentation.
 
 ---

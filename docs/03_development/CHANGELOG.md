@@ -1,9 +1,63 @@
 # Changelog
 
-**Version:** 1.2.0  
-**Last Updated:** 2026-07-30  
+**Version:** 1.9.1 (RC1 + final polish)  
+**Last Updated:** 2026-08-05  
 
 All notable changes to Mecha Connect will be documented in this file.
+
+---
+
+## [1.9.1] — 2026-08-05 — Sprint 1.9b close (Frontend Lock polish)
+
+### Added
+- `MECHA_CONNECT_MASTER_HANDBOOK.md` (v2.0.0) — master engineering handbook superseding `docs/archive/MASTER_ENGINEERING_HANDBOOK_v1.0.md`
+- Widget regression tests ×4 in `test/widget_test.dart` — rating-stars semantics, product-card touch targets + tooltips, wishlist toggle label, narrow-width quick-services grid
+
+### Fixed
+- **Navigation:** dead snackbar destinations wired to real screens — Home notifications → `openNotificationSettings`, vehicle card → `openMyVehicles`, "Shop All" → Marketplace, search bar → `HomeSearchScreen`; drawer Wallet → `openWallet`, Help & Support → `openSupport`; conditional Marketplace home back button (`Navigator.canPop` + `maybePop`); corrected "Coupon MECHA20" promo copy; mechanic availability surcharge shown as explicit cost line
+- **Performance:** fuel + mechanic live-tracking timers isolated into `_ElapsedTimerText` / `_ProgressTimeline` widgets (no whole-screen rebuilds on ticks); `context.watch<LocationProvider>` → `context.select` in location header + home; dialog `TextEditingController` disposed
+- **Dark mode:** `AppLoading` message/gradient, `PasswordStrength` inactive bars, product-detail offer strip, primary-button disabled colors, quantity-stepper border/icons
+- **Accessibility:** 13 icon-only buttons got `tooltip:`; three undersized bare icons converted to `IconButton`/`Semantics`+`Tooltip`; product-card wishlist/cart buttons ≥44px with tooltips; `RatingStars` merged semantics ("Rated X out of 5"); hero carousel disables autoplay under reduced motion + "Promotion banner, offer N of M"
+- **Responsive:** quick-services, services, and marketplace category grids adapt column count (2/3/4) to width
+- **Code quality:** `lib/debug/runtime_trace.dart` deleted + all wiring/imports stripped; `forceShowOnboarding` dev flag removed; orphan `coming_soon.dart` deleted; brace-wrapped 3 pre-existing `if` infos
+
+### Removed
+- `lib/debug/` (runtime trace), `lib/features/marketplace/widgets/coming_soon.dart`, `MyApp(navigatorObservers:)` param, `forceShowOnboarding` flag
+
+### Changed
+- `test/integration/runtime_marketplace_flow_test.dart` uses a local `_TestNavigatorObserver` (same hash/push/pop tracking)
+
+### Certified
+- `flutter analyze` — **No issues found!**
+- `flutter test` — **162/162 passing** (AI 25, Fuel 37, Marketplace 43, Profile 30, Mechanic 10, Vehicle Location 8, Home 3, Runtime Flow 2, Widget 4)
+
+---
+
+## [1.9.0] — 2026-08-02 — Sprint 1.9B (RC1 Certification)
+
+### Added
+- **RC1 certification docs (8)** — Frontend Lock, QA Certification, Project Status, Frontend Architecture, UI Design System, Navigation Map, Database Blueprint, API Contract (canonical set in `docs/07_rc1_certification/`)
+- `OrderStore` singleton (`lib/parts/order_data.dart`) so the Orders tab (mounted in an `IndexedStack`) rebuilds after Marketplace order inserts
+
+### Fixed
+- **P0** Vehicle form no longer calls legacy real HTTP to `127.0.0.1:8000` (≈90s hang) — now uses the AI mock engine via `DiagnosisService` (`lib/features/mechanic/screens/vehicle_form_screen.dart`)
+- **P0** AI provider shared a single `AiRepository` across provider + AiService + DiagnosisService; refresh preserves user conversations and pin overrides (`lib/features/ai/providers/ai_provider.dart`)
+- **P0** Orders tab stale after Marketplace checkout — shell uses `IndexedStack` + `OrderStore` notify; removed rebuild-every-tick tab listener (`lib/bottom_bar/bottom_navigation.dart`, `lib/bottom_bar/order_screen.dart`)
+- `ProductCard` rebuilds only on wishlist change (`context.read` + `context.select`)
+- Dark-mode empty review star color (`Colors.white38`) and Semantics on quantity stepper, search bar, SOS card
+- `kRuntimeTrace = false` (`lib/debug/runtime_trace.dart`)
+
+### Removed
+- 29 dead/legacy files — `lib/services/ai_repository.dart`, `lib/services/api_client.dart`, `lib/bottom_bar/chatboard.dart`, 12 orphaned widgets, unused module barrels, dead auth model, legacy verify scripts
+- Restored/fixed `lib/features/fuel_delivery/widgets/widgets.dart` barrel (now exports 12 widgets)
+
+### Changed
+- `MechanicProvider` accepts an optional `MechanicRepository` (constructor injectable)
+- `test/integration/runtime_marketplace_flow_test.dart` uses `.first` for `'Parts'` taps (IndexedStack keeps hidden tab labels in the tree)
+
+### Certified
+- `flutter analyze` — **No issues found!**
+- `flutter test` — **159/159 passing** (AI 25, Fuel 37, Marketplace 43, Profile 30, Mechanic 10, Vehicle Location 8, Home 3, Runtime Flow 2, Widget 1)
 
 ---
 

@@ -72,6 +72,6 @@ quadrantChart
 ## 5. Related Documents
 
 - [TEST_PLAN.md](../03_development/TEST_PLAN.md)
-- [THIRD_PARTY_SERVICES.md](../06_reference/THIRD_PARTY_SERVICES.md)
+- [THIRD_PARTY_SERVICES.md](../archive/THIRD_PARTY_SERVICES.md)
 - [PROJECT_STATUS.md](PROJECT_STATUS.md)
 

@@ -83,8 +83,8 @@ lib/<module>/
 4. Run `dart analyze` — must pass with 0 errors
 5. Run `flutter build web` — must succeed
 6. Verify runtime (no overflows, dead buttons, unreachable screens)
-7. Generate sprint report in `docs/04_sprints/`
-8. Update `docs/02_architecture/PROJECT_ARCHITECTURE.md`, `docs/03_development/CHANGELOG.md`, `docs/01_product/PROJECT_STATUS.md`
+7. Generate sprint report in `docs/05_reports/` (archive superseded reports to `docs/archive/`)
+8. Update `docs/07_rc1_certification/` (canonical RC1 docs), `docs/03_development/CHANGELOG.md`, `docs/01_product/PROJECT_STATUS.md`
 9. Mark sprint as LOCKED
 
 ---
@@ -148,9 +148,9 @@ Key principles:
 ---
 
 ## Related Documents
+- [PROJECT_ARCHITECTURE.md](../archive/PROJECT_ARCHITECTURE.md) (master blueprint)
 
-- [PROJECT_ARCHITECTURE.md](../02_architecture/PROJECT_ARCHITECTURE.md) (master blueprint)
-- [DESIGN_SYSTEM.md](../02_architecture/DESIGN_SYSTEM.md) (theme tokens)
+- [UI_DESIGN_SYSTEM.md](../07_rc1_certification/UI_DESIGN_SYSTEM.md) (theme tokens)
 - [TEST_PLAN.md](TEST_PLAN.md) (testing guidelines)
 - [DEPLOYMENT.md](DEPLOYMENT.md) (build commands)
 - [CHANGELOG.md](CHANGELOG.md) (version history)

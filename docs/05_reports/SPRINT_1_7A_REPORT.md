@@ -10,7 +10,7 @@
 
 **Root Cause:** `Geolocator.getCurrentPosition(LocationSettings(accuracy: LocationAccuracy.high))` hangs indefinitely on devices without GPS (e.g., Android emulator, tablets, indoor testing). Since `_getCurrentLocation()` had no timeout, the `_fuelLocationStatus` remained `_FuelLocationStatus.loading` forever, rendering a blank screen (the loading spinner sometimes invisible due to async gap after `initState`).
 
-**Fix Applied (`lib/homescreen/petrol_page.dart`):**
+**Fix Applied (`lib/homescreen/petrol_page.dart`, later refactored into `lib/features/fuel_delivery/screens/fuel_booking_screen.dart`):**
 - Added `LocationSettings(timeLimit: Duration(seconds: 10))` to cap GPS acquisition
 - Wrapped the `getCurrentPosition` call with `.timeout(const Duration(seconds: 12))`
 - Both locations (banner `_getCurrentLocation()` + manual refresh path) uniformly apply the timeout
@@ -100,5 +100,5 @@ lib/features/fuel_delivery/
 
 - [CHANGELOG.md](../03_development/CHANGELOG.md#120--2026-07-30--sprint-17a)
 - [PROJECT_STATUS.md](../01_product/PROJECT_STATUS.md)
-- [petrol_page.dart](../../lib/homescreen/petrol_page.dart) (GPS fix)
+- [fuel_booking_screen.dart](../../lib/features/fuel_delivery/screens/fuel_booking_screen.dart) (GPS fix — formerly `lib/homescreen/petrol_page.dart`)
 - [fuel_home_screen.dart](../../lib/features/fuel_delivery/screens/fuel_home_screen.dart)

@@ -130,7 +130,7 @@ flowchart LR
 
 ## 7. Related Documents
 
-- [SYSTEM_ARCHITECTURE.md](../02_architecture/SYSTEM_ARCHITECTURE.md)
+- [SYSTEM_ARCHITECTURE.md](../archive/SYSTEM_ARCHITECTURE.md)
 - [TEST_PLAN.md](TEST_PLAN.md)
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 

@@ -76,7 +76,7 @@
 
 ## Related Documents
 
-- [PROJECT_ARCHITECTURE.md](../02_architecture/PROJECT_ARCHITECTURE.md) (Section 3 — Roadmap)
+- [PROJECT_ARCHITECTURE.md](../archive/PROJECT_ARCHITECTURE.md) (Section 3 — Roadmap)
 - [PROJECT_STATUS.md](PROJECT_STATUS.md) (module completion dashboard)
 - [CHANGELOG.md](../03_development/CHANGELOG.md) (version history)
 - [PRODUCT_REQUIREMENTS_DOCUMENT.md](PRODUCT_REQUIREMENTS_DOCUMENT.md)
