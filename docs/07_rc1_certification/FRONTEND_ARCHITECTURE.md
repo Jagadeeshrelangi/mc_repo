@@ -1,7 +1,7 @@
 # Frontend Architecture — Mecha Connect (Frontend Lock Candidate)
 
 > Sprint 1.9b · Frozen architecture reference
-> Flutter 3.29.2 · Provider (7.x) · nested · google_nav_bar · device_preview
+> Flutter 3.29.2 · Provider (6.x) · nested · google_nav_bar · device_preview
 
 ## 1. Overview
 

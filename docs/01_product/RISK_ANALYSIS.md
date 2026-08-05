@@ -52,7 +52,7 @@ quadrantChart
 | ID | Item | Impact | Sprint Found | Remediation Plan |
 |----|------|--------|-------------|------------------|
 | TD1 | `lib/Starting_screen/` inconsistent naming | Low | 1.1 | Rename to `lib/features/splash/` in refactor sprint |
-| TD2 | Legacy `mechanic_map_screen.dart` removed (Spring 1.6.3) | None | 1.6.3 | ✅ Done |
+| TD2 | Legacy `mechanic_map_screen.dart` removed (Sprint 1.6.3) | None | 1.6.3 | ✅ Done |
 | TD3 | Mock data hardcoded | Medium | 1.4 | Replace with API calls in Sprint 2 |
 | TD4 | No backend error handling in UI | Medium | 1.5 | Add error widgets in Sprint 2 |
 

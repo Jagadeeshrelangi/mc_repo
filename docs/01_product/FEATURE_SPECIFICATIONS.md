@@ -165,7 +165,7 @@
 
 ---
 
-## 10. Related Documents
+## 11. Related Documents
 
 - [PRODUCT_REQUIREMENTS_DOCUMENT.md](PRODUCT_REQUIREMENTS_DOCUMENT.md)
 - [UI_DESIGN_SYSTEM.md](../07_rc1_certification/UI_DESIGN_SYSTEM.md)

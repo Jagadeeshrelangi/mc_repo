@@ -14,12 +14,12 @@ Counted per file via `testWidgets`/`test` declarations.
 
 | File | Count | Coverage |
 |---|---|---|
-| `test/features/ai_module_test.dart` | 25 | AI home render, chat, diagnosis, history, pin/refresh merge, retry/failure, cross-module actions |
-| `test/features/fuel_module_test.dart` | 37 | stations, booking, price estimate, lifecycle states, tracking, invoice, history, failure paths |
-| `test/features/marketplace_module_test.dart` | 43 | catalog, categories, offers, cart, checkout, orders, wishlist, coupons, failure paths |
-| `test/features/profile_module_test.dart` | 30 | profile, vehicles (default/promote), addresses, wallet, rewards, notification settings, order feed |
-| `test/features/mechanic_module_test.dart` | 10 | mechanic list, details, booking flow, vehicle form (AI-driven diagnosis) |
-| `test/features/vehicle_location_test.dart` | 8 | vehicle location flow |
+| `test/ai_module_test.dart` | 25 | AI home render, chat, diagnosis, history, pin/refresh merge, retry/failure, cross-module actions |
+| `test/fuel_module_test.dart` | 37 | stations, booking, price estimate, lifecycle states, tracking, invoice, history, failure paths |
+| `test/marketplace_module_test.dart` | 43 | catalog, categories, offers, cart, checkout, orders, wishlist, coupons, failure paths |
+| `test/profile_module_test.dart` | 30 | profile, vehicles (default/promote), addresses, wallet, rewards, notification settings, order feed |
+| `test/mechanic_module_test.dart` | 10 | mechanic list, details, booking flow, vehicle form (AI-driven diagnosis) |
+| `test/vehicle_location_test.dart` | 8 | vehicle location flow |
 | `test/home_dashboard_test.dart` | 3 | dashboard render + sections |
 | `test/integration/runtime_marketplace_flow_test.dart` | 2 | end-to-end runtime flow against production wiring |
 | `test/widget_test.dart` | 4 | rating semantics, product-card touch targets + tooltips, quick-services grid |

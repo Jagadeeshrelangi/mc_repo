@@ -9,9 +9,7 @@ This report freezes the frontend as the **Frontend Lock Candidate**. From the
 date of this report, the UI, data models, navigation, and app architecture are
 frozen. No redesign, no color/typography/icon/card/layout/animation changes,
 and no navigation-philosophy changes are permitted without a new sprint
-authorization. Only bug fixes and documentation updates are allowed until RC1
-is approved.
-ships.
+authorization. Only bug fixes and documentation updates are allowed until RC1 is approved.
 
 ## 2. Certification Gates
 
