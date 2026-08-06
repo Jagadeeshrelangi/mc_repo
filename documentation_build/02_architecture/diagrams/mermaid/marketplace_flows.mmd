@@ -1,0 +1,21 @@
+flowchart TD
+    MKPHOME["MarketplaceHomeScreen"]
+    MKPHOME -->|"category grid"| CAT["CategoryScreen"] --> PD["ProductDetailScreen"]
+    MKPHOME -->|"product card"| PD
+    MKPHOME -->|"search"| SRC["SearchScreen"] --> PD
+    MKPHOME -->|"cart"| CART["CartScreen"] --> CHK["CheckoutScreen"]
+    MKPHOME -->|"wishlist"| WL["WishlistScreen"] --> PD
+
+    PD -->|"add to cart / wishlist toggle"| CART
+    PD -->|"buy now"| CART
+    CHK -->|"coupon (catalog data at RC1)"| CART
+    CHK -->|"placeOrder"| OS["OrderSuccessScreen"]
+    OS -->|"writes Orders tab"| ORDERS["Orders tab (orderStore.addMarketplaceOrder)"]
+
+    subgraph CATALOG["Repository seed (frozen)"]
+        P["40 products"] 
+        C["10 categories"]
+        B["15 brands"]
+        O["3 offers"]
+        CP["3 coupons"]
+    end

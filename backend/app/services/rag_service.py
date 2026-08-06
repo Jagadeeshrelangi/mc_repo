@@ -41,7 +41,7 @@ class RAGService:
                 self.llm = None
             else:
                 self.llm = ChatGoogleGenerativeAI(
-                    model="gemini-2.5-flash",
+                    model=settings.GEMINI_MODEL,
                     google_api_key=api_key,
                     temperature=0.2
                 )
@@ -99,15 +99,14 @@ class RAGService:
             prompt = prompt_template.format(context=context_str, query=payload.query)
             
             # Execute inference
-            # Execute inference
             if self.llm is None:
                 if not settings.ENABLE_FALLBACK:
-                    logger.error("Gemini Request Failed | Model: gemini-2.5-flash | Error: GEMINI_API_KEY is unconfigured and fallback mode is disabled.")
+                    logger.error(f"Gemini Request Failed | Model: {settings.GEMINI_MODEL} | Error: GEMINI_API_KEY is unconfigured and fallback mode is disabled.")
                     raise InferenceException("GEMINI_API_KEY is unconfigured and fallback mode is disabled.")
                 answer = self._generate_local_fallback(payload.query, results)
             else:
                 try:
-                    logger.info(f"Gemini Request | Model: gemini-2.5-flash | Prompt Length: {len(prompt)} characters")
+                    logger.info(f"Gemini Request | Model: {settings.GEMINI_MODEL} | Prompt Length: {len(prompt)} characters")
                     response = self.llm.invoke(prompt)
                     logger.info("Gemini Response | Status: 200 OK | Success")
                     answer = response.content

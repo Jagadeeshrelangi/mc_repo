@@ -35,9 +35,6 @@ class _LoginScreenState extends State<LoginScreen> {
     if (auth.savedEmail != null) {
       _emailController.text = auth.savedEmail!;
     }
-    if (auth.savedPassword != null) {
-      _passwordController.text = auth.savedPassword!;
-    }
   }
 
   void _handleLogin() {

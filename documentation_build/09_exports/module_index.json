@@ -1,0 +1,76 @@
+{
+  "export": "module_index",
+  "generated": "2026-08-05",
+  "modules": [
+    {
+      "id": "ai",
+      "path": "lib/features/ai/",
+      "screens": ["AiHomeScreen", "ChatScreen", "DiagnosisScreen", "ConversationHistoryScreen", "ConversationDetailScreen"],
+      "provider": "AiProvider",
+      "repository": "AiRepository",
+      "services": ["AiService", "DiagnosisService"],
+      "routes": ["/ai", "/ai/chat", "/ai/diagnosis", "/ai/history", "/ai/conversation"],
+      "knowledge_file": "07_modules/ai_module.md"
+    },
+    {
+      "id": "auth",
+      "path": "lib/features/auth/",
+      "screens": ["LoginScreen", "SignUpScreen", "ForgotPasswordScreen"],
+      "provider": "AuthProvider",
+      "repository": "AuthRepository",
+      "services": ["AuthService"],
+      "routes": [],
+      "knowledge_file": "07_modules/auth_module.md"
+    },
+    {
+      "id": "home",
+      "path": "lib/features/home/",
+      "screens": ["HomeScreen", "HomeSearchScreen"],
+      "provider": "HomeProvider",
+      "repository": "HomeRepository",
+      "services": [],
+      "routes": [],
+      "knowledge_file": "07_modules/home_module.md"
+    },
+    {
+      "id": "marketplace",
+      "path": "lib/features/marketplace/",
+      "screens": ["MarketplaceHomeScreen", "ProductDetailScreen", "CategoryScreen", "SearchScreen", "CartScreen", "WishlistScreen", "CheckoutScreen", "OrderSuccessScreen"],
+      "provider": "MarketplaceProvider",
+      "repository": "MarketplaceRepository",
+      "services": ["CartService", "SelectService"],
+      "routes": ["/marketplace", "/marketplace/product", "/marketplace/category", "/marketplace/search", "/marketplace/cart", "/marketplace/wishlist"],
+      "knowledge_file": "07_modules/marketplace_module.md"
+    },
+    {
+      "id": "mechanic",
+      "path": "lib/features/mechanic/",
+      "screens": ["MechanicHomeScreen", "NearbyMechanicsScreen", "MechanicDetailsScreen", "SelectServiceScreen", "VehicleFormScreen", "BookingSummaryScreen", "BookingConfirmationScreen", "LiveTrackingScreen", "JobCompletedScreen", "RatingReviewScreen", "BookingHistoryScreen"],
+      "provider": "MechanicProvider",
+      "repository": "MechanicRepository",
+      "services": [],
+      "routes": [],
+      "knowledge_file": "07_modules/mechanic_module.md"
+    },
+    {
+      "id": "fuel_delivery",
+      "path": "lib/features/fuel_delivery/",
+      "screens": ["FuelHomeScreen", "FuelBookingScreen", "PaymentScreen", "OrderConfirmationScreen", "LiveTrackingScreen", "OrderCompleteScreen", "ReceiptScreen", "OrderHistoryScreen"],
+      "provider": "FuelProvider",
+      "repository": "FuelRepository",
+      "services": ["FuelService", "NearbyService", "QuickService"],
+      "routes": [],
+      "knowledge_file": "07_modules/fuel_delivery_module.md"
+    },
+    {
+      "id": "profile",
+      "path": "lib/features/profile/",
+      "screens": ["ProfileScreen", "EditProfileScreen", "MyVehiclesScreen", "VehicleDetailScreen", "SavedAddressesScreen", "WalletScreen", "RewardsScreen", "OrderHistoryScreen", "NotificationSettingsScreen", "PrivacySecurityScreen", "SupportScreen", "AboutScreen"],
+      "provider": "ProfileProvider",
+      "repository": "ProfileRepository",
+      "services": ["ProfileService", "ValidationService"],
+      "routes": ["/profile", "/profile/edit", "/profile/vehicles", "/profile/vehicles/detail", "/profile/addresses", "/profile/wallet", "/profile/rewards", "/profile/orders", "/profile/notifications", "/profile/privacy", "/profile/support", "/profile/about"],
+      "knowledge_file": "07_modules/profile_module.md"
+    }
+  ]
+}

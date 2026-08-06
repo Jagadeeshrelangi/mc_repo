@@ -30,14 +30,13 @@ mecha_connect/
 │   │   └── services/       # Chat, RAG, and Diagnosis integrations
 │   ├── requirements.txt    # Python backend package manifests
 │   └── .env                # Backend key overrides
-├── docs/                   # Product specs, architecture, development guides, sprint reports
-│   ├── 01_product/         # PRD, feature specs
-│   ├── 02_architecture/    # System diagrams, design system
-│   ├── 03_development/     # Installation, contribution, API spec
-│   ├── 04_sprints/         # Sprint planning & retrospectives
-│   ├── 05_reports/         # Audit, verification, health reports
-│   ├── 06_reference/       # Reference materials
-│   └── source/             # Blueprints, source documents
+├── documentation_build/    # Canonical documentation (see documentation_build/README.md)
+│   ├── 00_core/            # Product specs, changelog, install/deploy guides
+│   ├── 01_knowledge/       # Knowledge base + master handbook
+│   ├── 02_architecture/    # Architecture, diagrams, design system
+│   ├── 03_database/ 04_api/ 05_navigation/ 06_workflows/ 07_modules/
+│   ├── 08_assets/ 09_exports/  tools/
+│   └── archive/            # Historical records (engineering_review, sprint_history, legacy)
 ├── lib/                    # Flutter Application Core
 │   ├── auth/               # Login and authentication screens
 │   ├── bottom_bar/         # Navigation bar, chat, orders, profile
@@ -60,10 +59,10 @@ mecha_connect/
 
 ## 🔌 Technical Manuals
 For detailed setup instructions, API contracts, and architecture workflows, explore these resources:
-- 📥 **[Local Installation Guide](docs/03_development/INSTALLATION.md)**: Setup guides for FastAPI and Flutter environments.
-- 🏗️ **[Frontend Architecture Guide](docs/07_rc1_certification/FRONTEND_ARCHITECTURE.md)**: How the app is built — provider graph, module tree, backend integration seams.
-- 🔌 **[API Contract Reference](docs/07_rc1_certification/API_CONTRACT.md)**: The frozen API contract that Sprint 2 backend must implement.
-- 📖 **[Documentation Index](docs/README.md)**: Full navigation map of all project documentation.
+- 📥 **[Local Installation Guide](documentation_build/00_core/INSTALLATION.md)**: Setup guides for FastAPI and Flutter environments.
+- 🏗️ **[Frontend Architecture Guide](documentation_build/02_architecture/FRONTEND_ARCHITECTURE.md)**: How the app is built — provider graph, module tree, backend integration seams.
+- 🔌 **[API Contract Reference](documentation_build/04_api/API_CONTRACT.md)**: The frozen API contract that Sprint 2 backend must implement.
+- 📖 **[Documentation Index](documentation_build/CANONICAL_DOCUMENT_MAP.md)**: Single source of truth for every documentation topic.
 
 ---
 

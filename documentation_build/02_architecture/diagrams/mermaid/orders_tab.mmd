@@ -1,0 +1,11 @@
+flowchart LR
+    MKP["MarketplaceProvider.placeOrder"] -->|"insert into ordersList"| STORE["ordersList (global in-memory)"]
+    STORE -->|"orderStore.notify()"| ORDERS["Orders tab (tab 2) - rebuilds"]
+    STORE -->|"reads same list"| PROFORD["Profile OrderHistoryScreen"]
+    STORE -->|"seed entries"| SEED["Parts / Mechanic / Fuel / AI seeded entries"]
+
+    subgraph SOURCE["order_entries (Postgres Sprint 2 target)"]
+        E1["type: parts | mechanic | fuel | aiReport"]
+        E2["status: Pending | Delivered | Completed | In Progress | Cancelled"]
+        E3["id: ORD-* / MKP-*"]
+    end

@@ -1,7 +1,6 @@
-import os
 import uuid
 import time
-from typing import List, Dict, Any, Tuple, Optional
+from typing import List, Dict, Tuple, Optional
 from fastapi import HTTPException, status
 from langchain_core.prompts import PromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -43,7 +42,7 @@ class ChatService:
                 self.llm = None
             else:
                 self.llm = ChatGoogleGenerativeAI(
-                    model="gemini-2.5-flash",
+                    model=settings.GEMINI_MODEL,
                     google_api_key=api_key,
                     temperature=0.3
                 )
@@ -183,7 +182,7 @@ class ChatService:
             extracted_symptoms.append("Engine vibration")
             
         diag_res = diagnosis_service.predict_fault(DiagnosisInput(
-            mileage=80000,
+            mileage=settings.DEFAULT_VEHICLE_MILEAGE,
             symptoms=extracted_symptoms
         ))
         
@@ -228,12 +227,12 @@ class ChatService:
         
         if self.llm is None:
             if not settings.ENABLE_FALLBACK:
-                logger.error("Gemini Request Failed | Model: gemini-2.5-flash | Error: GEMINI_API_KEY is unconfigured and fallback mode is disabled.")
+                logger.error(f"Gemini Request Failed | Model: {settings.GEMINI_MODEL} | Error: GEMINI_API_KEY is unconfigured and fallback mode is disabled.")
                 raise InferenceException("GEMINI_API_KEY is unconfigured and fallback mode is disabled.")
             return self._fallback_chat_reply(message)
         else:
             try:
-                logger.info(f"Gemini Request | Model: gemini-2.5-flash | Prompt Length: {len(prompt)} characters")
+                logger.info(f"Gemini Request | Model: {settings.GEMINI_MODEL} | Prompt Length: {len(prompt)} characters")
                 res = self.llm.invoke(prompt)
                 logger.info("Gemini Response | Status: 200 OK | Success")
                 return res.content

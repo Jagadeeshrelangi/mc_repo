@@ -1,0 +1,17 @@
+flowchart TD
+    AIHOME["AiHomeScreen (/ai)"]
+    AIHOME -->|"suggested question / quick action"| CHAT["ChatScreen (/ai/chat)"]
+    AIHOME -->|"new diagnosis / Run Guided Diagnosis"| DIAG["DiagnosisScreen (/ai/diagnosis)"]
+    AIHOME -->|"history"| HIST["ConversationHistoryScreen (/ai/history)"]
+    HIST --> CD["ConversationDetailScreen (/ai/conversation)"]
+    CHAT -->|"rename/delete bottom sheet"| CD
+
+    CHAT -->|"AiActionButton: openDiagnosis"| DIAG
+    DIAG -->|"onBookMechanic"| MECH["MechanicHomeScreen"]
+    DIAG -->|"onSearchParts"| MKP["MarketplaceHomeScreen"]
+    DIAG -->|"onFuelRecommendation"| FUEL["FuelHomeScreen"]
+
+    subgraph REPO_SHARE["AiProvider owns ONE AiRepository shared with"]
+        SVC["AiService"]
+        DX["DiagnosisService"]
+    end

@@ -11,14 +11,12 @@ class AuthProvider extends ChangeNotifier {
   String? _error;
   bool _rememberMe = false;
   String? _savedEmail;
-  String? _savedPassword;
 
   bool get isLoggedIn => _isLoggedIn;
   bool get isLoading => _isLoading;
   String? get error => _error;
   bool get rememberMe => _rememberMe;
   String? get savedEmail => _savedEmail;
-  String? get savedPassword => _savedPassword;
 
   AuthProvider(this._authService) {
     _loadSavedCredentials();
@@ -29,7 +27,6 @@ class AuthProvider extends ChangeNotifier {
     _rememberMe = prefs.getBool('remember_me') ?? false;
     if (_rememberMe) {
       _savedEmail = prefs.getString('remember_me_email');
-      _savedPassword = prefs.getString('remember_me_password');
     }
     _isLoggedIn = prefs.getBool('is_logged_in') ?? false;
     notifyListeners();
@@ -57,7 +54,6 @@ class AuthProvider extends ChangeNotifier {
         final prefs = await SharedPreferences.getInstance();
         if (_rememberMe) {
           await prefs.setString('remember_me_email', email);
-          await prefs.setString('remember_me_password', password);
         } else {
           await prefs.remove('remember_me_email');
           await prefs.remove('remember_me_password');
@@ -120,10 +116,8 @@ class AuthProvider extends ChangeNotifier {
     _error = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('is_logged_in', false);
-    if (!_rememberMe) {
-      await prefs.remove('remember_me_email');
-      await prefs.remove('remember_me_password');
-    }
+    await prefs.remove('remember_me_email');
+    await prefs.remove('remember_me_password');
     notifyListeners();
   }
 

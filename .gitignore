@@ -4,6 +4,8 @@
 *.pyc
 *.swp
 .DS_Store
+Thumbs.db
+desktop.ini
 .atom/
 .build/
 .buildlog/
@@ -47,6 +49,13 @@ app.*.map.json
 # Environment local configurations
 .env
 .env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Flutter DevTools / IDE generated
+devtools_options.yaml
 
 # Python Cache
 __pycache__/

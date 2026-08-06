@@ -1,0 +1,34 @@
+{
+  "export": "documentation_index",
+  "generated": "2026-08-05",
+  "docs_tree": {
+    "01_product": ["BUSINESS_MODEL.md", "FEATURE_SPECIFICATIONS.md", "PRODUCT_REQUIREMENTS_DOCUMENT.md", "PROJECT_STATUS.md", "RISK_ANALYSIS.md", "ROADMAP.md"],
+    "03_development": ["dev guides (CHANGELOG, FAULT_INJECTION, TEST_PLAN etc.)"],
+    "05_reports": ["docs-audit-* (7)", "SPRINT_1_7A_REPORT.md", "SPRINT_1_9_AI_ASSISTANT_REPORT.md", "SPRINT_1_9A_PROFILE_REPORT.md", "SPRINT_1_9B_FINAL_REVIEW_REPORT.md", "DOCUMENTATION_SPRINT_REPORT.md"],
+    "07_rc1_certification": ["MECHA_CONNECT_MASTER_HANDBOOK.md (21 chapters)", "FRONTEND_ARCHITECTURE.md", "NAVIGATION_MAP.md", "UI_DESIGN_SYSTEM.md", "DATABASE_BLUEPRINT.md", "API_CONTRACT.md", "QA_CERTIFICATION_REPORT.md", "FRONTEND_LOCK_REPORT.md", "PROJECT_STATUS_REPORT.md", "VERSION_HISTORY.md", "RC1_RELEASE_REPORT.md", "RELEASE_NOTES_RC1.md", "RC1_CHECKLIST.md", "LICENSE_GUIDE.md", "COPYRIGHT_NOTICE.md", "handbook pdf/docx"],
+    "archive": "43 historical files (cite-only)",
+    "source": "legacy asset folder (rename proposed to assets/)",
+    "root": ["README.md (stale/mojibake in parts)", "PROJECT_DOCUMENTATION_INDEX.md"]
+  },
+  "canonical_topic_sources": {
+    "product": "01_product/PRODUCT_REQUIREMENTS_DOCUMENT.md",
+    "features": "01_product/FEATURE_SPECIFICATIONS.md",
+    "business": "01_product/BUSINESS_MODEL.md",
+    "roadmap": "01_product/ROADMAP.md",
+    "risks": "01_product/RISK_ANALYSIS.md",
+    "frontend_arch": "07_rc1_certification/FRONTEND_ARCHITECTURE.md",
+    "navigation": "07_rc1_certification/NAVIGATION_MAP.md",
+    "design_system": "07_rc1_certification/UI_DESIGN_SYSTEM.md",
+    "database": "07_rc1_certification/DATABASE_BLUEPRINT.md",
+    "api": "07_rc1_certification/API_CONTRACT.md",
+    "qa": "07_rc1_certification/QA_CERTIFICATION_REPORT.md",
+    "frontend_lock": "07_rc1_certification/FRONTEND_LOCK_REPORT.md",
+    "versions": "07_rc1_certification/VERSION_HISTORY.md"
+  },
+  "audit_findings": {
+    "broken_links": 0,
+    "active_docs_linking_into_archive": ["RISK_ANALYSIS->THIRD_PARTY_SERVICES", "ROADMAP->PROJECT_ARCHITECTURE", "CONTRIBUTING->PROJECT_ARCHITECTURE", "DEPLOYMENT->SYSTEM_ARCHITECTURE"],
+    "proposed_structure": ["01_product", "02_architecture", "03_development", "04_release", "05_reports", "assets", "archive"],
+    "duplication_clusters": ["Handbook ch9 tech stack", "Handbook ch17 sprint history"]
+  }
+}

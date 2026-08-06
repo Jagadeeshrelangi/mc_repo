@@ -1,0 +1,27 @@
+flowchart LR
+    ENTRY["main.dart
+dotenv.load - best effort"] --> WIRING["app_wiring.dart
+buildRootProviders()"]
+    WIRING --> RP["Root Provider Graph"]
+    RP --> APP["MyApp
+DevicePreview (kDebugMode)"]
+    APP --> MAT["MaterialApp
+theme / darkTheme / themeMode
+initialRoute '/'"]
+    MAT --> SPLASH["SplashScreen"]
+    SPLASH -->|"is_logged_in"| SHELL["BottomNavigation
+5-tab IndexedStack"]
+    SPLASH -->|"onboarding done"| LOGIN["LoginScreen"]
+    SPLASH -->|"first launch"| ONBOARD["OnboardingScreen"]
+
+    subgraph RP["Root Provider Graph (order)"]
+        T1["1 ThemeProvider"]
+        T2["2 LocationProvider"]
+        T3["3 AuthProvider (AuthService/AuthRepository)"]
+        T4["4 HomeProvider (HomeRepository)"]
+        T5["5 MechanicProvider"]
+        T6["6 AiProvider (owns ONE AiRepository)"]
+        T7["7 ProfileProvider (SharedPrefs store)"]
+        T8["8 FuelProvider (locationProvider:)"]
+        T9["9 MarketplaceProvider"]
+    end
