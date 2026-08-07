@@ -1,0 +1,15 @@
+flowchart LR
+    subgraph TODAY["RC1 - Mock Realism"]
+        UI["Screens"] --> PROV["Providers"]
+        PROV --> REPO["Repository interfaces (frozen seams)"]
+        REPO --> MOCK["In-memory engines
+latency (700-900ms) + failForFirstCalls"]
+        MOCK --> UIERR["real loading / empty / error UI"]
+    end
+
+    subgraph SWAP["Sprint 2 - Backend Integration"]
+        REPO2["SAME repository interfaces"] --> HTTP["HTTP client (FastAPI/PostgreSQL)"]
+        HTTP --> API["api/v1/*"]
+    end
+
+    MOCK -."swap internals only; UI never bypasses repository layer".-> REPO2

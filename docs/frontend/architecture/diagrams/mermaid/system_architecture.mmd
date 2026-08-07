@@ -1,0 +1,37 @@
+flowchart TB
+    subgraph CLIENT["Flutter Client (RC1 - Frontend Lock Candidate)"]
+        UI["Screens (50) + Widgets (79)"]
+        PROV["Providers (7 module + Theme + Location)"]
+        REPO["Repositories (7) - ONLY data source"]
+        MOCK["Mock Engines
+simulated latency + failForFirstCalls"]
+        UI --> PROV --> REPO --> MOCK
+    end
+
+    subgraph BACKEND["FastAPI Backend (Sprint 2 target - scaffold exists)"]
+        API["api/v1
+conversation / diagnosis / knowledge"]
+        SVC["Services
+chat_service / diagnosis_service / rag_service"]
+        AI["AI Assets
+FAISS KB, XGBoost fault_classifier.joblib,
+Gemini"]
+        DB[("PostgreSQL 15
+DATABASE_BLUEPRINT")]
+        API --> SVC --> AI
+        SVC --> DB
+    end
+
+    subgraph LOCAL["On-device state"]
+        PREFS["SharedPreferences
+is_logged_in, theme_mode,
+notification_settings"]
+        ORDERSTORE["orderStore / ordersList
+lib/parts/order_data.dart"]
+    end
+
+    REPO -. "Sprint 2: swap mock for HTTP client
+(UI + provider signatures unchanged)" .-> API
+    REPO --> PREFS
+    ORDERSTORE --> PROV
+    ORDERSTORE --> REPO

@@ -1,0 +1,19 @@
+flowchart TD
+    SPLASH["SplashScreen"]
+    LOGIN["LoginScreen"]
+    SIGN["SignUpScreen"]
+    FORGOT["ForgotPasswordScreen"]
+    SHELL["BottomNavigation (5 tabs)"]
+
+    SPLASH -->|"is_logged_in"| SHELL
+    SPLASH -->|"onboarding done"| LOGIN
+    LOGIN <-->|"link"| SIGN
+    LOGIN <-->|"link"| FORGOT
+    SIGN -->|"success"| SHELL
+    LOGIN -->|"success"| SHELL
+    SHELL -->|"logout (pushAndRemoveUntil)"| LOGIN
+
+    subgraph STATE["Auth state (RC1)"]
+        FLAG["SharedPreferences key: is_logged_in"]
+        NOTE["No credential storage at RC1"]
+    end

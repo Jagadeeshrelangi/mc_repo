@@ -1,0 +1,39 @@
+{
+  "export": "navigation_index",
+  "generated": "2026-08-05",
+  "source": "NAVIGATION_MAP.md (frozen) + repo scan",
+  "entry": { "named_route": "/", "screen": "SplashScreen" },
+  "splash_decision": [
+    { "is_logged_in": true, "target": "BottomNavigation" },
+    { "is_logged_in": false, "onboarding_done": true, "target": "LoginScreen" },
+    { "is_logged_in": false, "onboarding_done": false, "target": "OnboardingScreen" }
+  ],
+  "tab_shell": [
+    { "index": 0, "tab": "Home", "screen": "HomeDashboard" },
+    { "index": 1, "tab": "Services", "screen": "ServiceSelectionScreen" },
+    { "index": 2, "tab": "Orders", "screen": "Orderscreen", "note": "reads OrderStore" },
+    { "index": 3, "tab": "AI", "screen": "AiHomeScreen" },
+    { "index": 4, "tab": "Profile", "screen": "ProfileScreen" }
+  ],
+  "routes": {
+    "ai": ["/ai", "/ai/chat", "/ai/diagnosis", "/ai/history", "/ai/conversation"],
+    "marketplace": ["/marketplace", "/marketplace/product", "/marketplace/category", "/marketplace/search", "/marketplace/cart", "/marketplace/wishlist"],
+    "profile": ["/profile", "/profile/edit", "/profile/vehicles", "/profile/vehicles/detail", "/profile/addresses", "/profile/wallet", "/profile/rewards", "/profile/orders", "/profile/notifications", "/profile/privacy", "/profile/support", "/profile/about"]
+  },
+  "mechanic_flow": ["VehicleFormPage", "MechanicHomeScreen", "NearbyMechanicsScreen", "MechanicDetailsScreen", "SelectServiceScreen", "BookingSummaryScreen", "BookingConfirmationScreen", "LiveTrackingScreen", "JobCompletedScreen", "RatingReviewScreen"],
+  "fuel_flow": ["FuelHomeScreen", "FuelBookingScreen", "PaymentScreen", "OrderConfirmationScreen", "LiveTrackingScreen", "OrderCompleteScreen", "ReceiptScreen"],
+  "marketplace_flow": ["MarketplaceHomeScreen", "ProductDetailScreen", "CartScreen", "CheckoutScreen", "OrderSuccessScreen", "OrdersTab"],
+  "cross_module_edges": [
+    { "from": "AI", "to": ["MechanicHomeScreen", "FuelHomeScreen", "MarketplaceHomeScreen"], "trigger": "AiAction buttons" },
+    { "from": "Marketplace checkout", "to": "Orders tab", "trigger": "addMarketplaceOrder + orderStore.notify()" },
+    { "from": "Profile", "to": "LoginScreen", "trigger": "logout pushAndRemoveUntil" },
+    { "from": "Orders tab", "to": "Services tab", "trigger": "Explore Services" }
+  ],
+  "transitions": {
+    "splash": "450ms fade",
+    "ai": "aiFadeRoute 220ms",
+    "profile": "profileFadeRoute 220/180ms",
+    "default": "MaterialPageRoute",
+    "tab_switch": "GNav 250ms"
+  }
+}

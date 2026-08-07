@@ -1,0 +1,27 @@
+# Normalize line endings
+* text=auto
+
+# Source files
+*.dart text eol=lf
+*.py text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.sh text eol=lf
+*.bat text eol=crlf
+
+# Binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.svg text
+*.webp binary
+*.ico binary
+*.pdf binary
+*.docx binary
+*.joblib binary
+*.faiss binary
+*.pkl binary
+*.csv text

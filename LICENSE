@@ -1,0 +1,19 @@
+# Mecha Connect — All Rights Reserved
+
+Copyright (c) 2026 Mecha Connect. All rights reserved.
+
+Unless otherwise stated, all content in this repository — including source
+code, documentation, designs, assets, and configuration — is the proprietary
+and confidential property of Mecha Connect and its licensors.
+
+**No open-source license is granted.** You may not copy, modify, distribute,
+sublicense, or otherwise use any part of this software or documentation
+except as expressly permitted by the project maintainers in writing. Redistribution,
+including public reproduction of repository materials, is prohibited without
+prior written authorization.
+
+This restriction does not affect the separate, independent licenses of any
+third-party libraries, packages, or assets used by the project. Those remain
+under their respective licenses (see `docs/common/LICENSE_GUIDE.md`).
+
+All rights not expressly granted are reserved by Mecha Connect.

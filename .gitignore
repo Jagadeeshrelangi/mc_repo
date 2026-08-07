@@ -28,12 +28,12 @@ migrate_working_dir/
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
+frontend/.dart_tool/
+frontend/.flutter-plugins
+frontend/.flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
+frontend/build/
 
 # Symbolication related
 app.*.symbols
@@ -42,14 +42,17 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+frontend/android/app/debug
+frontend/android/app/profile
+frontend/android/app/release
 
 # Environment local configurations
 .env
 .env.*
 !.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
 backend/.env
 backend/.env.*
 !backend/.env.example
@@ -64,3 +67,48 @@ __pycache__/
 
 # Virtual environments
 venv/
+
+# ==========================================================
+# Confidential / internal documentation (NEVER commit)
+# ==========================================================
+docs/internal/
+docs/archive/private/
+private/
+secrets/
+credentials/
+internal/
+docs/exports/private/
+
+# ==========================================================
+# Secrets, keys, credentials (NEVER commit)
+# (env files already covered above)
+# ==========================================================
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.jks
+*.keystore
+firebase-adminsdk*.json
+google-services.json
+GoogleService-Info.plist
+service-account*.json
+api_keys.*
+apikeys.*
+config/private/*
+secrets.properties
+*_credentials.json
+*.secret
+*.token
+
+# ==========================================================
+# Databases, dumps, logs
+# ==========================================================
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+*.dump
+*.log.*
+

@@ -1,0 +1,22 @@
+flowchart TD
+    FH["FuelHomeScreen"]
+    FH -->|"history card"| OH["OrderHistoryScreen"]
+    OH -->|"order"| LT["LiveTrackingScreen"]
+    OH -->|"invoice"| RC["ReceiptScreen"]
+    FH -->|"book fuel"| FB["FuelBookingScreen (station card / CTA)"]
+    FB --> PY["PaymentScreen (pushReplacement)"]
+    PY --> OC["OrderConfirmationScreen (pushReplacement)"]
+    OC --> LT
+    LT --> OCP["OrderCompleteScreen (pushReplacement)"]
+    OCP --> RC["ReceiptScreen (pushReplacement)"]
+
+    subgraph STATUS["OrderStatus sequence (frozen)"]
+        S1["requested"] --> S2["accepted"] --> S3["fuelPacked"] --> S4["partnerAssigned"] --> S5["enRoute"] --> S6["arrived"] --> S7["delivered"]
+    end
+
+    subgraph PRICE["FuelService.calculatePrice"]
+        P1["fuelCost"] --> PT["grandTotal"]
+        P2["deliveryCharge"] --> PT
+        P3["platformFee"] --> PT
+        P4["taxes"] --> PT
+    end

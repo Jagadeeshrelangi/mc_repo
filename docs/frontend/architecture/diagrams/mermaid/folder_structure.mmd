@@ -1,0 +1,36 @@
+flowchart TB
+    LIB["lib/"] --> MAIN["main.dart - entry"]
+    LIB --> WIRING["app_wiring.dart - provider graph source of truth"]
+    LIB --> THEME["theme/
+AppColors, AppSpacing, AppElevation,
+AppResponsive, ThemeProvider, AppTheme"]
+    LIB --> SHELL["bottom_bar/
+bottom_navigation.dart (5-tab GNav + IndexedStack)
+order_screen.dart (Orders tab)"]
+    LIB --> PARTS["parts/order_data.dart
+orderStore + ordersList"]
+    LIB --> START["starting_screen/
+splash, onboarding, HomeDashboard,
+ServiceSelectionScreen"]
+    LIB --> HOMESC["homescreen/drawerscreen.dart
+ProfileDrawer"]
+    LIB --> SVC["services/
+location_provider.dart, geocoding_service.dart"]
+    LIB --> WID["widgets/ - shared UI"]
+    LIB --> FEAT["features/ - 7 modules"]
+
+    FEAT --> AI["ai/"]
+    FEAT --> AUTH["auth/"]
+    FEAT --> FUEL["fuel_delivery/"]
+    FEAT --> HOME["home/"]
+    FEAT --> MKP["marketplace/"]
+    FEAT --> MECH["mechanic/"]
+    FEAT --> PROF["profile/"]
+
+    AI --> AIS["screens(5) models(7) providers(1) repositories(1) services(2) widgets(10)"]
+    AUTH --> AUS["screens(3) providers(1) repositories(1) services(1) widgets(1)"]
+    FUEL --> FUS["screens(8) models(11) providers(1) repositories(1) services(1) widgets(13)"]
+    HOME --> HOS["screens(2) models(1) providers(1) repositories(1) widgets(15)"]
+    MKP --> MKS["screens(8) models(8) providers(1) repositories(1) services(1) widgets(19)"]
+    MECH --> MES["screens(11) models(3) providers(1) repositories(1) services(1) widgets(8)"]
+    PROF --> PRS["screens(13) models(9) providers(1) repositories(1) services(2) widgets(13)"]

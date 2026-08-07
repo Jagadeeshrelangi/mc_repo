@@ -1,0 +1,24 @@
+flowchart LR
+    LOC["LocationProvider"] --> GEO["GeocodingService"]
+    LOC --> LOCSVC["LocationService (geolocator + permission_handler)"]
+
+    subgraph MOD["Module Providers (7)"]
+        AUTH["AuthProvider"] --> AS["AuthService"] --> AR["AuthRepository"]
+        HOME["HomeProvider"] --> HR["HomeRepository"]
+        MECH["MechanicProvider"] --> MR["MechanicRepository"]
+        AI["AiProvider"] --> AIREPO["ONE AiRepository (shared)"]
+        AI --> AISVC["AiService"]
+        AI --> DIAG["DiagnosisService"]
+        PROFILE["ProfileProvider"] --> PS["ProfileService"] --> PR["ProfileRepository"]
+        PROFILE --> VAL["ValidationService"]
+        FUEL["FuelProvider"] --> FS["FuelService"] --> FR["FuelRepository"]
+        FUEL --> NS["NearbyService"]
+        FUEL --> QS["QuickService"]
+        MKP["MarketplaceProvider"] --> CS["CartService"] --> MKR["MarketplaceRepository"]
+        MKP --> SS["SelectService"]
+    end
+
+    T["ThemeProvider"] -.->|"SharedPreferences theme_mode"| PREFS
+    FUEL -.->|"needs location"| LOC
+    MECH -.->|"VehicleForm uses AI DiagnosisService (mock)"| DIAG
+    MKP -.->|"addMarketplaceOrder + notify()"| ORDERSTORE["orderStore / ordersList"]

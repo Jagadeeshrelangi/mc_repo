@@ -1,0 +1,36 @@
+erDiagram
+    users ||--o{ vehicles : owns
+    users ||--o{ addresses : owns
+    users ||--|| wallet : has
+    users ||--o{ wallet_transactions : has
+    users ||--o{ reward_ledger : has
+    users ||--|| notification_settings : has
+    users ||--o{ conversations : has
+    conversations ||--o{ chat_messages : contains
+    users ||--o{ diagnoses : has
+
+    categories ||--o{ products : contains
+    brands ||--o{ products : has
+    products ||--o{ product_specifications : has
+    products ||--o{ product_reviews : has
+    products o{--o{ product_vehicle_types : tagged
+    products o{--o{ product_compatibility : tagged
+    categories ||--o{ offers : has
+
+    orders ||--o{ order_items : has
+    orders ||--o{ order_entries : has
+    users ||--o{ orders : places
+
+    users ||--o{ mechanic_bookings : books
+    mechanics ||--o{ mechanic_bookings : receives
+    mechanic_services o{--o{ mechanics : offered
+    mechanics ||--o{ mechanic_reviews : has
+    mechanic_bookings ||--o{ booking_events : tracks
+    mechanic_bookings ||--|| ratings : rated
+
+    users ||--o{ fuel_orders : orders
+    fuel_orders ||--|| price_estimates : prices
+    fuel_stations ||--o{ fuel_orders : supplies
+    fuel_partners o{--o{ fuel_orders : delivers
+    fuel_orders ||--o{ tracking_events : tracks
+    fuel_orders ||--|| invoices : bills

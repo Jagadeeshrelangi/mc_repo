@@ -1,0 +1,29 @@
+{
+  "export": "project_index",
+  "name": "Mecha Connect",
+  "generated": "2026-08-05",
+  "repo": { "url": "https://github.com/Jagadeeshrelangi/mc_repo", "branch": "main" },
+  "workspace_root": "C:\\mecha_connect - opencode",
+  "counts": {
+    "dart_files_lib": 233,
+    "test_files": 9,
+    "assets": 18,
+    "docs_files": 97,
+    "backend_python_files": 17,
+    "screens_public": 48,
+    "feature_modules": 7,
+    "root_providers": 4,
+    "module_providers": 7,
+    "repositories": 7,
+    "services_classes": 13
+  },
+  "top_level_dirs": ["frontend", "backend", "docs", "scripts", ".github"],
+  "lib_structure": [
+    "main.dart", "app_wiring.dart", "theme/", "bottom_bar/", "parts/order_data.dart",
+    "starting_screen/", "homescreen/drawerscreen.dart", "services/", "widgets/", "features/",
+    "features/ai", "features/auth", "features/fuel_delivery", "features/home",
+    "features/marketplace", "features/mechanic", "features/profile"
+  ],
+  "verification": { "analyze": "0 issues", "tests": "162/162", "build_web": "passes" },
+  "next_sprint": "Sprint 2 - Backend Integration (FastAPI + PostgreSQL + Firebase Auth + Maps)"
+}

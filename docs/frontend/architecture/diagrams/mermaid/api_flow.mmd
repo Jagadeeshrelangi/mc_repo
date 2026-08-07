@@ -1,0 +1,36 @@
+flowchart LR
+    subgraph CLIENT["Flutter (RC1)"]
+        AIREPO["AiRepository"] 
+        DIAGREPO["DiagnosisService"]
+        MKPREPO["MarketplaceRepository"]
+        FIREPO["FuelRepository"]
+        MECHREPO["MechanicRepository"]
+        PROREPO["ProfileRepository"]
+    end
+
+    subgraph API["FastAPI api/v1 (Sprint 2, scaffold exists)"]
+        CONV["/conversation - chat_service (Gemini + langchain)"]
+        DIAG["/diagnosis - diagnosis_service (XGBoost fault_classifier.joblib)"]
+        KNOW["/knowledge - rag_service (FAISS index + sentence-transformers)"]
+    end
+
+    subgraph STORE["Data stores"]
+        PG[("PostgreSQL 15")]
+        REDIS[("Redis (caching/push)")]
+        KB[("ai/knowledge_base
+faq, manuals, obd_codes, dashboard_symbols")]
+        MODEL[("ai/models/fault_classifier.joblib")]
+    end
+
+    AIREPO -.-> CONV
+    DIAGREPO -.-> DIAG
+    KNOW -.-> KNOW
+    CONV --> KB
+    DIAG --> MODEL
+    CONV --> PG
+    DIAG --> PG
+    KNOW --> PG
+    REDIS --> API
+
+    NOTE["Frozen contract: API_CONTRACT.md - latency + failForFirstCalls honored
+so loading/empty/error UI stays exercisable in QA"]
