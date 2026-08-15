@@ -40,8 +40,59 @@ class UserOut(BaseModel):
     date_of_birth: Optional[date] = Field(None, description="Date of birth (if set).")
     gender: Optional[str] = Field(None, description="Gender (if set).")
     emergency_contact_name: Optional[str] = Field(None, description="Emergency contact name (if set).")
+    emergency_contact_relation: Optional[str] = Field(None, description="Emergency contact relation (if set).")
+    emergency_contact_phone: Optional[str] = Field(None, description="Emergency contact phone (if set).")
 
     model_config = ConfigDict(from_attributes=True)
 
 
-__all__ = ["UserOut", "UserRoleLiteral"]
+class UserProfileUpdate(BaseModel):
+    """Owner-writable profile fields (Sprint 2, Task 5).
+
+    Explicit whitelist contract for ``PATCH /api/v1/users/me``: ONLY the safe
+    profile fields listed below may be written by the account owner. Identity
+    (``id``, ``email``, ``phone``), security (``role``, ``is_active``,
+    ``is_verified``, ``password_hash``, ``failed_login_attempts``,
+    ``lockout_at``, ``last_login_at``), billing (``membership_tier``) and audit
+    (``created_at``, ``updated_at``) fields are intentionally absent from the
+    writable contract — Pydantic rejects them rather than silently ignoring
+    them (``extra="forbid"``), preventing mass assignment.
+    """
+
+    name: Optional[str] = Field(
+        None,
+        min_length=3,
+        max_length=100,
+        description="Full display name of the user.",
+        example="Jagadeesh Gowda",
+    )
+    date_of_birth: Optional[date] = Field(
+        None,
+        description="Date of birth (optional).",
+    )
+    gender: Optional[str] = Field(
+        None,
+        max_length=20,
+        description="Gender (optional).",
+    )
+    emergency_contact_name: Optional[str] = Field(
+        None,
+        max_length=100,
+        description="Emergency contact name (optional).",
+    )
+    emergency_contact_relation: Optional[str] = Field(
+        None,
+        max_length=50,
+        description="Emergency contact relation (optional).",
+    )
+    emergency_contact_phone: Optional[str] = Field(
+        None,
+        max_length=16,
+        pattern=r"^\+?[0-9]{10,15}$",
+        description="Emergency contact phone (optional).",
+    )
+
+    model_config = ConfigDict(extra="forbid")
+
+
+__all__ = ["UserOut", "UserProfileUpdate", "UserRoleLiteral"]

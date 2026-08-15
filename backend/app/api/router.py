@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import auth, diagnosis, knowledge, conversation
+from app.api.v1 import auth, diagnosis, knowledge, conversation, users
 
 api_router = APIRouter()
 
@@ -25,4 +25,9 @@ api_router.include_router(
     conversation.router,
     prefix="/conversation",
     tags=["Conversation Engine"]
+)
+
+api_router.include_router(
+    users.router,
+    tags=["Users"]
 )
