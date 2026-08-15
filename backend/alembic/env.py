@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 # Base.metadata. Model modules are added in later Sprint 2 tasks.
 from app.core.config import settings  # noqa: E402
 from app.core.database import Base  # noqa: E402
+from app import models  # noqa: E402,F401  (register all models on Base.metadata)
 
 config = context.config
 

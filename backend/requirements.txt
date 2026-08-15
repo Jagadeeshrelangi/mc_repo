@@ -27,3 +27,10 @@ sqlalchemy==2.0.51
 greenlet==3.5.3
 asyncpg==0.31.0
 alembic==1.19.1
+
+# Authentication foundation (Sprint 2, Task 3, Stage 1) — pinned to backend/venv.
+# bcrypt is pinned to 4.0.1 for passlib 1.7.4 compatibility on Python 3.13:
+# bcrypt>=4.1 rejects >72-byte secrets, which breaks passlib's backend probe.
+python-jose[cryptography]==3.5.0
+passlib==1.7.4
+bcrypt==4.0.1

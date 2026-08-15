@@ -1,8 +1,11 @@
-from fastapi import APIRouter, status
+from fastapi import APIRouter, Depends, status
+from app.api.deps import get_current_user
 from app.schemas.knowledge import KnowledgeQuery, KnowledgeResponse
 from app.services.rag_service import rag_service
 
-router = APIRouter()
+# Stage 8: auth-only protection (no role restriction). Any authenticated
+# user may query the knowledge base.
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 @router.post(
     "/query",

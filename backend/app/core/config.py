@@ -21,6 +21,22 @@ class Settings(BaseSettings):
     # (and serve /health + AI endpoints) without a live database.
     DATABASE_URL: Optional[str] = None
 
+    # --- Authentication (Sprint 2, Task 3, Stage 1) ---
+    # JWT signing secret. MUST come from the environment (backend/.env or a
+    # secret store). No default/fallback secret is hardcoded here. Any
+    # development/test fallback must be opt-in and live outside this file
+    # (e.g. a guarded test fixture), never a real production secret.
+    JWT_SECRET_KEY: Optional[str] = None
+
+    # JWT signing algorithm (configurable, e.g. HS256 for symmetric signing).
+    JWT_ALGORITHM: str = "HS256"
+
+    # Access-token lifetime in minutes (D5: 15 minutes).
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+
+    # Refresh-token lifetime in days (D5: 7 days).
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
     # Explicit CORS origins. `allow_credentials` is incompatible with "*",
     # so keep this a concrete allow-list. Comma-separated in .env.
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]

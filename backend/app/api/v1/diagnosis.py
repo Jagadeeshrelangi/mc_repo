@@ -1,8 +1,11 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
+from app.api.deps import get_current_user
 from app.schemas.diagnosis import DiagnosisInput, DiagnosisResponse
 from app.services.diagnosis_service import diagnosis_service
 
-router = APIRouter()
+# Stage 8: auth-only protection (no role restriction). Any authenticated
+# user (customer/mechanic/admin) may diagnose a vehicle.
+router = APIRouter(dependencies=[Depends(get_current_user)])
 
 @router.post(
     "/diagnose",
