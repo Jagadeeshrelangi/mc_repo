@@ -1,0 +1,1 @@
+"""Mecha Connect backend application package."""

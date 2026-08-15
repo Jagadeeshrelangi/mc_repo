@@ -15,6 +15,12 @@ class Settings(BaseSettings):
     # caller does not supply a telemetry odometer reading.
     DEFAULT_VEHICLE_MILEAGE: int = 80000
 
+    # PostgreSQL async connection string for SQLAlchemy.
+    # Format: postgresql+asyncpg://user:password@host:port/database
+    # Leave unset until the database is provisioned; the app must still boot
+    # (and serve /health + AI endpoints) without a live database.
+    DATABASE_URL: Optional[str] = None
+
     # Explicit CORS origins. `allow_credentials` is incompatible with "*",
     # so keep this a concrete allow-list. Comma-separated in .env.
     CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://127.0.0.1:3000"]

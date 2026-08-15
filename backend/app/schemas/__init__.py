@@ -1,0 +1,1 @@
+"""Pydantic schemas package for Mecha Connect backend."""

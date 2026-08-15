@@ -1,0 +1,1 @@
+"""Core infrastructure package for Mecha Connect backend."""

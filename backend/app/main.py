@@ -1,9 +1,11 @@
 from fastapi import FastAPI, Request, status
+from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from app.core.config import settings
 from app.core.logging import logger, setup_logging
 from app.core.exceptions import MechaException
+from app.core.database import configure_database, check_database, dispose_engine
 from app.api.router import api_router
 
 # Initialize system logger
@@ -22,12 +24,21 @@ else:
     logger.warning("Startup Config | GEMINI_API_KEY is missing or null.")
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifecycle: initialize/destroy the async database engine."""
+    configure_database()
+    yield
+    dispose_engine()
+
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Production-grade backend services for the Mecha Connect on-demand vehicle care ecosystem.",
     version="1.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # Enable CORS for Flutter Web client access.
@@ -88,11 +99,20 @@ app.include_router(api_router, prefix=settings.API_V1_STR)
     tags=["System"],
     summary="API Server Health Check"
 )
-def health_check():
+async def health_check():
+    db_status = "not_configured"
+    if settings.DATABASE_URL:
+        try:
+            db_ok = await check_database()
+            db_status = "ok" if db_ok else "unreachable"
+        except Exception as e:  # noqa: BLE001
+            logger.error(f"Database health probe failed: {str(e)}")
+            db_status = "error"
     return {
         "status": "healthy",
         "service": settings.PROJECT_NAME,
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "database": db_status,
     }
 
 logger.info(f"FastAPI initialization complete for {settings.PROJECT_NAME}.")
