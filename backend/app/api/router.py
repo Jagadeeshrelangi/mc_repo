@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import auth, diagnosis, knowledge, conversation, users
+from app.api.v1 import auth, diagnosis, knowledge, conversation, users, mechanic
 
 api_router = APIRouter()
 
@@ -30,4 +30,9 @@ api_router.include_router(
 api_router.include_router(
     users.router,
     tags=["Users"]
+)
+
+api_router.include_router(
+    mechanic.router,
+    tags=["Mechanics"]
 )
