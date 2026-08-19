@@ -37,9 +37,12 @@ class AiService {
   AiService({AiRepository? repository})
       : _repository = repository ?? AiRepository();
 
-  /// Sends [userText] to the mock model and composes the structured reply.
-  Future<AssistantReply> generateResponse(String userText) async {
-    final raw = await _repository.sendMessage('', userText);
+  /// Sends [userText] to the conversation engine and composes the structured reply.
+  Future<AssistantReply> generateResponse(
+    String userText, {
+    String? conversationId,
+  }) async {
+    final raw = await _repository.sendMessage(conversationId ?? '', userText);
     final intent = _classify(userText);
     final reply = _buildReply(intent, raw);
     return AssistantReply(text: reply.text, response: reply.response);

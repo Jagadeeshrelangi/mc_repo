@@ -19,6 +19,7 @@ from app.models.mechanic_service import MechanicService, MechanicServiceOffered
 from app.models.mechanic_category import MechanicCategory
 from app.models.mechanic_review import MechanicReview
 from app.models.mechanic_booking import MechanicBooking, BookingEvent, Rating
+from app.models.diagnosis import Diagnosis
 
 __all__ = [
     "User",
@@ -38,4 +39,5 @@ __all__ = [
     "MechanicBooking",
     "BookingEvent",
     "Rating",
+    "Diagnosis",
 ]

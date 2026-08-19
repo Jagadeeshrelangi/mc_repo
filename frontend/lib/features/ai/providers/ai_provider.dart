@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mecha_connect/services/api_client.dart';
 import '../models/models.dart';
 import '../repositories/ai_repository.dart';
 import '../services/ai_service.dart';
@@ -39,7 +40,15 @@ class AiProvider extends ChangeNotifier {
     AiRepository? repository,
     AiService? aiService,
     DiagnosisService? diagnosisService,
-  }) : this._(repository ?? AiRepository(), aiService, diagnosisService);
+    ApiClient? apiClient,
+  }) : this._(
+          repository ??
+              AiRepository(
+                apiClient: apiClient ?? ApiClient(),
+              ),
+          aiService,
+          diagnosisService,
+        );
 
   AiProvider._(
     this._repository,
@@ -419,7 +428,10 @@ class AiProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final reply = await _aiService.generateResponse(userText);
+      final reply = await _aiService.generateResponse(
+        userText,
+        conversationId: _currentConversationId,
+      );
       _appendToCurrent(
         ChatMessage(
           id: _nextMessageId(),

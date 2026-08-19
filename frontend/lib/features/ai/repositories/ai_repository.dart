@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'package:mecha_connect/services/api_client.dart';
 import '../models/models.dart';
 
 /// Thrown by the mock AI backend when it simulates a network failure.
@@ -12,34 +14,34 @@ class AiNetworkException implements Exception {
       : 'AI service is temporarily unreachable. Please try again.';
 }
 
-/// Mock AI backend.
+/// AI backend repository.
 ///
-/// Sprint 1.9 serves a seeded, in-memory knowledge base with simulated network
-/// latency so the UI behaves exactly like production. It also supports a
-/// deterministic failure injection (`failForFirstCalls`) so the error / retry
-/// paths can be exercised by tests. Sprint 2 swaps the internals for the real
-/// Gemini/OpenAI client — the provider, services and screens never change
-/// because they depend only on this interface.
+/// Dispatches to FastAPI `/api/v1/conversation/*` endpoints when an [ApiClient]
+/// is available, falling back gracefully to the local seeded knowledge base and
+/// deterministic failure simulator in offline or unit test environments.
 class AiRepository {
   static const Duration defaultLatency = Duration(milliseconds: 900);
 
   final Duration latency;
   final int failForFirstCalls;
+  final ApiClient? _apiClient;
   final List<Conversation> _conversations = [];
 
   int _callCount = 0;
   int _diagnosisCounter = 0;
+  String? _currentSessionId;
 
   AiRepository({
     this.latency = defaultLatency,
     this.failForFirstCalls = 0,
-  }) {
+    ApiClient? apiClient,
+  }) : _apiClient = apiClient {
     _seed();
   }
 
   // ── Failure + latency simulation ───────────────────────────────────────
 
-  Future<T> _call<T>(T Function() body) async {
+  Future<T> _call<T>(FutureOr<T> Function() body) async {
     await Future<void>.delayed(latency);
     if (failForFirstCalls > 0 && _callCount < failForFirstCalls) {
       _callCount++;
@@ -48,7 +50,7 @@ class AiRepository {
       );
     }
     _callCount++;
-    return body();
+    return await body();
   }
 
   // ── Seed data ──────────────────────────────────────────────────────────
@@ -308,9 +310,83 @@ class AiRepository {
     });
   }
 
-  /// Sends a message to the mock model and returns the raw assistant reply.
-  Future<String> sendMessage(String conversationId, String message) {
+  /// Creates a session on the backend if [ApiClient] is available.
+  Future<String?> createSession() async {
+    if (_apiClient != null) {
+      try {
+        final res = await _apiClient.post(
+          '/api/v1/conversation/session',
+          body: {},
+          requiresAuth: true,
+        );
+        if (res is Map<String, dynamic> && res['session_id'] != null) {
+          _currentSessionId = res['session_id'].toString();
+          return _currentSessionId;
+        }
+      } catch (e) {
+        debugPrint('Backend session creation fell back to local: $e');
+      }
+    }
+    return null;
+  }
+
+  /// Sends a message to the conversation engine and returns the assistant reply.
+  Future<String> sendMessage(String conversationId, String message) async {
+    if (_apiClient != null) {
+      try {
+        String sessionId = conversationId;
+        if (sessionId.isEmpty || sessionId.startsWith('ai-')) {
+          if (_currentSessionId != null) {
+            sessionId = _currentSessionId!;
+          } else {
+            final sessionRes = await _apiClient.post(
+              '/api/v1/conversation/session',
+              body: {},
+              requiresAuth: true,
+            );
+            if (sessionRes is Map<String, dynamic> && sessionRes['session_id'] != null) {
+              sessionId = sessionRes['session_id'].toString();
+              _currentSessionId = sessionId;
+            }
+          }
+        }
+
+        final res = await _apiClient.post(
+          '/api/v1/conversation/chat',
+          body: {
+            'message': message,
+            'session_id': sessionId,
+          },
+          requiresAuth: true,
+        );
+
+        if (res is Map<String, dynamic> && res['response'] != null) {
+          return res['response'] as String;
+        }
+      } catch (e) {
+        debugPrint('Backend chat call fell back to local engine: $e');
+      }
+    }
+
     return _call(() => _composeRawReply(message));
+  }
+
+  /// Fetches conversation dialogue logs from the backend.
+  Future<List<Map<String, dynamic>>> fetchHistory(String sessionId) async {
+    if (_apiClient != null) {
+      try {
+        final res = await _apiClient.get(
+          '/api/v1/conversation/history?session_id=$sessionId',
+          requiresAuth: true,
+        );
+        if (res is Map<String, dynamic> && res['history'] is List) {
+          return (res['history'] as List).cast<Map<String, dynamic>>();
+        }
+      } catch (e) {
+        debugPrint('Backend history fetch fell back to local: $e');
+      }
+    }
+    return const [];
   }
 
   /// Runs the mock diagnostic engine and returns a raw structured payload

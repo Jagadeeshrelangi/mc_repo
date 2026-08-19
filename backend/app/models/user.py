@@ -120,5 +120,12 @@ class User(Base):
         passive_deletes=True,
     )
 
+    diagnoses: Mapped[list["Diagnosis"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
 
+
+from app.models.diagnosis import Diagnosis  # noqa: E402  (avoid circular import)
 from app.models.refresh_token import RefreshToken  # noqa: E402  (avoid circular import)

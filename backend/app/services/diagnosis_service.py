@@ -1,8 +1,14 @@
 import os
 import joblib
 import numpy as np
+from typing import Optional
+from uuid import uuid4
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.exceptions import InferenceException
 from app.core.logging import logger
+from app.repositories.diagnosis import DiagnosisRepository
 from app.schemas.diagnosis import DiagnosisInput, DiagnosisResponse
 from ai.metadata import DIAGNOSIS_METADATA
 
@@ -14,19 +20,19 @@ class DiagnosisService:
         )
         self.model_data = None
         self._load_model()
-        
+
     def _load_model(self) -> None:
         try:
             if not os.path.exists(self.model_path):
                 logger.error(f"Inference classifier model not found at {self.model_path}")
                 raise FileNotFoundError(f"Model file missing: {self.model_path}")
-                
+
             self.model_data = joblib.load(self.model_path)
             logger.info("XGBoost vehicle fault classifier loaded successfully.")
         except Exception as e:
             logger.critical(f"Failed to load fault classifier model: {str(e)}")
             self.model_data = None
-            
+
     def predict_fault(self, data: DiagnosisInput) -> DiagnosisResponse:
         # Determine diagnosis mode based on payload
         is_telemetry = (
@@ -35,11 +41,58 @@ class DiagnosisService:
             data.battery_voltage is not None and
             data.oil_pressure is not None
         )
-        
+
         if is_telemetry:
             return self._diagnose_telemetry(data)
         else:
             return self._diagnose_symptoms(data)
+
+    @staticmethod
+    async def create_diagnosis(
+        session: AsyncSession,
+        user_id: str,
+        predicted_fault: str,
+        confidence: float,
+        diagnosis_mode: str,
+        symptoms: Optional[dict] = None,
+        possible_causes: Optional[dict] = None,
+        severity: Optional[str] = None,
+        estimated_cost: Optional[float] = None,
+        recommended_action: Optional[str] = None,
+        should_drive: Optional[bool] = None,
+        recommended_service: Optional[str] = None,
+        vehicle_name: Optional[str] = None,
+        vehicle_type: Optional[str] = None,
+    ) -> None:
+        """Persist a diagnosis result to the diagnoses table.
+
+        Repository performs flush(); caller (route handler / auth service)
+        owns the transaction boundary and calls session.commit() explicitly
+        — consistent with Task 4 ``handle_chat`` pattern.
+        """
+        stored_confidence: Optional[int] = None
+        if confidence is not None:
+            if 0.0 <= confidence <= 1.0:
+                stored_confidence = round(confidence * 100)
+            else:
+                stored_confidence = round(confidence)
+
+        repo = DiagnosisRepository(session)
+        obj = await repo.create_diagnosis(
+            user_id=user_id,
+            problem=predicted_fault,
+            symptoms=symptoms,
+            possible_causes=possible_causes,
+            severity=severity,
+            estimated_cost=estimated_cost,
+            recommended_action=recommended_action,
+            should_drive=should_drive,
+            recommended_service=recommended_service,
+            confidence=stored_confidence,
+            vehicle_name=vehicle_name,
+            vehicle_type=vehicle_type,
+        )
+        # flush-only; commit owned by the caller
 
     def _diagnose_telemetry(self, data: DiagnosisInput) -> DiagnosisResponse:
         if self.model_data is None:

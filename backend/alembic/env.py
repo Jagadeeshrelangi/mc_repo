@@ -28,7 +28,10 @@ if config.config_file_name is not None:
 # Prefer DATABASE_URL from Pydantic settings (read from backend/.env);
 # fall back to the value in alembic.ini (empty by default).
 database_url = settings.DATABASE_URL or config.get_main_option("sqlalchemy.url")
-config.set_main_option("sqlalchemy.url", database_url or "")
+if database_url:
+    config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
+else:
+    config.set_main_option("sqlalchemy.url", "")
 
 target_metadata = Base.metadata
 

@@ -156,6 +156,26 @@ def auth_app(monkeypatch) -> FastAPI:
                 diagnosis_mode="symptom",
             )
 
+        async def create_diagnosis(
+            self,
+            session,
+            user_id: str,
+            predicted_fault: str,
+            confidence: float,
+            diagnosis_mode: str,
+            symptoms: Optional[dict] = None,
+            possible_causes: Optional[dict] = None,
+            severity: Optional[str] = None,
+            estimated_cost: Optional[float] = None,
+            recommended_action: Optional[str] = None,
+            should_drive: Optional[bool] = None,
+            recommended_service: Optional[str] = None,
+            vehicle_name: Optional[str] = None,
+            vehicle_type: Optional[str] = None,
+        ) -> None:
+            # No-op fake; just swallow the call
+            pass
+
     class FakeRagService:
         def query_rag(self, payload) -> KnowledgeResponse:
             from app.schemas.knowledge import SourceDoc

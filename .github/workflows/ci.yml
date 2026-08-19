@@ -35,4 +35,5 @@ jobs:
           python-version: '3.11'
       - run: pip install -r requirements.txt
       - run: python -m compileall app
+      - run: python -m pytest -q
       - run: python -c "from app.main import app; print('OK', app.title)"

@@ -3,9 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:mecha_connect/features/profile/models/models.dart';
 import 'package:mecha_connect/parts/order_data.dart';
+import 'package:mecha_connect/services/api_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Thrown by the mock Profile backend when it simulates a network failure.
+/// Thrown by the Profile backend when it encounters a network or service failure.
 class ProfileNetworkException implements Exception {
   final String message;
   const ProfileNetworkException([this.message = '']);
@@ -17,9 +18,6 @@ class ProfileNetworkException implements Exception {
 }
 
 /// Persistence contract for [NotificationSettings].
-///
-/// A SharedPreferences-backed implementation is used in production; tests
-/// inject the in-memory one so they never touch the platform channel.
 abstract class NotificationSettingsStore {
   Future<NotificationSettings> load();
   Future<void> save(NotificationSettings settings);
@@ -64,20 +62,14 @@ class InMemoryNotificationSettingsStore implements NotificationSettingsStore {
   }
 }
 
-/// Mock Profile / Account backend.
-///
-/// Sprint 1.9a serves a seeded, in-memory account (profile, vehicles,
-/// addresses, wallet, rewards, orders and notification settings) with
-/// simulated network latency and deterministic failure injection
-/// (`failForFirstCalls`). Sprint 2 swaps the internals for the real
-/// FastAPI/PostgreSQL API — the provider, services and screens never change
-/// because they depend only on this interface.
+/// User Profile Repository connecting with FastAPI `/api/v1/users/me`.
 class ProfileRepository {
   static const Duration defaultLatency = Duration(milliseconds: 800);
 
   final Duration latency;
   final int failForFirstCalls;
   final NotificationSettingsStore _notificationStore;
+  final ApiClient? _apiClient;
 
   UserProfile _profile = _seedProfile();
   List<ProfileVehicle> _vehicles = [];
@@ -90,8 +82,10 @@ class ProfileRepository {
     this.latency = defaultLatency,
     this.failForFirstCalls = 0,
     NotificationSettingsStore? notificationSettingsStore,
-  }) : _notificationStore =
-            notificationSettingsStore ?? InMemoryNotificationSettingsStore() {
+    ApiClient? apiClient,
+  })  : _notificationStore =
+            notificationSettingsStore ?? InMemoryNotificationSettingsStore(),
+        _apiClient = apiClient {
     _seed();
   }
 
@@ -106,7 +100,7 @@ class ProfileRepository {
       );
     }
     _callCount++;
-    return body();
+    return await body();
   }
 
   // ── Seed data ──────────────────────────────────────────────────────────
@@ -176,23 +170,47 @@ class ProfileRepository {
     );
   }
 
-  // ── API surface (all async, all latency/failure aware) ────────────────
+  // ── API surface ──────────────────────────────────────────────────────────
 
-  Future<UserProfile> fetchProfile() => _call(() => _profile);
+  Future<UserProfile> fetchProfile() => _call(() async {
+    if (_apiClient != null) {
+      try {
+        final res = await _apiClient.get('/api/v1/users/me', requiresAuth: true);
+        if (res is Map<String, dynamic>) {
+          _profile = UserProfile.fromJson(res);
+          return _profile;
+        }
+      } catch (e) {
+        debugPrint('Backend profile fetch fell back to local store: $e');
+      }
+    }
+    return _profile;
+  });
 
-  Future<UserProfile> saveProfile(UserProfile profile) {
-    return _call(() {
-      _profile = profile;
-      return _profile;
-    });
-  }
+  Future<UserProfile> saveProfile(UserProfile profile) => _call(() async {
+    if (_apiClient != null) {
+      try {
+        final res = await _apiClient.patch(
+          '/api/v1/users/me',
+          body: profile.toUpdateJson(),
+          requiresAuth: true,
+        );
+        if (res is Map<String, dynamic>) {
+          _profile = UserProfile.fromJson(res);
+          return _profile;
+        }
+      } catch (e) {
+        debugPrint('Backend profile update fell back to local store: $e');
+      }
+    }
+    _profile = profile;
+    return _profile;
+  });
 
   Future<List<ProfileVehicle>> fetchVehicles() {
     return _call(() => List.unmodifiable(_sortedVehicles()));
   }
 
-  /// Default vehicle first, then most recent registration — the SAME ordering
-  /// every vehicle surface shows, so the list never jumps between screens.
   List<ProfileVehicle> _sortedVehicles() {
     final sorted = [..._vehicles]..sort((a, b) {
         if (a.isDefault != b.isDefault) return a.isDefault ? -1 : 1;
@@ -253,7 +271,6 @@ class ProfileRepository {
     return _call(() => List.unmodifiable(_sortedAddresses()));
   }
 
-  /// Default address first, then home → office → other.
   List<SavedAddress> _sortedAddresses() {
     final sorted = [..._addresses]..sort((a, b) {
         if (a.isDefault != b.isDefault) return a.isDefault ? -1 : 1;
@@ -467,8 +484,6 @@ class ProfileRepository {
     });
   }
 
-  /// Unified order history — reads the SAME store the Orders tab renders so
-  /// profile and tab never disagree.
   Future<List<Map<String, dynamic>>> fetchOrders() {
     return _call(() {
       return List.unmodifiable(
