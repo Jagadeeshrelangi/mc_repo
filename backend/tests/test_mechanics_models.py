@@ -63,9 +63,9 @@ def test_all_mechanic_tables_registered() -> None:
     assert MECHANIC_TABLES <= tables
 
 
-def test_no_vehicles_table_in_metadata() -> None:
-    """D6-1: the vehicles table must not exist yet in this module."""
-    assert "vehicles" not in Base.metadata.tables
+def test_vehicles_table_in_metadata() -> None:
+    """Vehicles table is registered in metadata."""
+    assert "vehicles" in Base.metadata.tables
 
 
 def test_models_are_declarative() -> None:
@@ -384,7 +384,7 @@ def test_booking_events_ddl_jsonb_and_cascade() -> None:
 
 
 def test_migration_revision_chain() -> None:
-    """0004 must be the single head after 0003, additive-only."""
+    """0005 must be the single head after 0004, additive-only."""
     import alembic.config
     import alembic.script
 
@@ -392,10 +392,10 @@ def test_migration_revision_chain() -> None:
     script = alembic.script.ScriptDirectory.from_config(cfg)
 
     heads = set(script.get_heads())
-    assert heads == {"0004"}
+    assert heads == {"0006"}
 
     revisions = list(script.walk_revisions())
-    assert [r.revision for r in revisions] == ["0004", "0003", "0002", "0001"]
+    assert [r.revision for r in revisions] == ["0006", "0005", "0004", "0003", "0002", "0001"]
 
     assert script.get_base() == "0001"
 

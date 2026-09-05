@@ -76,7 +76,7 @@ class _FakeScalarResult:
     def scalar(self) -> Any:
         return self.items[0] if self.items else None
 
-    async def all(self) -> List[Any]:
+    def all(self) -> List[Any]:
         return list(self.items)
 
 
@@ -459,7 +459,7 @@ def test_list_for_mechanic_empty_when_no_offers() -> None:
 
 def test_list_for_mechanic_sql_joins_junction_and_filters_mechanic() -> None:
     session = AsyncMock(spec=AsyncSession)
-    session.scalars.return_value.all.return_value = []
+    session.scalars.return_value = _FakeScalarResult([])
     repo = MechanicServiceRepository(session)
     asyncio.run(repo.list_for_mechanic("m1"))
     stmt = session.scalars.call_args.args[0]
@@ -620,7 +620,7 @@ def test_list_for_user_newest_first() -> None:
 
 def test_list_for_user_sql_contains_user_filter() -> None:
     session = AsyncMock(spec=AsyncSession)
-    session.scalars.return_value.all.return_value = []
+    session.scalars.return_value = _FakeScalarResult([])
     repo = MechanicBookingRepository(session)
     asyncio.run(repo.list_for_user(USER_A))
     sql = compile_stmt(session.scalars.call_args.args[0])

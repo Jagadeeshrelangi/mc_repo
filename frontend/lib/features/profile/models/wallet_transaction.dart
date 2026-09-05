@@ -27,6 +27,25 @@ class WalletTransaction {
     required this.date,
     this.icon,
   });
+
+  factory WalletTransaction.fromJson(Map<String, dynamic> json) {
+    final typeStr = (json['type'] as String? ?? 'credit').toLowerCase();
+    final type = typeStr == 'debit' ? WalletTransactionType.debit : WalletTransactionType.credit;
+    final dateStr = json['occurred_at'] as String? ?? '';
+    String displayDate = dateStr;
+    if (dateStr.length >= 10) {
+      displayDate = dateStr.substring(0, 10);
+    }
+
+    return WalletTransaction(
+      id: json['id'] as String? ?? '',
+      title: json['title'] as String? ?? (type == WalletTransactionType.credit ? 'Credit' : 'Debit'),
+      subtitle: json['subtitle'] as String? ?? '',
+      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+      type: type,
+      date: displayDate,
+    );
+  }
 }
 
 /// A promotional coupon visible in the wallet.

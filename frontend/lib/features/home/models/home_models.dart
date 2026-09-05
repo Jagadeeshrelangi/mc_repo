@@ -6,8 +6,8 @@ class UserProfile {
   final String avatarUrl;
 
   const UserProfile({
-    this.name = 'Jagadeesh',
-    this.greeting = 'Good Afternoon',
+    this.name = '',
+    this.greeting = '',
     this.avatarUrl = '',
   });
 }
@@ -34,12 +34,12 @@ class VehicleInfo {
   final String imageUrl;
 
   const VehicleInfo({
-    this.name = 'Honda Activa 6G',
-    this.healthPercent = 92,
-    this.fuelPercent = 65,
-    this.battery = 'Healthy',
-    this.lastService = '15 days ago',
-    this.insurance = 'Valid',
+    this.name = '',
+    this.healthPercent = 0,
+    this.fuelPercent = 0,
+    this.battery = '',
+    this.lastService = '',
+    this.insurance = '',
     this.imageUrl = '',
   });
 }
@@ -96,6 +96,8 @@ class ActivityItem {
   final IconData icon;
   final Color statusColor;
   final bool isCompleted;
+  final DateTime? timestamp;
+  final String? type;
 
   const ActivityItem({
     required this.title,
@@ -103,6 +105,8 @@ class ActivityItem {
     required this.icon,
     required this.statusColor,
     this.isCompleted = true,
+    this.timestamp,
+    this.type,
   });
 }
 

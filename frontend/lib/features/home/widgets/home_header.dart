@@ -17,6 +17,9 @@ class HomeHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final displayName = user.name.trim().isNotEmpty ? user.name.trim() : 'Driver';
+    final avatarLetter = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'D';
+
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: AppResponsive.horizontalPadding(context),
@@ -27,7 +30,7 @@ class HomeHeader extends StatelessWidget {
             radius: 26,
             backgroundColor: AppColors.brandOrange.withValues(alpha: 0.15),
             child: Text(
-              user.name.isNotEmpty ? user.name[0].toUpperCase() : 'U',
+              avatarLetter,
               style: TextStyle(
                 fontSize: AppResponsive.scaleFont(context, 22),
                 fontWeight: FontWeight.w700,
@@ -58,7 +61,7 @@ class HomeHeader extends StatelessWidget {
                 ),
                 SizedBox(height: AppSpacing.xxs),
                 Text(
-                  user.name,
+                  displayName,
                   style: TextStyle(
                     fontFamily: 'Space Grotesk',
                     fontSize: AppResponsive.scaleFont(context, 24),

@@ -27,9 +27,9 @@ else:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifecycle: initialize/destroy the async database engine."""
-    configure_database()
+    await configure_database()
     yield
-    dispose_engine()
+    await dispose_engine()
 
 
 app = FastAPI(

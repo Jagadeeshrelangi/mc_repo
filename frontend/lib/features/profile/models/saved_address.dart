@@ -54,4 +54,41 @@ class SavedAddress {
       isDefault: isDefault ?? this.isDefault,
     );
   }
+
+  factory SavedAddress.fromJson(Map<String, dynamic> json) {
+    final labelStr = (json['label'] as String? ?? 'other').toLowerCase();
+    final parsedLabel = AddressLabel.values.firstWhere(
+      (e) => e.name.toLowerCase() == labelStr,
+      orElse: () => AddressLabel.other,
+    );
+
+    return SavedAddress(
+      id: json['id'] as String? ?? '',
+      label: parsedLabel,
+      address: json['address'] as String? ?? '',
+      latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
+      longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
+      isDefault: json['is_default'] as bool? ?? false,
+    );
+  }
+
+  Map<String, dynamic> toCreateJson() {
+    return {
+      'label': label.name,
+      'address': address,
+      'latitude': latitude,
+      'longitude': longitude,
+      'is_default': isDefault,
+    };
+  }
+
+  Map<String, dynamic> toUpdateJson() {
+    return {
+      'label': label.name,
+      'address': address,
+      'latitude': latitude,
+      'longitude': longitude,
+      'is_default': isDefault,
+    };
+  }
 }

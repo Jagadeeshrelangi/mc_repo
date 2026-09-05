@@ -109,7 +109,7 @@ class MechanicRepository(BaseRepository[Mechanic]):
         """
         stmt = select(Mechanic).options(*_mechanic_catalog_options()).order_by(Mechanic.id)
         result = await self.session.scalars(stmt)
-        return list(await result.all())
+        return list(result.all())
 
     async def list_featured(self, limit: int = FEATURED_LIMIT) -> Sequence[Mechanic]:
         """Return the top-rated mechanics (the contract's "featured" list).
@@ -125,7 +125,7 @@ class MechanicRepository(BaseRepository[Mechanic]):
             .limit(limit)
         )
         result = await self.session.scalars(stmt)
-        return list(await result.all())
+        return list(result.all())
 
 
 class MechanicServiceRepository(BaseRepository[MechanicService]):
@@ -141,7 +141,7 @@ class MechanicServiceRepository(BaseRepository[MechanicService]):
         """Return every service, ordered by id for determinism."""
         stmt = select(MechanicService).order_by(MechanicService.id)
         result = await self.session.scalars(stmt)
-        return list(await result.all())
+        return list(result.all())
 
     async def list_for_mechanic(self, mechanic_id: str) -> Sequence[MechanicService]:
         """Return the services a mechanic offers (via ``mechanic_service_offered``)."""
@@ -155,7 +155,7 @@ class MechanicServiceRepository(BaseRepository[MechanicService]):
             .order_by(MechanicService.id)
         )
         result = await self.session.scalars(stmt)
-        return list(await result.all())
+        return list(result.all())
 
 
 class MechanicCategoryRepository(BaseRepository[MechanicCategory]):
@@ -173,7 +173,7 @@ class MechanicCategoryRepository(BaseRepository[MechanicCategory]):
             MechanicCategory.sort_order, MechanicCategory.id
         )
         result = await self.session.scalars(stmt)
-        return list(await result.all())
+        return list(result.all())
 
 
 class MechanicReviewRepository(BaseRepository[MechanicReview]):
@@ -193,7 +193,7 @@ class MechanicReviewRepository(BaseRepository[MechanicReview]):
             .order_by(MechanicReview.id)
         )
         result = await self.session.scalars(stmt)
-        return list(await result.all())
+        return list(result.all())
 
 
 class MechanicBookingRepository(BaseRepository[MechanicBooking]):
@@ -268,7 +268,7 @@ class MechanicBookingRepository(BaseRepository[MechanicBooking]):
             .order_by(MechanicBooking.created_at.desc())
         )
         result = await self.session.scalars(stmt)
-        return list(await result.all())
+        return list(result.all())
 
     async def update_status(self, booking: MechanicBooking, status: str) -> MechanicBooking:
         """Set a booking's status on an already-loaded record (flush only).
@@ -312,7 +312,7 @@ class BookingEventRepository(BaseRepository[BookingEvent]):
             .order_by(BookingEvent.occurred_at)
         )
         result = await self.session.scalars(stmt)
-        return list(await result.all())
+        return list(result.all())
 
 
 class RatingRepository(BaseRepository[Rating]):

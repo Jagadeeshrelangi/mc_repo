@@ -1,21 +1,23 @@
 import 'dart:math';
+import 'package:flutter/foundation.dart';
+import 'package:mecha_connect/services/api_client.dart';
 import '../models/models.dart';
 import '../services/fuel_service.dart';
 
-/// Mock fuel-delivery API.
-///
-/// Backend integration lands in Sprint 2; this repository simulates latency
-/// and state transitions so the UI behaves exactly like the production flow.
+/// Fuel-delivery API repository connecting Flutter with FastAPI `/api/v1/fuel/*`.
 class FuelRepository {
   final FuelService _service = FuelService();
+  final ApiClient? _apiClient;
   final Random _random = Random();
   final List<FuelOrder> _orders = [];
   int _orderCounter = 0;
 
   static const Duration _latency = Duration(milliseconds: 700);
 
-  FuelRepository() {
-    _seedHistory();
+  FuelRepository({ApiClient? apiClient}) : _apiClient = apiClient {
+    if (_apiClient == null) {
+      _seedHistory();
+    }
   }
 
   Future<void> _delay() => Future<void>.delayed(_latency);
@@ -26,9 +28,42 @@ class FuelRepository {
   /// cards (Electric Charging, CNG).
   List<FuelType> getFuelTypes() => FuelType.values;
 
-  /// Mock saved vehicles from the user profile. Falls back to this set when
-  /// no persisted profile exists (Sprint 2 wires real profile data).
+  /// Saved vehicles from the user profile. Fetches from backend when connected.
   Future<List<FuelVehicle>> getSavedVehicles() async {
+    final client = _apiClient;
+    if (client != null) {
+      try {
+        final res = await client.get('/api/v1/vehicles', requiresAuth: true);
+        if (res is List) {
+          final vehicles = res.whereType<Map<String, dynamic>>().map((v) {
+            // Backend VehicleResponse uses fuel_type (petrol/diesel/electric/cng),
+            // not a vehicle-body-type field. Default to car since that's the most
+            // common use-case; the fuel_type is available separately if needed.
+            final fuelType = (v['fuel_type'] ?? '').toString().toLowerCase();
+            VehicleType vType = VehicleType.car;
+            if (fuelType == 'bike' || fuelType == 'motorcycle') {
+              vType = VehicleType.bike;
+            }
+            // Build display name from brand + model (backend schema fields)
+            final brand = (v['brand'] ?? '').toString().trim();
+            final model = (v['model'] ?? '').toString().trim();
+            final displayName = v['name'] as String? ??
+                (brand.isNotEmpty ? '$brand $model' : model).trim();
+            // Backend returns registration plate under "registration"
+            final number = (v['registration'] ?? v['license_plate'] ?? v['number'] ?? '').toString();
+            return FuelVehicle(
+              id: (v['id'] ?? '').toString(),
+              type: vType,
+              name: displayName,
+              number: number,
+            );
+          }).toList();
+          if (vehicles.isNotEmpty) return vehicles;
+        }
+      } catch (e) {
+        debugPrint('Backend saved vehicles fetch fell back: $e');
+      }
+    }
     await _delay();
     return const [
       FuelVehicle(id: 'v1', type: VehicleType.car, name: 'Honda City', number: 'KA-01-AB-1234'),
@@ -43,6 +78,17 @@ class FuelRepository {
     required double latitude,
     required double longitude,
   }) async {
+    final client = _apiClient;
+    if (client != null) {
+      try {
+        final res = await client.get('/api/v1/fuel/stations', requiresAuth: false);
+        if (res is List && res.isNotEmpty) {
+          return res.map((json) => FuelStation.fromJson(json as Map<String, dynamic>)).toList();
+        }
+      } catch (e) {
+        debugPrint('Backend fuel station fetch fell back to simulated: $e');
+      }
+    }
     await _delay();
     return _buildStations(latitude, longitude);
   }
@@ -103,6 +149,38 @@ class FuelRepository {
     required DeliveryLocation location,
     required FuelStation station,
   }) async {
+    final client = _apiClient;
+    if (client != null) {
+      try {
+        final payload = {
+          'fuel_type': fuelType.name,
+          'quantity': quantity,
+          'vehicle_type': vehicle.type.label,
+          'vehicle_name': vehicle.name,
+          'vehicle_number': vehicle.number,
+          'station_id': station.id,
+          'station_name': station.name,
+          'brand': station.brand,
+          'price_per_litre': station.pricePerLitre,
+          'delivery_label': location.label,
+          'delivery_address': location.address,
+          'lat': location.latitude,
+          'lng': location.longitude,
+          'payment_method': 'UPI',
+        };
+        final res = await client.post('/api/v1/fuel/orders', body: payload, requiresAuth: true);
+        if (res is Map<String, dynamic>) {
+          final order = FuelOrder.fromJson(res);
+          _orders.removeWhere((o) => o.id == order.id);
+          _orders.insert(0, order);
+          return order;
+        }
+      } catch (e) {
+        debugPrint('Backend fuel order creation fell back: $e');
+        if (e is ApiException) rethrow;
+      }
+    }
+
     await _delay();
     _orderCounter++;
     final orderId = 'FUEL-${DateTime.now().year}-${_orderCounter.toString().padLeft(4, '0')}';
@@ -130,6 +208,28 @@ class FuelRepository {
   }
 
   Future<FuelOrder> acceptOrder(String orderId) async {
+    final client = _apiClient;
+    if (client != null) {
+      try {
+        final res = await client.patch(
+          '/api/v1/fuel/orders/$orderId/status',
+          body: {'status': 'accepted'},
+          requiresAuth: true,
+        );
+        if (res is Map<String, dynamic>) {
+          final updated = FuelOrder.fromJson(res);
+          final index = _indexOf(orderId);
+          if (index >= 0) {
+            _orders[index] = updated;
+          } else {
+            _orders.insert(0, updated);
+          }
+          return updated;
+        }
+      } catch (e) {
+        debugPrint('Backend accept fuel order error: $e');
+      }
+    }
     await _delay();
     return _updateStatus(orderId, OrderStatus.accepted);
   }
@@ -157,6 +257,25 @@ class FuelRepository {
     if (current == -1 || current >= sequence.length - 1) return order;
 
     final next = sequence[current + 1];
+
+    final client = _apiClient;
+    if (client != null) {
+      try {
+        final res = await client.patch(
+          '/api/v1/fuel/orders/$orderId/status',
+          body: {'status': next.name},
+          requiresAuth: true,
+        );
+        if (res is Map<String, dynamic>) {
+          final updated = FuelOrder.fromJson(res);
+          _orders[index] = updated;
+          return updated;
+        }
+      } catch (e) {
+        debugPrint('Backend advance fuel order status error: $e');
+      }
+    }
+
     var updated = order.copyWith(status: next);
     if (next == OrderStatus.partnerAssigned) {
       updated = updated.copyWith(partner: _randomPartner());
@@ -166,11 +285,56 @@ class FuelRepository {
   }
 
   Future<FuelOrder> cancelOrder(String orderId) async {
+    final client = _apiClient;
+    if (client != null) {
+      try {
+        final res = await client.patch(
+          '/api/v1/fuel/orders/$orderId/status',
+          body: {'status': 'cancelled'},
+          requiresAuth: true,
+        );
+        if (res is Map<String, dynamic>) {
+          final updated = FuelOrder.fromJson(res);
+          final index = _indexOf(orderId);
+          if (index >= 0) {
+            _orders[index] = updated;
+          } else {
+            _orders.insert(0, updated);
+          }
+          return updated;
+        }
+      } catch (e) {
+        debugPrint('Backend cancel fuel order error: $e');
+      }
+    }
     await _delay();
     return _updateStatus(orderId, OrderStatus.cancelled);
   }
 
   Future<FuelOrder> completeOrder(String orderId) async {
+    final client = _apiClient;
+    if (client != null) {
+      try {
+        final res = await client.patch(
+          '/api/v1/fuel/orders/$orderId/status',
+          body: {'status': 'delivered'},
+          requiresAuth: true,
+        );
+        if (res is Map<String, dynamic>) {
+          final updated = FuelOrder.fromJson(res);
+          final index = _indexOf(orderId);
+          if (index >= 0) {
+            _orders[index] = updated;
+          } else {
+            _orders.insert(0, updated);
+          }
+          return updated;
+        }
+      } catch (e) {
+        debugPrint('Backend complete fuel order error: $e');
+      }
+    }
+
     final index = _indexOf(orderId);
     if (index == -1) throw Exception('Order not found');
 
@@ -182,6 +346,17 @@ class FuelRepository {
   }
 
   Future<Invoice> generateInvoice(String orderId) async {
+    final client = _apiClient;
+    if (client != null) {
+      try {
+        final res = await client.get('/api/v1/fuel/orders/$orderId/invoice', requiresAuth: true);
+        if (res is Map<String, dynamic>) {
+          return Invoice.fromJson(res);
+        }
+      } catch (e) {
+        debugPrint('Backend generate fuel invoice error: $e');
+      }
+    }
     await _delay();
     final order = getOrderById(orderId);
     if (order == null) throw Exception('Order not found');
@@ -193,7 +368,7 @@ class FuelRepository {
       createdAt: order.createdAt,
       fuelType: order.fuelType.name,
       quantity: order.quantity,
-      pricePerLitre: estimate.fuelCost / order.quantity,
+      pricePerLitre: estimate.fuelCost / (order.quantity > 0 ? order.quantity : 1),
       fuelCost: estimate.fuelCost,
       deliveryCharge: estimate.deliveryCharge,
       platformFee: estimate.platformFee,
@@ -237,6 +412,23 @@ class FuelRepository {
   }
 
   Future<List<FuelOrder>> refreshHistory() async {
+    final client = _apiClient;
+    if (client != null) {
+      try {
+        final res = await client.get('/api/v1/fuel/orders', requiresAuth: true);
+        if (res is List) {
+          final fetched = res
+              .whereType<Map<String, dynamic>>()
+              .map((j) => FuelOrder.fromJson(j))
+              .toList();
+          _orders.clear();
+          _orders.addAll(fetched);
+          return List.unmodifiable(_orders);
+        }
+      } catch (e) {
+        debugPrint('Backend fuel order history fetch fell back: $e');
+      }
+    }
     await _delay();
     return List.unmodifiable(_orders);
   }

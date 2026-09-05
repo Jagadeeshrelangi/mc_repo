@@ -35,6 +35,25 @@ class Reward {
     required this.date,
     this.icon,
   });
+
+  factory Reward.fromJson(Map<String, dynamic> json) {
+    final typeStr = (json['type'] as String? ?? 'earned').toLowerCase();
+    final type = typeStr == 'redeemed' ? RewardType.redeemed : RewardType.earned;
+    final dateStr = json['occurred_at'] as String? ?? '';
+    String displayDate = dateStr;
+    if (dateStr.length >= 10) {
+      displayDate = dateStr.substring(0, 10);
+    }
+
+    return Reward(
+      id: json['id'] as String? ?? '',
+      title: json['title'] as String? ?? (type == RewardType.earned ? 'Earned' : 'Redeemed'),
+      subtitle: json['subtitle'] as String? ?? '',
+      points: (json['points'] as num?)?.toInt() ?? 0,
+      type: type,
+      date: displayDate,
+    );
+  }
 }
 
 /// Progress toward the next membership tier.

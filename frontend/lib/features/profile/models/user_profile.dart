@@ -96,9 +96,12 @@ class UserProfile {
             '${dateOfBirth!.year.toString().padLeft(4, '0')}-${dateOfBirth!.month.toString().padLeft(2, '0')}-${dateOfBirth!.day.toString().padLeft(2, '0')}',
       if (gender != null && gender!.isNotEmpty) 'gender': gender,
       if (emergencyContact != null) ...{
-        'emergency_contact_name': emergencyContact!.name,
-        'emergency_contact_relation': emergencyContact!.relation,
-        'emergency_contact_phone': emergencyContact!.phone,
+        if (emergencyContact!.name.isNotEmpty)
+          'emergency_contact_name': emergencyContact!.name,
+        if (emergencyContact!.relation.isNotEmpty)
+          'emergency_contact_relation': emergencyContact!.relation,
+        if (emergencyContact!.phone.isNotEmpty)
+          'emergency_contact_phone': emergencyContact!.phone.replaceAll(' ', ''),
       },
     };
   }

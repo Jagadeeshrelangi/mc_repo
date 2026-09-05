@@ -17,6 +17,92 @@ class VehicleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (vehicle.name.isEmpty) {
+      return Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppResponsive.horizontalPadding(context),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+            child: Container(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkCard : AppColors.white,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
+                boxShadow: isDark ? null : AppElevation.shadowLow,
+                border: Border.all(
+                  color: (isDark ? AppColors.darkBorder : AppColors.grey200).withValues(alpha: 0.8),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: AppColors.brandOrange.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                    ),
+                    child: const Icon(
+                      Icons.directions_car_outlined,
+                      color: AppColors.brandOrange,
+                      size: 26,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'No vehicle added yet',
+                          style: TextStyle(
+                            fontFamily: 'Space Grotesk',
+                            fontSize: AppResponsive.scaleFont(context, 16),
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? AppColors.darkText : AppColors.textPrimary,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Add a vehicle to view health & maintenance',
+                          style: TextStyle(
+                            fontSize: AppResponsive.scaleFont(context, 12),
+                            color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: AppColors.brandOrange,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                    ),
+                    child: const Text(
+                      'Add',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     return Material(
       color: Colors.transparent,
       borderRadius: BorderRadius.circular(AppSpacing.radiusXl),

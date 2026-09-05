@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -25,13 +27,35 @@ class ApiException implements Exception {
 /// Centralized HTTP client managing authorization headers, token lifecycle,
 /// and automated refresh retries for the FastAPI backend.
 class ApiClient {
-  static const String defaultBaseUrl = 'http://127.0.0.1:8000';
-  static const Duration defaultTimeout = Duration(seconds: 15);
+  static String get defaultBaseUrl {
+    String? envUrl;
+    try {
+      if (dotenv.isInitialized) {
+        envUrl = dotenv.env['API_BASE_URL'];
+      }
+    } catch (_) {
+      // dotenv not loaded (e.g. in test runner)
+    }
+    if (envUrl != null && envUrl.trim().isNotEmpty) {
+      return envUrl.trim();
+    }
+    if (!kIsWeb && Platform.isAndroid) {
+      return 'http://10.0.2.2:8000';
+    }
+    return 'http://127.0.0.1:8000';
+  }
+
+  static const Duration defaultTimeout = Duration(seconds: 30);
 
   final String baseUrl;
   final http.Client _client;
 
   static ApiClient? _instance;
+
+  @visibleForTesting
+  static void resetInstance() {
+    _instance = null;
+  }
 
   factory ApiClient({String? baseUrl, http.Client? client}) {
     if (_instance == null || baseUrl != null || client != null) {

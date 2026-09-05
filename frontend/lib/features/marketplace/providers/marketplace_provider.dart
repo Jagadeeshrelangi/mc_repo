@@ -601,6 +601,7 @@ class MarketplaceProvider extends ChangeNotifier {
         items: items,
         address: address.fullAddress,
         paymentMethod: paymentMethod,
+        couponCode: _appliedCoupon?.code,
       );
 
       // Register each line in the shared Orders tab store (Orders integration).

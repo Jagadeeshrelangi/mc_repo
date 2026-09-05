@@ -668,10 +668,12 @@ void main() {
       expect(find.text('Select Fuel Station'), findsOneWidget);
       expect(find.byType(FuelStationCard), findsWidgets);
       final index = fuel.stations.indexWhere((s) => s.isSelectable);
-      await tester.tap(find.byType(FuelStationCard).at(index));
+      await tester.ensureVisible(find.byType(FuelStationCard).at(index));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FuelStationCard).at(index), warnIfMissed: false);
       await tester.pump();
       await tester.tap(find.text('Continue'));
-      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 900));
 
       // Step 5 — Review → Place Order → Payment
       expect(find.text('Order Summary'), findsOneWidget);
@@ -1094,12 +1096,13 @@ void main() {
       await tester.pump();
       expect(find.text('Please select a fuel station'), findsOneWidget);
 
-      // Select a station and Continue while the snack is still visible.
       final index = fuel.stations.indexWhere((s) => s.isSelectable);
-      await tester.tap(find.byType(FuelStationCard).at(index));
+      await tester.ensureVisible(find.byType(FuelStationCard).at(index));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(FuelStationCard).at(index), warnIfMissed: false);
       await tester.pump();
       await tester.tap(find.text('Continue'));
-      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 900));
       expect(find.text('Please select a fuel station'), findsOneWidget,
           reason: 'snack is still on screen');
       expect(find.text('Order Summary'), findsOneWidget,

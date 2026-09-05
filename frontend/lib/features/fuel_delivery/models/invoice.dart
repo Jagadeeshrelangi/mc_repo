@@ -28,4 +28,24 @@ class Invoice {
     required this.partnerName,
     required this.vehicleNumber,
   });
+
+  factory Invoice.fromJson(Map<String, dynamic> json) {
+    return Invoice(
+      invoiceId: json['invoice_id'] as String? ?? json['id'] as String? ?? '',
+      orderId: json['order_id'] as String? ?? '',
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString()) ?? DateTime.now()
+          : DateTime.now(),
+      fuelType: json['fuel_type'] as String? ?? '',
+      quantity: (json['quantity'] as num?)?.toDouble() ?? 0.0,
+      pricePerLitre: (json['price_per_litre'] as num?)?.toDouble() ?? 0.0,
+      fuelCost: (json['fuel_cost'] as num?)?.toDouble() ?? 0.0,
+      deliveryCharge: (json['delivery_charge'] as num?)?.toDouble() ?? 0.0,
+      platformFee: (json['platform_fee'] as num?)?.toDouble() ?? 0.0,
+      taxes: (json['taxes'] as num?)?.toDouble() ?? 0.0,
+      grandTotal: (json['grand_total'] as num?)?.toDouble() ?? 0.0,
+      partnerName: json['partner_name'] as String? ?? '',
+      vehicleNumber: json['vehicle_number'] as String? ?? '',
+    );
+  }
 }

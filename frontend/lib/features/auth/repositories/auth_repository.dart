@@ -12,14 +12,14 @@ class AuthRepository {
   final ApiClient _apiClient;
   final bool enableFallback;
 
-  AuthRepository({ApiClient? apiClient, this.enableFallback = true})
+  AuthRepository({ApiClient? apiClient, this.enableFallback = false})
       : _apiClient = apiClient ?? ApiClient();
 
   Future<bool> login(String email, String password) async {
     try {
       final res = await _apiClient.post(
         '/api/v1/auth/login',
-        body: {'email': email.trim(), 'password': password},
+        body: {'identifier': email.trim(), 'password': password},
         requiresAuth: false,
       );
 
@@ -35,7 +35,7 @@ class AuthRepository {
       if (enableFallback && (e is ApiException && e.statusCode == 0)) {
         debugPrint('Backend offline — falling back to mock login');
         await Future.delayed(const Duration(milliseconds: 300));
-        return true;
+        rethrow;
       }
       rethrow;
     }
@@ -66,7 +66,7 @@ class AuthRepository {
       if (enableFallback && (e is ApiException && e.statusCode == 0)) {
         debugPrint('Backend offline — falling back to mock register');
         await Future.delayed(const Duration(milliseconds: 300));
-        return true;
+        rethrow;
       }
       rethrow;
     }
@@ -83,7 +83,7 @@ class AuthRepository {
     } catch (e) {
       if (enableFallback && (e is ApiException && e.statusCode == 0)) {
         await Future.delayed(const Duration(milliseconds: 300));
-        return true;
+        rethrow;
       }
       rethrow;
     }

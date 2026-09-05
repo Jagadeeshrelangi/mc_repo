@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:mecha_connect/features/auth/widgets/password_strength.dart';
 import 'package:mecha_connect/features/auth/services/auth_service.dart';
+import 'package:mecha_connect/services/api_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -64,7 +65,11 @@ class AuthProvider extends ChangeNotifier {
       }
       return success;
     } catch (e) {
-      _error = e.toString();
+      if (e is ApiException) {
+        _error = e.message;
+      } else {
+        _error = e.toString();
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -103,7 +108,11 @@ class AuthProvider extends ChangeNotifier {
       }
       return success;
     } catch (e) {
-      _error = e.toString();
+      if (e is ApiException) {
+        _error = e.message;
+      } else {
+        _error = e.toString();
+      }
       return false;
     } finally {
       _isLoading = false;

@@ -18,9 +18,9 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, Optional, Union
 from uuid import UUID
 
+import bcrypt
 from jose import JWTError, jwt
 from jose.exceptions import ExpiredSignatureError, JWTClaimsError
-from passlib.context import CryptContext
 
 from app.core.config import settings
 from app.core.exceptions import MechaException
@@ -34,12 +34,6 @@ BCRYPT_ROUNDS: int = 12
 # inputs explicitly rather than silently truncating them.
 BCRYPT_MAX_PASSWORD_BYTES: int = 72
 
-_pwd_context: CryptContext = CryptContext(
-    schemes=["bcrypt"],
-    deprecated="auto",
-    bcrypt__rounds=BCRYPT_ROUNDS,
-)
-
 
 def hash_password(password: str) -> str:
     """Return a bcrypt hash of ``password`` at cost factor 12.
@@ -49,11 +43,13 @@ def hash_password(password: str) -> str:
     """
     if not isinstance(password, str) or not password:
         raise ValueError("password must be a non-empty string")
-    if len(password.encode("utf-8")) > BCRYPT_MAX_PASSWORD_BYTES:
+    pwd_bytes = password.encode("utf-8")
+    if len(pwd_bytes) > BCRYPT_MAX_PASSWORD_BYTES:
         raise ValueError(
             f"password must not exceed {BCRYPT_MAX_PASSWORD_BYTES} bytes"
         )
-    return _pwd_context.hash(password)
+    salt = bcrypt.gensalt(rounds=BCRYPT_ROUNDS)
+    return bcrypt.hashpw(pwd_bytes, salt).decode("utf-8")
 
 
 def verify_password(password: str, hashed_password: str) -> bool:
@@ -66,9 +62,13 @@ def verify_password(password: str, hashed_password: str) -> bool:
         return False
     if not isinstance(hashed_password, str) or not hashed_password:
         return False
-    if len(password.encode("utf-8")) > BCRYPT_MAX_PASSWORD_BYTES:
+    pwd_bytes = password.encode("utf-8")
+    if len(pwd_bytes) > BCRYPT_MAX_PASSWORD_BYTES:
         return False
-    return bool(_pwd_context.verify(password, hashed_password))
+    try:
+        return bcrypt.checkpw(pwd_bytes, hashed_password.encode("utf-8"))
+    except Exception:
+        return False
 
 
 # --- JWT (D5) ---------------------------------------------------------------

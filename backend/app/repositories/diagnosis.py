@@ -77,7 +77,7 @@ class DiagnosisRepository:
         stmt = select(self.model).where(self.model.user_id == user_id)
         stmt = stmt.order_by(self.model.id.desc()).offset(offset).limit(limit)
         result = await self.session.scalars(stmt)
-        return list(await result.all())
+        return list(result.all())
 
     async def get_diagnosis_by_id(
         self, diagnosis_id: str, user_id: str

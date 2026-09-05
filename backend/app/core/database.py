@@ -32,7 +32,7 @@ engine: Optional[AsyncEngine] = None
 AsyncSessionFactory: Optional[async_sessionmaker[AsyncSession]] = None
 
 
-def configure_database(url: Optional[str] = None) -> None:
+async def configure_database(url: Optional[str] = None) -> None:
     """Create (or reload) the async engine and session factory.
 
     Passing ``None``/empty URL leaves the database unconfigured so the app
@@ -62,7 +62,7 @@ def configure_database(url: Optional[str] = None) -> None:
         )
 
     if engine is not None:
-        engine.sync_engine.dispose()
+        await engine.dispose()
 
     engine = create_async_engine(
         configured_url,
@@ -104,11 +104,11 @@ async def check_database() -> bool:
         return result.scalar() == 1
 
 
-def dispose_engine() -> None:
+async def dispose_engine() -> None:
     """Dispose the engine (used by tests / lifecycle teardown)."""
     global engine, AsyncSessionFactory
     if engine is not None:
-        engine.sync_engine.dispose()
+        await engine.dispose()
     engine = None
     AsyncSessionFactory = None
 

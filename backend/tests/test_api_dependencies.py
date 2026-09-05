@@ -25,7 +25,7 @@ def test_get_db_is_foundation_session_dependency() -> None:
 
 
 def test_get_db_raises_when_unconfigured() -> None:
-    db_module.dispose_engine()
+    asyncio.run(db_module.dispose_engine())
     assert db_module.AsyncSessionFactory is None
 
     async def _consume() -> None:
@@ -38,7 +38,7 @@ def test_get_db_raises_when_unconfigured() -> None:
 
 def test_get_db_yields_async_session_when_configured() -> None:
     """Creating a session from the lazy factory does NOT connect to Postgres."""
-    db_module.configure_database("postgresql+asyncpg://u:p@localhost:5432/testdb")
+    asyncio.run(db_module.configure_database("postgresql+asyncpg://u:p@localhost:5432/testdb"))
     try:
         async def _consume() -> AsyncSession:
             sessions: list[AsyncSession] = []
@@ -50,11 +50,11 @@ def test_get_db_yields_async_session_when_configured() -> None:
         assert isinstance(session, AsyncSession)
         asyncio.run(session.close())
     finally:
-        db_module.dispose_engine()
+        asyncio.run(db_module.dispose_engine())
 
 
 def test_get_db_rolls_back_and_reraises_on_error() -> None:
-    db_module.configure_database("postgresql+asyncpg://u:p@localhost:5432/testdb")
+    asyncio.run(db_module.configure_database("postgresql+asyncpg://u:p@localhost:5432/testdb"))
     try:
         class _SentinelError(RuntimeError):
             pass
@@ -66,4 +66,4 @@ def test_get_db_rolls_back_and_reraises_on_error() -> None:
         with pytest.raises(_SentinelError, match="boom"):
             asyncio.run(_consume())
     finally:
-        db_module.dispose_engine()
+        asyncio.run(db_module.dispose_engine())

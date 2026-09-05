@@ -10,7 +10,9 @@ class MechanicRepository {
 
   MechanicRepository({ApiClient? apiClient})
       : _apiClient = apiClient {
-    _seedHistory();
+    if (_apiClient == null) {
+      _seedHistory();
+    }
   }
 
   void _seedHistory() {
@@ -254,6 +256,27 @@ class MechanicRepository {
     final updated = _bookings[index].copyWith(status: BookingStatus.completed);
     _bookings[index] = updated;
     return updated;
+  }
+
+  Future<List<Booking>> refreshHistory() async {
+    if (_apiClient != null) {
+      try {
+        final res = await _apiClient.get('/api/v1/mechanic/bookings', requiresAuth: true);
+        if (res is List) {
+          final fetched = res
+              .whereType<Map<String, dynamic>>()
+              .map((j) => Booking.fromJson(j))
+              .toList();
+          _bookings.clear();
+          _bookings.addAll(fetched);
+          return List.unmodifiable(_bookings);
+        }
+      } catch (e) {
+        debugPrint('Backend bookings fetch fell back to mock: $e');
+      }
+    }
+    await _delay();
+    return List.unmodifiable(_bookings);
   }
 
   List<Booking> getBookingHistory() => List.unmodifiable(_bookings);

@@ -33,13 +33,13 @@ async def _main() -> int:
     print(f"Checking database connectivity ... url tail: {masked}")
 
     try:
-        configure_database()
+        await configure_database()
         ok = await check_database()
     except Exception as exc:  # noqa: BLE001
         print(f"Database connection failed: {type(exc).__name__}: {exc}")
         return 2
     finally:
-        dispose_engine()
+        await dispose_engine()
 
     if ok:
         print("Database connectivity: OK (SELECT 1 succeeded).")

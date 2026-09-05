@@ -24,6 +24,6 @@ def _reset_database_state():
     configuration and lazy wiring. We always leave the module unconfigured to
     avoid leaking a configured engine across tests.
     """
-    db_module.dispose_engine()
+    asyncio.run(db_module.dispose_engine())
     yield
-    db_module.dispose_engine()
+    asyncio.run(db_module.dispose_engine())

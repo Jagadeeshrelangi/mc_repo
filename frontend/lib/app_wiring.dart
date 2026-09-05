@@ -5,14 +5,19 @@ import 'package:mecha_connect/features/auth/providers/auth_provider.dart';
 import 'package:mecha_connect/features/auth/repositories/auth_repository.dart';
 import 'package:mecha_connect/features/auth/services/auth_service.dart';
 import 'package:mecha_connect/features/fuel_delivery/providers/fuel_provider.dart';
+import 'package:mecha_connect/features/fuel_delivery/repositories/fuel_repository.dart';
 import 'package:mecha_connect/features/home/providers/home_provider.dart';
 import 'package:mecha_connect/features/home/repositories/home_repository.dart';
 import 'package:mecha_connect/features/marketplace/providers/marketplace_provider.dart';
+import 'package:mecha_connect/features/marketplace/repositories/marketplace_repository.dart';
 import 'package:mecha_connect/features/mechanic/providers/mechanic_provider.dart';
+import 'package:mecha_connect/features/mechanic/repositories/mechanic_repository.dart';
 import 'package:mecha_connect/features/profile/providers/profile_provider.dart';
 import 'package:mecha_connect/features/profile/repositories/profile_repository.dart';
 import 'package:mecha_connect/services/location_provider.dart';
 import 'package:mecha_connect/theme/theme_provider.dart';
+
+import 'package:mecha_connect/services/api_client.dart';
 
 /// Single source of truth for the app's root provider graph.
 ///
@@ -25,15 +30,27 @@ List<SingleChildWidget> buildRootProviders({
   MarketplaceProvider? marketplaceProvider,
   ProfileProvider? profileProvider,
 }) {
+  final apiClient = ApiClient();
   final location = locationProvider ?? LocationProvider();
-  final fuel = fuelProvider ?? FuelProvider(locationProvider: location);
-  final marketplace = marketplaceProvider ?? MarketplaceProvider();
+  final fuel = fuelProvider ??
+      FuelProvider(
+        locationProvider: location,
+        repository: FuelRepository(apiClient: apiClient),
+      );
+  final marketplace = marketplaceProvider ??
+      MarketplaceProvider(
+        repository: MarketplaceRepository(apiClient: apiClient),
+      );
   final profile = profileProvider ??
       ProfileProvider(
         repository: ProfileRepository(
+          apiClient: apiClient,
           notificationSettingsStore: SharedPreferencesNotificationSettingsStore(),
         ),
       );
+  final mechanic = MechanicProvider(
+    repository: MechanicRepository(apiClient: apiClient),
+  );
 
   return [
     ChangeNotifierProvider(create: (_) => ThemeProvider()),
@@ -41,8 +58,8 @@ List<SingleChildWidget> buildRootProviders({
     ChangeNotifierProvider(
       create: (_) => AuthProvider(AuthService(AuthRepository())),
     ),
-    ChangeNotifierProvider(create: (_) => HomeProvider(HomeRepository())),
-    ChangeNotifierProvider(create: (_) => MechanicProvider()),
+    ChangeNotifierProvider(create: (_) => HomeProvider(HomeRepository(apiClient: apiClient))),
+    ChangeNotifierProvider.value(value: mechanic),
     ChangeNotifierProvider(create: (_) => AiProvider()),
     ChangeNotifierProvider.value(value: profile),
     ChangeNotifierProvider.value(value: fuel),

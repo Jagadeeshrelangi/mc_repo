@@ -17,13 +17,16 @@ enum FuelScreenState { initial, loading, ready, error, empty }
 /// The booking wizard owns NO booking data; every write funnels through this
 /// provider, and the UI only mirrors it.
 class FuelProvider extends ChangeNotifier {
-  final FuelRepository _repository = FuelRepository();
+  final FuelRepository _repository;
   final FuelService _service = FuelService();
   final LocationProvider _locationProvider;
   final LocationService _locationService = LocationService();
 
-  FuelProvider({required LocationProvider locationProvider})
-      : _locationProvider = locationProvider;
+  FuelProvider({
+    required LocationProvider locationProvider,
+    FuelRepository? repository,
+  })  : _locationProvider = locationProvider,
+        _repository = repository ?? FuelRepository();
 
   // ── UI state ──────────────────────────────────────────────────────────
   FuelScreenState _state = FuelScreenState.initial;

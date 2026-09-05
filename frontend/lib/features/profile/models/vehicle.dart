@@ -85,7 +85,58 @@ class ProfileVehicle {
           clearServiceDueDate ? null : (serviceDueDate ?? this.serviceDueDate),
       imageUrl: imageUrl ?? this.imageUrl,
       isDefault: isDefault ?? this.isDefault,
-      healthScore: healthScore ?? this.healthScore,
     );
   }
+
+  factory ProfileVehicle.fromJson(Map<String, dynamic> json) {
+    VehicleFuel fuel = VehicleFuel.petrol;
+    final rawFuel = json['fuel_type']?.toString().toLowerCase();
+    if (rawFuel == 'diesel') {
+      fuel = VehicleFuel.diesel;
+    } else if (rawFuel == 'electric') {
+      fuel = VehicleFuel.electric;
+    } else if (rawFuel == 'cng') {
+      fuel = VehicleFuel.cng;
+    }
+
+    return ProfileVehicle(
+      id: json['id']?.toString() ?? '',
+      brand: json['brand']?.toString() ?? '',
+      model: json['model']?.toString() ?? '',
+      registration: json['registration']?.toString() ?? '',
+      fuelType: fuel,
+      insuranceExpiry: json['insurance_expiry'] != null
+          ? DateTime.tryParse(json['insurance_expiry'].toString())
+          : null,
+      pucExpiry: json['puc_expiry'] != null
+          ? DateTime.tryParse(json['puc_expiry'].toString())
+          : null,
+      serviceDueKm: json['service_due_km'] as int?,
+      serviceDueDate: json['service_due_date'] != null
+          ? DateTime.tryParse(json['service_due_date'].toString())
+          : null,
+      isDefault: json['is_default'] == true,
+      healthScore: json['health_score'] as int? ?? 80,
+    );
+  }
+
+  Map<String, dynamic> toCreateJson() {
+    return {
+      'brand': brand,
+      'model': model,
+      'registration': registration,
+      'fuel_type': fuelType.name,
+      if (insuranceExpiry != null)
+        'insurance_expiry': insuranceExpiry!.toIso8601String().split('T').first,
+      if (pucExpiry != null)
+        'puc_expiry': pucExpiry!.toIso8601String().split('T').first,
+      if (serviceDueKm != null) 'service_due_km': serviceDueKm,
+      if (serviceDueDate != null)
+        'service_due_date': serviceDueDate!.toIso8601String().split('T').first,
+      'is_default': isDefault,
+      'health_score': healthScore,
+    };
+  }
+
+  Map<String, dynamic> toUpdateJson() => toCreateJson();
 }

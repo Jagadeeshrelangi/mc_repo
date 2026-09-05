@@ -45,6 +45,13 @@ class Brand {
 
   const Brand({required this.id, required this.name});
 
+  factory Brand.fromJson(Map<String, dynamic> json) {
+    return Brand(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+    );
+  }
+
   @override
   bool operator ==(Object other) =>
       other is Brand && other.id == id && other.name == name;
@@ -62,6 +69,14 @@ class Category {
 
   const Category({required this.id, required this.name, required this.icon});
 
+  factory Category.fromJson(Map<String, dynamic> json) {
+    return Category(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      icon: Icons.category_rounded,
+    );
+  }
+
   @override
   bool operator ==(Object other) =>
       other is Category && other.id == id && other.name == name;
@@ -76,6 +91,13 @@ class ProductSpecification {
   final String value;
 
   const ProductSpecification({required this.label, required this.value});
+
+  factory ProductSpecification.fromJson(Map<String, dynamic> json) {
+    return ProductSpecification(
+      label: json['label'] as String? ?? '',
+      value: json['value'] as String? ?? '',
+    );
+  }
 }
 
 /// A marketplace product. Prices are MRP-inclusive sale prices; [mrp] holds the
@@ -137,6 +159,36 @@ class Product {
     this.isRecommended = false,
     this.reviews = const [],
   });
+
+  factory Product.fromJson(Map<String, dynamic> json) {
+    final specsList = (json['specifications'] as List?)
+            ?.map((s) => ProductSpecification.fromJson(s as Map<String, dynamic>))
+            .toList() ??
+        const [];
+    return Product(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      brand: json['brand'] as String? ?? '',
+      brandId: json['brand_id'] as String? ?? '',
+      categoryId: json['category_id'] as String? ?? '',
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      mrp: (json['mrp'] as num?)?.toDouble() ?? 0.0,
+      rating: (json['rating'] as num?)?.toDouble() ?? 4.0,
+      ratingCount: json['rating_count'] as int? ?? 0,
+      stock: json['stock'] as int? ?? 10,
+      imageUrl: json['image_url'] as String?,
+      description: json['description'] as String? ?? '',
+      specifications: specsList,
+      warranty: json['warranty'] as String? ?? '6 months brand warranty',
+      deliveryEstimate: json['delivery_estimate'] as String? ?? 'Delivery in 3-5 days',
+      popularity: json['popularity'] as int? ?? 0,
+      isFeatured: json['is_featured'] as bool? ?? false,
+      isBestSeller: json['is_best_seller'] as bool? ?? false,
+      isTrending: json['is_trending'] as bool? ?? false,
+      isFlashDeal: json['is_flash_deal'] as bool? ?? false,
+      isRecommended: json['is_recommended'] as bool? ?? false,
+    );
+  }
 
   /// Discount against MRP, rounded to a whole percentage.
   double get discountPercent =>
