@@ -102,8 +102,25 @@ __all__ = [
     "DiagnosisInput",
     "DiagnosisResponse",
     "DiagnosisRecordResponse",
+    # Chat & Conversations
+    "ChatRequest",
+    "ChatResponse",
+    "SessionResponse",
+    "HistoryResponse",
+    "ConversationSummaryResponse",
+    "ConversationUpdate",
+    "ConversationDetailResponse",
 ]
 
+from app.schemas.chat import (
+    ChatRequest,
+    ChatResponse,
+    SessionResponse,
+    HistoryResponse,
+    ConversationSummaryResponse,
+    ConversationUpdate,
+    ConversationDetailResponse,
+)
 from app.schemas.diagnosis import (
     DiagnosisInput,
     DiagnosisResponse,

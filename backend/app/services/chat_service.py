@@ -36,7 +36,15 @@ from app.core.exceptions import EntityNotFoundException, InferenceException
 from app.core.logging import logger
 from app.repositories.chat_messages import ChatMessageRepository
 from app.repositories.conversations import ConversationRepository
-from app.schemas.chat import ChatRequest, ChatResponse, DiagnosticSummary
+from app.schemas.chat import (
+    ChatRequest,
+    ChatResponse,
+    ConversationDetailResponse,
+    ConversationSummaryResponse,
+    ConversationUpdate,
+    DiagnosticSummary,
+    MessageLog,
+)
 from app.schemas.diagnosis import DiagnosisInput
 from app.schemas.knowledge import KnowledgeQuery
 from app.services.diagnosis_service import diagnosis_service
@@ -128,6 +136,89 @@ class ChatService:
             conversation_id=session_id
         )
         return [{"role": m.role, "content": m.content or ""} for m in messages]
+
+    async def list_sessions(
+        self, user_id: str, offset: int = 0, limit: int = 50
+    ) -> List[ConversationSummaryResponse]:
+        """List a user's conversations: pinned first, then most recently updated."""
+        convs = await self.conversations.list_for_user(
+            user_id=user_id, offset=offset, limit=limit
+        )
+        summaries = []
+        for c in convs:
+            recent_msgs = await self.messages.list_for_conversation(
+                conversation_id=c.id, limit=1
+            )
+            preview = recent_msgs[-1].content if recent_msgs else None
+            summaries.append(
+                ConversationSummaryResponse(
+                    id=c.id,
+                    title=c.title,
+                    is_pinned=c.is_pinned,
+                    created_at=c.created_at,
+                    updated_at=c.updated_at,
+                    message_count=len(recent_msgs),
+                    preview=preview,
+                )
+            )
+        return summaries
+
+    async def get_session_detail(
+        self, session_id: str, user_id: str
+    ) -> ConversationDetailResponse:
+        """Fetch conversation metadata and all messages with owner guard."""
+        conversation = await self.conversations.get_owned(session_id, user_id)
+        if conversation is None:
+            raise EntityNotFoundException("Conversation not found.")
+        messages = await self.messages.list_for_conversation(
+            conversation_id=session_id, limit=200
+        )
+        return ConversationDetailResponse(
+            id=conversation.id,
+            title=conversation.title,
+            is_pinned=conversation.is_pinned,
+            created_at=conversation.created_at,
+            updated_at=conversation.updated_at,
+            messages=[
+                MessageLog(
+                    id=m.id,
+                    role=m.role,
+                    content=m.content or "",
+                    timestamp=m.timestamp,
+                    response=m.response,
+                )
+                for m in messages
+            ],
+        )
+
+    async def update_session(
+        self,
+        session_id: str,
+        user_id: str,
+        *,
+        title: Optional[str] = None,
+        is_pinned: Optional[bool] = None,
+    ) -> ConversationSummaryResponse:
+        """Update conversation title and/or pin status (owner-guarded)."""
+        conversation = await self.conversations.get_owned(session_id, user_id)
+        if conversation is None:
+            raise EntityNotFoundException("Conversation not found.")
+        updated = await self.conversations.update_properties(
+            conversation, title=title, is_pinned=is_pinned
+        )
+        if hasattr(self.session, "commit") and callable(self.session.commit):
+            await self.session.commit()
+        return ConversationSummaryResponse.model_validate(updated)
+
+    async def delete_session(self, session_id: str, user_id: str) -> bool:
+        """Delete an owned conversation and all associated message turns."""
+        deleted = await self.conversations.delete_owned(session_id, user_id)
+        if not deleted:
+            raise EntityNotFoundException("Conversation not found.")
+        if hasattr(self.session, "commit") and callable(self.session.commit):
+            await self.session.commit()
+        return True
+
 
     async def handle_chat(self, payload: ChatRequest, user_id: str) -> ChatResponse:
         start_time = time.perf_counter()
