@@ -43,7 +43,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   const MyApp({
     super.key,
-    this.enableDevicePreview = kDebugMode,
+    this.enableDevicePreview = kIsWeb && kDebugMode,
     this.navigatorObservers = const [],
   });
 

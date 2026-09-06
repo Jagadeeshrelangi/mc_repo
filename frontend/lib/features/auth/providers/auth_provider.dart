@@ -121,7 +121,15 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _authService.logout();
+    } catch (_) {
+      // Ignore network errors on logout
+    }
     _isLoggedIn = false;
+    _isLoading = false;
     _error = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('is_logged_in', false);
