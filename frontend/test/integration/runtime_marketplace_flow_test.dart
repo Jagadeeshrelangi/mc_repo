@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mecha_connect/main.dart';
 import 'package:mecha_connect/app_wiring.dart';
 import 'package:mecha_connect/features/marketplace/providers/marketplace_provider.dart';
+import 'package:mecha_connect/features/marketplace/repositories/marketplace_repository.dart';
 import 'package:mecha_connect/features/marketplace/screens/cart_screen.dart';
 import 'package:mecha_connect/features/marketplace/screens/checkout_screen.dart';
 import 'package:mecha_connect/features/marketplace/screens/marketplace_home_screen.dart';
@@ -77,7 +78,11 @@ void main() {
       final observer = _TestNavigatorObserver();
       await tester.pumpWidget(
         MultiProvider(
-          providers: buildRootProviders(),
+          providers: buildRootProviders(
+            marketplaceProvider: MarketplaceProvider(
+              repository: MarketplaceRepository(),
+            ),
+          ),
           child: MyApp(
             enableDevicePreview: false,
             navigatorObservers: [observer],
@@ -252,7 +257,11 @@ void main() {
 
       await tester.pumpWidget(
         MultiProvider(
-          providers: buildRootProviders(),
+          providers: buildRootProviders(
+            marketplaceProvider: MarketplaceProvider(
+              repository: MarketplaceRepository(),
+            ),
+          ),
           child: MyApp(enableDevicePreview: false),
         ),
       );

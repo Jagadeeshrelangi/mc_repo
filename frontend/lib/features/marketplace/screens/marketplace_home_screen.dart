@@ -315,11 +315,11 @@ class _HomeContent extends StatelessWidget {
         const SizedBox(height: 12),
         if (browse.isEmpty)
           MarketplaceEmptyState(
-            icon: Icons.search_off_rounded,
-            title: 'No products match',
-            message: 'Try removing some filters.',
-            actionLabel: 'Reset Filters',
-            onAction: provider.resetFilters,
+            icon: provider.hasActiveFilters ? Icons.search_off_rounded : Icons.storefront_outlined,
+            title: provider.hasActiveFilters ? 'No products match' : 'No products available',
+            message: provider.hasActiveFilters ? 'Try removing some filters.' : 'Check back later for newly added items.',
+            actionLabel: provider.hasActiveFilters ? 'Reset Filters' : 'Refresh',
+            onAction: provider.hasActiveFilters ? provider.resetFilters : provider.refresh,
           )
         else
           ProductGrid(products: browse, shrinkWrap: true),

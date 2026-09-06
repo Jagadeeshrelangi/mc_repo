@@ -8,6 +8,7 @@ Reads never commit; writes ``flush()`` only (commit owned by the service).
 """
 
 from datetime import datetime, timezone
+import inspect
 from typing import Optional, Sequence
 
 from sqlalchemy import select
@@ -50,7 +51,10 @@ class ConversationRepository(BaseRepository[Conversation]):
             .limit(limit)
         )
         result = await self.session.scalars(stmt)
-        return list(await result.all())
+        res_all = result.all()
+        if inspect.isawaitable(res_all):
+            res_all = await res_all
+        return list(res_all)
 
     async def create_owned(
         self,

@@ -8,6 +8,7 @@ reversed to ascending — the "last 12 messages" cap that used to live in
 in-memory ``SessionMemory`` now lives at the query level.
 """
 
+import inspect
 from typing import Optional, Sequence
 
 from sqlalchemy import select
@@ -43,7 +44,10 @@ class ChatMessageRepository(BaseRepository[ChatMessage]):
             .limit(limit)
         )
         result = await self.session.scalars(stmt)
-        rows = list(await result.all())
+        res_all = result.all()
+        if inspect.isawaitable(res_all):
+            res_all = await res_all
+        rows = list(res_all)
         return list(reversed(rows))
 
     async def append(

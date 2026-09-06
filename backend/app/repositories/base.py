@@ -15,6 +15,7 @@ This keeps repositories DATA ACCESS ONLY and lets the service coordinate
 atomic multi-operation transactions without unexpected intermediate commits.
 """
 
+import inspect
 from typing import Any, Generic, Optional, Sequence, TypeVar
 
 from sqlalchemy import select
@@ -59,7 +60,10 @@ class BaseRepository(Generic[T]):
             stmt = stmt.where(getattr(self.model, column_name) == value)
         stmt = stmt.order_by(self.model.id).offset(offset).limit(limit)
         result = await self.session.scalars(stmt)
-        return list(await result.all())
+        res_all = result.all()
+        if inspect.isawaitable(res_all):
+            res_all = await res_all
+        return list(res_all)
 
     async def create(self, obj: T) -> T:
         """Persist a new entity (flush; commit owned by the caller)."""

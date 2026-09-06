@@ -32,37 +32,33 @@ class FuelRepository {
   Future<List<FuelVehicle>> getSavedVehicles() async {
     final client = _apiClient;
     if (client != null) {
-      try {
-        final res = await client.get('/api/v1/vehicles', requiresAuth: true);
-        if (res is List) {
-          final vehicles = res.whereType<Map<String, dynamic>>().map((v) {
-            // Backend VehicleResponse uses fuel_type (petrol/diesel/electric/cng),
-            // not a vehicle-body-type field. Default to car since that's the most
-            // common use-case; the fuel_type is available separately if needed.
-            final fuelType = (v['fuel_type'] ?? '').toString().toLowerCase();
-            VehicleType vType = VehicleType.car;
-            if (fuelType == 'bike' || fuelType == 'motorcycle') {
-              vType = VehicleType.bike;
-            }
-            // Build display name from brand + model (backend schema fields)
-            final brand = (v['brand'] ?? '').toString().trim();
-            final model = (v['model'] ?? '').toString().trim();
-            final displayName = v['name'] as String? ??
-                (brand.isNotEmpty ? '$brand $model' : model).trim();
-            // Backend returns registration plate under "registration"
-            final number = (v['registration'] ?? v['license_plate'] ?? v['number'] ?? '').toString();
-            return FuelVehicle(
-              id: (v['id'] ?? '').toString(),
-              type: vType,
-              name: displayName,
-              number: number,
-            );
-          }).toList();
-          if (vehicles.isNotEmpty) return vehicles;
-        }
-      } catch (e) {
-        debugPrint('Backend saved vehicles fetch fell back: $e');
+      final res = await client.get('/api/v1/vehicles', requiresAuth: true);
+      if (res is List) {
+        return res.whereType<Map<String, dynamic>>().map((v) {
+          // Backend VehicleResponse uses fuel_type (petrol/diesel/electric/cng),
+          // not a vehicle-body-type field. Default to car since that's the most
+          // common use-case; the fuel_type is available separately if needed.
+          final fuelType = (v['fuel_type'] ?? '').toString().toLowerCase();
+          VehicleType vType = VehicleType.car;
+          if (fuelType == 'bike' || fuelType == 'motorcycle') {
+            vType = VehicleType.bike;
+          }
+          // Build display name from brand + model (backend schema fields)
+          final brand = (v['brand'] ?? '').toString().trim();
+          final model = (v['model'] ?? '').toString().trim();
+          final displayName = v['name'] as String? ??
+              (brand.isNotEmpty ? '$brand $model' : model).trim();
+          // Backend returns registration plate under "registration"
+          final number = (v['registration'] ?? v['license_plate'] ?? v['number'] ?? '').toString();
+          return FuelVehicle(
+            id: (v['id'] ?? '').toString(),
+            type: vType,
+            name: displayName,
+            number: number,
+          );
+        }).toList();
       }
+      return [];
     }
     await _delay();
     return const [
@@ -80,14 +76,14 @@ class FuelRepository {
   }) async {
     final client = _apiClient;
     if (client != null) {
-      try {
-        final res = await client.get('/api/v1/fuel/stations', requiresAuth: false);
-        if (res is List && res.isNotEmpty) {
-          return res.map((json) => FuelStation.fromJson(json as Map<String, dynamic>)).toList();
-        }
-      } catch (e) {
-        debugPrint('Backend fuel station fetch fell back to simulated: $e');
+      final res = await client.get('/api/v1/fuel/stations', requiresAuth: false);
+      if (res is List) {
+        return res
+            .whereType<Map<String, dynamic>>()
+            .map((json) => FuelStation.fromJson(json))
+            .toList();
       }
+      return [];
     }
     await _delay();
     return _buildStations(latitude, longitude);

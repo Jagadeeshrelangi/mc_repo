@@ -44,7 +44,12 @@ class DiagnosisService {
       );
 
       if (res is Map<String, dynamic>) {
-        return parseDiagnosis(res, vehicleName: vehicleName, inputSymptoms: symptoms);
+        return parseDiagnosis(
+          res,
+          vehicleName: vehicleName,
+          inputSymptoms: symptoms,
+          isOfflineFallback: false,
+        );
       }
     } catch (e) {
       if (!enableFallback) rethrow;
@@ -56,7 +61,7 @@ class DiagnosisService {
       problem: problem,
       symptoms: symptoms,
     );
-    return parseDiagnosis(raw, vehicleName: vehicleName);
+    return parseDiagnosis(raw, vehicleName: vehicleName, isOfflineFallback: true);
   }
 
   /// Parses a diagnosis map into [Diagnosis].
@@ -65,6 +70,7 @@ class DiagnosisService {
     Map<String, dynamic> raw, {
     required String vehicleName,
     List<String>? inputSymptoms,
+    bool isOfflineFallback = false,
   }) {
     final id = raw['id'] as String? ?? 'diag-unknown';
     final vehicleType = raw['vehicle_type'] as String? ?? vehicleName;
@@ -142,6 +148,7 @@ class DiagnosisService {
       recommendedService: recommendedService,
       confidence: confidence,
       timestamp: timestamp,
+      isOfflineFallback: isOfflineFallback,
     );
   }
 

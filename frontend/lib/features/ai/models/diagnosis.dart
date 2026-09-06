@@ -63,6 +63,7 @@ class Diagnosis {
   final String recommendedService;
   final int confidence;
   final DateTime timestamp;
+  final bool isOfflineFallback;
 
   const Diagnosis({
     required this.id,
@@ -78,5 +79,6 @@ class Diagnosis {
     required this.recommendedService,
     required this.confidence,
     required this.timestamp,
+    this.isOfflineFallback = false,
   });
 }

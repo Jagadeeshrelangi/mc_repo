@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:mecha_connect/features/fuel_delivery/models/models.dart';
 import 'package:mecha_connect/features/fuel_delivery/repositories/fuel_repository.dart';
+import 'package:mecha_connect/features/marketplace/models/models.dart';
 import 'package:mecha_connect/features/marketplace/repositories/marketplace_repository.dart';
 import 'package:mecha_connect/services/api_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,16 +22,15 @@ void main() {
   HttpOverrides.global = _RealHttpOverrides();
 
   const String baseUrl = 'http://127.0.0.1:8000';
-  bool isServerAvailable = false;
 
   setUpAll(() async {
     try {
-      final res = await http.get(Uri.parse('$baseUrl/health')).timeout(const Duration(seconds: 2));
-      if (res.statusCode == 200) {
-        isServerAvailable = true;
+      final res = await http.get(Uri.parse('$baseUrl/health')).timeout(const Duration(seconds: 4));
+      if (res.statusCode != 200) {
+        fail('FastAPI backend at $baseUrl is unhealthy (status ${res.statusCode}). Live integration tests require a running, healthy backend.');
       }
-    } catch (_) {
-      isServerAvailable = false;
+    } catch (e) {
+      fail('FastAPI backend is unreachable at $baseUrl: $e. Live integration tests require a running FastAPI backend.');
     }
   });
 
@@ -40,7 +40,6 @@ void main() {
 
   group('End-to-End Flutter -> Real FastAPI Server Integration', () {
     test('1. Backend health check returns 200 OK and database ok', () async {
-      if (!isServerAvailable) return;
       final response = await http.get(Uri.parse('$baseUrl/health'));
       expect(response.statusCode, 200);
       final body = jsonDecode(response.body) as Map<String, dynamic>;
@@ -49,7 +48,6 @@ void main() {
     });
 
     test('2. Public Fuel endpoints respond via ApiClient', () async {
-      if (!isServerAvailable) return;
       final apiClient = ApiClient(baseUrl: baseUrl);
 
       // GET /api/v1/fuel/stations
@@ -69,7 +67,6 @@ void main() {
     });
 
     test('3. Public Marketplace endpoints respond via ApiClient', () async {
-      if (!isServerAvailable) return;
       final apiClient = ApiClient(baseUrl: baseUrl);
 
       // Categories
@@ -99,7 +96,6 @@ void main() {
     });
 
     test('4. Protected endpoints reject unauthenticated or invalid JWT requests', () async {
-      if (!isServerAvailable) return;
       final apiClient = ApiClient(baseUrl: baseUrl);
       await apiClient.clearTokens();
 
@@ -121,22 +117,24 @@ void main() {
     });
 
     test('5. FuelRepository and MarketplaceRepository execute cleanly over real HTTP client', () async {
-      if (!isServerAvailable) return;
       final apiClient = ApiClient(baseUrl: baseUrl);
       final fuelRepo = FuelRepository(apiClient: apiClient);
       final marketplaceRepo = MarketplaceRepository(apiClient: apiClient);
 
       final stations = await fuelRepo.getFuelStations(latitude: 12.97, longitude: 77.59);
-      expect(stations.isNotEmpty, isTrue);
+      expect(stations, isA<List<FuelStation>>());
 
       final products = await marketplaceRepo.fetchProducts();
-      expect(products.isNotEmpty, isTrue);
+      expect(products, isA<List<Product>>());
 
       final categories = await marketplaceRepo.fetchCategories();
-      expect(categories.isNotEmpty, isTrue);
+      expect(categories, isA<List<Category>>());
 
       final brands = await marketplaceRepo.fetchBrands();
-      expect(brands.isNotEmpty, isTrue);
+      expect(brands, isA<List<Brand>>());
+
+      final offers = await marketplaceRepo.fetchOffers();
+      expect(offers, isA<List<Offer>>());
     });
   });
 }

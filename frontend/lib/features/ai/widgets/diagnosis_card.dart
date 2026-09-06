@@ -50,6 +50,32 @@ class DiagnosisCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (diagnosis.isOfflineFallback) ...[
+            Container(
+              margin: const EdgeInsets.only(bottom: AppSpacing.md),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                border: Border.all(color: AppColors.warning.withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.offline_bolt_outlined, size: 18, color: AppColors.warning),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Offline Heuristic Assessment — Backend AI was unreachable. This is an approximate rule-based estimate.',
+                      style: AppTypography.bodySm.copyWith(
+                        color: context.textPrimary,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           _buildHeader(context, severityColor),
           const SizedBox(height: AppSpacing.base),
           _severityBanner(context, severityColor),
