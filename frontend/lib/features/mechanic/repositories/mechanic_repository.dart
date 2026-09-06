@@ -55,44 +55,43 @@ class MechanicRepository {
   }
 
   Future<List<MechanicInfo>> fetchMechanics() async {
-    if (_apiClient != null) {
-      try {
-        final res = await _apiClient.get('/api/v1/mechanic/mechanics', requiresAuth: false);
-        if (res is List && res.isNotEmpty) {
-          return res.map((item) => MechanicInfo.fromJson(item as Map<String, dynamic>)).toList();
-        }
-      } catch (e) {
-        debugPrint('Backend mechanic list fetch fell back to mock: $e');
+    final client = _apiClient;
+    if (client != null) {
+      final res = await client.get('/api/v1/mechanic/mechanics', requiresAuth: false);
+      if (res is List) {
+        return res
+            .whereType<Map<String, dynamic>>()
+            .map((item) => MechanicInfo.fromJson(item))
+            .toList();
       }
+      return [];
     }
     await _delay();
     return List<MechanicInfo>.from(mockMechanics);
   }
 
   Future<List<MechanicInfo>> fetchFeaturedMechanics() async {
-    if (_apiClient != null) {
-      try {
-        final res = await _apiClient.get('/api/v1/mechanic/mechanics/featured', requiresAuth: false);
-        if (res is List && res.isNotEmpty) {
-          return res.map((item) => MechanicInfo.fromJson(item as Map<String, dynamic>)).toList();
-        }
-      } catch (e) {
-        debugPrint('Backend featured mechanics fetch fell back to mock: $e');
+    final client = _apiClient;
+    if (client != null) {
+      final res = await client.get('/api/v1/mechanic/mechanics/featured', requiresAuth: false);
+      if (res is List) {
+        return res
+            .whereType<Map<String, dynamic>>()
+            .map((item) => MechanicInfo.fromJson(item))
+            .toList();
       }
+      return [];
     }
     await _delay();
     return List<MechanicInfo>.from(featuredMechanics);
   }
 
   Future<MechanicInfo> fetchMechanicById(String id) async {
-    if (_apiClient != null) {
-      try {
-        final res = await _apiClient.get('/api/v1/mechanic/mechanics/$id', requiresAuth: false);
-        if (res is Map<String, dynamic>) {
-          return MechanicInfo.fromJson(res);
-        }
-      } catch (e) {
-        debugPrint('Backend mechanic detail fetch fell back to mock: $e');
+    final client = _apiClient;
+    if (client != null) {
+      final res = await client.get('/api/v1/mechanic/mechanics/$id', requiresAuth: false);
+      if (res is Map<String, dynamic>) {
+        return MechanicInfo.fromJson(res);
       }
     }
     await _delay();
@@ -104,30 +103,32 @@ class MechanicRepository {
   }
 
   Future<List<MechanicReview>> fetchReviews(String mechanicId) async {
-    if (_apiClient != null) {
-      try {
-        final res = await _apiClient.get('/api/v1/mechanic/mechanics/$mechanicId/reviews', requiresAuth: false);
-        if (res is List && res.isNotEmpty) {
-          return res.map((item) => MechanicReview.fromJson(item as Map<String, dynamic>)).toList();
-        }
-      } catch (e) {
-        debugPrint('Backend reviews fetch fell back to mock: $e');
+    final client = _apiClient;
+    if (client != null) {
+      final res = await client.get('/api/v1/mechanic/mechanics/$mechanicId/reviews', requiresAuth: false);
+      if (res is List) {
+        return res
+            .whereType<Map<String, dynamic>>()
+            .map((item) => MechanicReview.fromJson(item))
+            .toList();
       }
+      return [];
     }
     await _delay();
     return List<MechanicReview>.from(mechanicReviews[mechanicId] ?? const []);
   }
 
   Future<List<MechanicCategory>> fetchCategories() async {
-    if (_apiClient != null) {
-      try {
-        final res = await _apiClient.get('/api/v1/mechanic/categories', requiresAuth: false);
-        if (res is List && res.isNotEmpty) {
-          return res.map((item) => MechanicCategory.fromJson(item as Map<String, dynamic>)).toList();
-        }
-      } catch (e) {
-        debugPrint('Backend categories fetch fell back to mock: $e');
+    final client = _apiClient;
+    if (client != null) {
+      final res = await client.get('/api/v1/mechanic/categories', requiresAuth: false);
+      if (res is List) {
+        return res
+            .whereType<Map<String, dynamic>>()
+            .map((item) => MechanicCategory.fromJson(item))
+            .toList();
       }
+      return [];
     }
     await _delay();
     return List<MechanicCategory>.from(mechanicCategories);
