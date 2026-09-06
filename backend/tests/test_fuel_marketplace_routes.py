@@ -22,6 +22,7 @@ from fastapi.testclient import TestClient
 from app.api.deps import get_current_user, get_db
 from app.api.router import api_router
 from app.core.exceptions import EntityNotFoundException, InvalidInputException, MechaException
+from app.models.coupon import Coupon
 from app.models.fuel_order import FuelOrder
 from app.models.fuel_station import FuelStation
 from app.models.invoice import Invoice
@@ -408,6 +409,29 @@ def test_public_marketplace_coupon_validation(client: TestClient) -> None:
         data = resp.json()
         assert data["is_valid"] is True
         assert data["discount_amount"] == 150.0
+
+
+def test_public_marketplace_coupons_list(client: TestClient) -> None:
+    coupon = Coupon(
+        id="coup-1",
+        code="SAVE20",
+        title="20% Off",
+        description="Get 20% discount up to ₹500",
+        type="percent",
+        value=Decimal("20.00"),
+        max_discount=Decimal("500.00"),
+        min_order_value=Decimal("1000.00"),
+    )
+    with patch.object(MarketplaceService, "list_coupons", new_callable=AsyncMock) as mock_list:
+        mock_list.return_value = [coupon]
+        resp = client.get("/api/v1/marketplace/coupons")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data) == 1
+        assert data[0]["code"] == "SAVE20"
+        assert data[0]["type"] == "percent"
+        assert data[0]["value"] == 20.0
+
 
 
 def test_protected_marketplace_order_create(client: TestClient) -> None:

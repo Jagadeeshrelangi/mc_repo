@@ -1,5 +1,6 @@
-from typing import List, Optional
-from pydantic import BaseModel, Field
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, ConfigDict, Field
 
 class DiagnosisInput(BaseModel):
     # Telemetry fields (Optional, but used to trigger Telemetry-based Mode)
@@ -26,3 +27,25 @@ class DiagnosisResponse(BaseModel):
     repair_time: str = Field(..., description="Estimated time duration required to fix the fault.")
     safety_advice: str = Field(..., description="Immediate safety recommendations for the driver.")
     diagnosis_mode: str = Field(..., description="The mode used for diagnosis ('telemetry' or 'symptom').")
+
+
+class DiagnosisRecordResponse(BaseModel):
+    """Safe representation of a persisted diagnostic report."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str = Field(..., description="Unique diagnosis report ID (diag-xxxxxxxxxxxx).")
+    user_id: str = Field(..., description="Owner user UUID.")
+    problem: str = Field(..., description="Predicted vehicle fault.")
+    symptoms: Optional[Dict[str, Any]] = Field(None, description="Recorded symptoms structure.")
+    possible_causes: Optional[Dict[str, Any]] = Field(None, description="Root cause possibilities.")
+    severity: Optional[str] = Field(None, description="Calculated fault severity.")
+    estimated_cost: Optional[float] = Field(None, description="Estimated repair cost in INR.")
+    recommended_action: Optional[str] = Field(None, description="Immediate driver safety advice.")
+    should_drive: Optional[bool] = Field(None, description="Whether the vehicle can safely be driven.")
+    recommended_service: Optional[str] = Field(None, description="Suggested mechanic workshop service.")
+    confidence: Optional[int] = Field(None, description="Confidence percentage score (0-100).")
+    vehicle_name: Optional[str] = Field(None, description="Vehicle make/model.")
+    vehicle_type: Optional[str] = Field(None, description="Vehicle category.")
+    created_at: datetime = Field(..., description="Diagnosis creation timestamp.")
+

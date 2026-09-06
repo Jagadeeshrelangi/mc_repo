@@ -624,7 +624,7 @@ def test_health_remains_public(client) -> None:
 
 def test_openapi_path_count_stays_14(client) -> None:
     schema = client.app.openapi()
-    assert len(schema["paths"]) == 14
+    assert len(schema["paths"]) == 16
     for path in [
         "/api/v1/conversation/chat",
         "/api/v1/conversation/session",

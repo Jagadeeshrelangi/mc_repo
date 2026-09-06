@@ -75,7 +75,7 @@ class DiagnosisRepository:
     ) -> Sequence[Diagnosis]:
         """List diagnoses owned by *user_id* (read-only, never commits)."""
         stmt = select(self.model).where(self.model.user_id == user_id)
-        stmt = stmt.order_by(self.model.id.desc()).offset(offset).limit(limit)
+        stmt = stmt.order_by(self.model.created_at.desc()).offset(offset).limit(limit)
         result = await self.session.scalars(stmt)
         return list(result.all())
 
@@ -93,3 +93,19 @@ class DiagnosisRepository:
         )
         result = await self.session.scalars(stmt)
         return result.one_or_none()
+
+    async def delete_diagnosis(
+        self, diagnosis_id: str, user_id: str
+    ) -> bool:
+        """Delete a diagnosis by ID if owned by user_id.
+
+        Flushes on success; caller owns the transaction commit.
+        Returns True if deleted, False if not found or unauthorized.
+        """
+        obj = await self.get_diagnosis_by_id(diagnosis_id, user_id)
+        if obj is None:
+            return False
+        await self.session.delete(obj)
+        await self.session.flush()
+        return True
+

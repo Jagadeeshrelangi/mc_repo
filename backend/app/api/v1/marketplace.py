@@ -14,6 +14,7 @@ from app.models.user import User
 from app.schemas.marketplace import (
     BrandResponse,
     CategoryResponse,
+    CouponResponse,
     CouponValidateIn,
     CouponValidationResult,
     OfferResponse,
@@ -148,6 +149,22 @@ async def add_product_review(
         payload.author = current_user.name
     review = await service.add_product_review(product_id=product_id, payload=payload)
     return ProductReviewResponse.model_validate(review)
+
+
+@router.get(
+    "/coupons",
+    response_model=List[CouponResponse],
+    status_code=status.HTTP_200_OK,
+    summary="List available discount coupons",
+)
+async def list_coupons(
+    limit: int = Query(50, ge=1, le=100),
+    session: AsyncSession = Depends(get_db),
+) -> List[CouponResponse]:
+    """Fetch available promotional discount coupons."""
+    service = MarketplaceService(session)
+    coupons = await service.list_coupons(limit=limit)
+    return [CouponResponse.model_validate(c) for c in coupons]
 
 
 @router.post(

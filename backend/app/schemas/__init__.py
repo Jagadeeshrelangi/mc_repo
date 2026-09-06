@@ -98,8 +98,17 @@ __all__ = [
     # Notification Settings
     "NotificationSettingUpdate",
     "NotificationSettingResponse",
+    # Diagnosis
+    "DiagnosisInput",
+    "DiagnosisResponse",
+    "DiagnosisRecordResponse",
 ]
 
+from app.schemas.diagnosis import (
+    DiagnosisInput,
+    DiagnosisResponse,
+    DiagnosisRecordResponse,
+)
 from app.schemas.address import (
     AddressCreate,
     AddressUpdate,

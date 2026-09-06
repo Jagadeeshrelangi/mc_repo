@@ -149,6 +149,10 @@ class MarketplaceService:
 
     # ── Coupons ─────────────────────────────────────────────────────────────
 
+    async def list_coupons(self, limit: int = 50) -> Sequence[Coupon]:
+        """List available discount coupons."""
+        return await self.coupon_repo.list_all(limit=limit)
+
     async def validate_coupon(
         self, code: str, order_amount: Decimal
     ) -> CouponValidationResult:

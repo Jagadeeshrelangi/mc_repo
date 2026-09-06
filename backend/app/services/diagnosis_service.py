@@ -1,13 +1,14 @@
 import os
 import joblib
 import numpy as np
-from typing import Optional
+from typing import Optional, Sequence
 from uuid import uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import InferenceException
 from app.core.logging import logger
+from app.models.diagnosis import Diagnosis
 from app.repositories.diagnosis import DiagnosisRepository
 from app.schemas.diagnosis import DiagnosisInput, DiagnosisResponse
 from ai.metadata import DIAGNOSIS_METADATA
@@ -63,7 +64,7 @@ class DiagnosisService:
         recommended_service: Optional[str] = None,
         vehicle_name: Optional[str] = None,
         vehicle_type: Optional[str] = None,
-    ) -> None:
+    ) -> Diagnosis:
         """Persist a diagnosis result to the diagnoses table.
 
         Repository performs flush(); caller (route handler / auth service)
@@ -92,7 +93,39 @@ class DiagnosisService:
             vehicle_name=vehicle_name,
             vehicle_type=vehicle_type,
         )
-        # flush-only; commit owned by the caller
+        return obj
+
+    @staticmethod
+    async def list_user_diagnoses(
+        session: AsyncSession,
+        user_id: str,
+        offset: int = 0,
+        limit: int = 50,
+    ) -> Sequence[Diagnosis]:
+        """Fetch previously stored diagnostic reports for user_id (newest first)."""
+        repo = DiagnosisRepository(session)
+        return await repo.get_diagnoses_by_user(user_id=user_id, offset=offset, limit=limit)
+
+    @staticmethod
+    async def get_user_diagnosis(
+        session: AsyncSession,
+        diagnosis_id: str,
+        user_id: str,
+    ) -> Optional[Diagnosis]:
+        """Fetch a specific diagnostic report ensuring user ownership."""
+        repo = DiagnosisRepository(session)
+        return await repo.get_diagnosis_by_id(diagnosis_id=diagnosis_id, user_id=user_id)
+
+    @staticmethod
+    async def delete_user_diagnosis(
+        session: AsyncSession,
+        diagnosis_id: str,
+        user_id: str,
+    ) -> bool:
+        """Delete an owned diagnostic report (flushes; caller commits transaction)."""
+        repo = DiagnosisRepository(session)
+        return await repo.delete_diagnosis(diagnosis_id=diagnosis_id, user_id=user_id)
+
 
     def _diagnose_telemetry(self, data: DiagnosisInput) -> DiagnosisResponse:
         if self.model_data is None:
