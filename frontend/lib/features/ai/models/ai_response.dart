@@ -27,6 +27,36 @@ class AiBlock {
     this.items = const [],
     this.note,
   });
+
+  factory AiBlock.fromJson(Map<String, dynamic> json) {
+    final typeStr = json['type']?.toString() ?? 'text';
+    final blockType = AiBlockType.values.firstWhere(
+      (e) => e.name == typeStr,
+      orElse: () => AiBlockType.text,
+    );
+    final rawItems = json['items'];
+    List<String> parsedItems = const [];
+    if (rawItems is List) {
+      parsedItems = rawItems.map((e) => e.toString()).toList();
+    }
+    return AiBlock(
+      type: blockType,
+      title: json['title'] as String?,
+      text: json['text'] as String?,
+      items: parsedItems,
+      note: json['note'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': type.name,
+      if (title != null) 'title': title,
+      if (text != null) 'text': text,
+      if (items.isNotEmpty) 'items': items,
+      if (note != null) 'note': note,
+    };
+  }
 }
 
 /// Actions a reply can offer. Screens map each action to a real route or a
@@ -49,6 +79,27 @@ class AiActionButton {
     required this.action,
     this.prompt,
   });
+
+  factory AiActionButton.fromJson(Map<String, dynamic> json) {
+    final actionStr = json['action']?.toString() ?? '';
+    final act = AiAction.values.firstWhere(
+      (e) => e.name == actionStr,
+      orElse: () => AiAction.openChat,
+    );
+    return AiActionButton(
+      label: json['label']?.toString() ?? '',
+      action: act,
+      prompt: json['prompt'] as String?,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'label': label,
+      'action': action.name,
+      if (prompt != null) 'prompt': prompt,
+    };
+  }
 }
 
 /// The full structured payload of an assistant message: intro [content]
@@ -63,4 +114,37 @@ class AiResponse {
   });
 
   bool get isEmpty => blocks.isEmpty && actions.isEmpty;
+
+  factory AiResponse.fromJson(Map<String, dynamic> json) {
+    final rawBlocks = json['blocks'];
+    List<AiBlock> parsedBlocks = const [];
+    if (rawBlocks is List) {
+      parsedBlocks = rawBlocks
+          .whereType<Map<String, dynamic>>()
+          .map((b) => AiBlock.fromJson(b))
+          .toList();
+    }
+
+    final rawActions = json['actions'];
+    List<AiActionButton> parsedActions = const [];
+    if (rawActions is List) {
+      parsedActions = rawActions
+          .whereType<Map<String, dynamic>>()
+          .map((a) => AiActionButton.fromJson(a))
+          .toList();
+    }
+
+    return AiResponse(
+      blocks: parsedBlocks,
+      actions: parsedActions,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (blocks.isNotEmpty) 'blocks': blocks.map((b) => b.toJson()).toList(),
+      if (actions.isNotEmpty)
+        'actions': actions.map((a) => a.toJson()).toList(),
+    };
+  }
 }

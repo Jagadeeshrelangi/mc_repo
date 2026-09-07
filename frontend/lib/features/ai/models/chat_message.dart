@@ -25,6 +25,38 @@ class ChatMessage {
 
   bool get isUser => role == MessageRole.user;
 
+  factory ChatMessage.fromJson(Map<String, dynamic> json) {
+    final roleStr = (json['role'] ?? '').toString().toLowerCase();
+    final role = roleStr == 'user' ? MessageRole.user : MessageRole.assistant;
+    final timestampStr = json['timestamp'] ?? json['created_at'];
+
+    AiResponse? parsedResponse;
+    if (json['response'] is Map<String, dynamic>) {
+      parsedResponse =
+          AiResponse.fromJson(json['response'] as Map<String, dynamic>);
+    }
+
+    return ChatMessage(
+      id: json['id']?.toString() ?? '',
+      role: role,
+      content: json['content']?.toString() ?? '',
+      timestamp: timestampStr != null
+          ? DateTime.tryParse(timestampStr.toString()) ?? DateTime.now()
+          : DateTime.now(),
+      response: parsedResponse,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'role': role == MessageRole.user ? 'user' : 'assistant',
+      'content': content,
+      'timestamp': timestamp.toIso8601String(),
+      if (response != null) 'response': response!.toJson(),
+    };
+  }
+
   ChatMessage copyWith({
     String? id,
     MessageRole? role,

@@ -111,6 +111,11 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         actions: [
           IconButton(
+            tooltip: 'Conversation history',
+            onPressed: () => openAiHistory(context),
+            icon: const Icon(Icons.history_rounded),
+          ),
+          IconButton(
             tooltip: 'New chat',
             onPressed: () {
               _controller.clear();

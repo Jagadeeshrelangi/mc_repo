@@ -49,6 +49,14 @@ class _ConversationHistoryScreenState extends State<ConversationHistoryScreen> {
       appBar: AppBar(
         title: const Text('Conversations'),
         actions: [
+          IconButton(
+            tooltip: 'New conversation',
+            onPressed: () {
+              provider.newConversation();
+              openAiChat(context);
+            },
+            icon: const Icon(Icons.add_comment_rounded),
+          ),
           if (provider.conversations.isNotEmpty)
             IconButton(
               tooltip: 'Clear all conversations',
@@ -129,44 +137,50 @@ class _ConversationHistoryScreenState extends State<ConversationHistoryScreen> {
     final results = provider.searchConversations(_query);
 
     if (results.isEmpty) {
-      return AiEmptyState(
-        icon: _query.isEmpty ? Icons.forum_rounded : Icons.search_off_rounded,
-        title: _query.isEmpty ? 'No conversations yet' : 'No matches found',
-        message:
-            _query.isEmpty
-                ? 'Start chatting with Mecha AI and your threads will show up here.'
-                : 'Nothing matches \'$_query\'. Try a different search.',
-        actionLabel: _query.isEmpty ? 'Start chatting' : null,
-        onAction: _query.isEmpty ? () => openAiChat(context) : null,
+      return SingleChildScrollView(
+        child: AiEmptyState(
+          icon: _query.isEmpty ? Icons.forum_rounded : Icons.search_off_rounded,
+          title: _query.isEmpty ? 'No conversations yet' : 'No matches found',
+          message:
+              _query.isEmpty
+                  ? 'Start chatting with Mecha AI and your threads will show up here.'
+                  : 'Nothing matches \'$_query\'. Try a different search.',
+          actionLabel: _query.isEmpty ? 'Start chatting' : null,
+          onAction: _query.isEmpty ? () => openAiChat(context) : null,
+        ),
       );
     }
 
     final pinned = results.where((c) => c.isPinned).toList();
     final others = results.where((c) => !c.isPinned).toList();
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.base,
-        0,
-        AppSpacing.base,
-        AppSpacing.xxl,
+    return RefreshIndicator(
+      onRefresh: provider.refreshHome,
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.base,
+          0,
+          AppSpacing.base,
+          AppSpacing.xxl,
+        ),
+        children: [
+          if (pinned.isNotEmpty) ...[
+            _sectionLabel(context, 'PINNED'),
+            for (final conversation in pinned)
+              _tile(context, provider, conversation),
+            if (others.isNotEmpty) const SizedBox(height: AppSpacing.md),
+          ],
+          if (others.isNotEmpty) ...[
+            _sectionLabel(
+              context,
+              pinned.isNotEmpty ? 'ALL CONVERSATIONS' : 'RECENT',
+            ),
+            for (final conversation in others)
+              _tile(context, provider, conversation),
+          ],
+        ],
       ),
-      children: [
-        if (pinned.isNotEmpty) ...[
-          _sectionLabel(context, 'PINNED'),
-          for (final conversation in pinned)
-            _tile(context, provider, conversation),
-          if (others.isNotEmpty) const SizedBox(height: AppSpacing.md),
-        ],
-        if (others.isNotEmpty) ...[
-          _sectionLabel(
-            context,
-            pinned.isNotEmpty ? 'ALL CONVERSATIONS' : 'RECENT',
-          ),
-          for (final conversation in others)
-            _tile(context, provider, conversation),
-        ],
-      ],
     );
   }
 

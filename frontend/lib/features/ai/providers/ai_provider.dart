@@ -240,7 +240,9 @@ class AiProvider extends ChangeNotifier {
 
     try {
       final loaded = await _repository.fetchConversations();
-      _mergeReloaded(loaded);
+      _conversations
+        ..clear()
+        ..addAll(loaded);
       _state = AiScreenState.ready;
     } catch (e) {
       _state = AiScreenState.error;
@@ -256,7 +258,9 @@ class AiProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final loaded = await _repository.fetchConversations();
-      _mergeReloaded(loaded);
+      _conversations
+        ..clear()
+        ..addAll(loaded);
       _state = AiScreenState.ready;
     } catch (e) {
       _errorMessage = e.toString();
@@ -264,31 +268,6 @@ class AiProvider extends ChangeNotifier {
       _isRefreshing = false;
       notifyListeners();
     }
-  }
-
-  /// Replaces the seeded conversations with the freshly loaded ones while
-  /// preserving anything the user created during this session (new threads,
-  /// messages and pin overrides must never be wiped by a refresh).
-  void _mergeReloaded(List<Conversation> loaded) {
-    final previousById = {for (final c in _conversations) c.id: c};
-    final loadedIds = loaded.map((c) => c.id).toSet();
-
-    final refreshedSeeds =
-        loaded.map((c) {
-          final previous = previousById[c.id];
-          if (previous != null && previous.isPinned != c.isPinned) {
-            return c.copyWith(isPinned: previous.isPinned);
-          }
-          return c;
-        }).toList();
-
-    final userCreated =
-        _conversations.where((c) => !loadedIds.contains(c.id)).toList();
-
-    _conversations
-      ..clear()
-      ..addAll(refreshedSeeds)
-      ..addAll(userCreated);
   }
 
   // ── Conversation lifecycle ─────────────────────────────────────────────
@@ -300,11 +279,24 @@ class AiProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void openConversation(String conversationId) {
+  Future<void> openConversation(String conversationId) async {
     _currentConversationId = conversationId;
     _errorMessage = null;
     _lastFailedUserText = null;
     notifyListeners();
+
+    try {
+      final detail = await _repository.fetchConversationDetail(conversationId);
+      final index = _conversations.indexWhere((c) => c.id == conversationId);
+      if (index >= 0) {
+        _conversations[index] = detail;
+      } else {
+        _conversations.insert(0, detail);
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error fetching conversation detail for $conversationId: $e');
+    }
   }
 
   Future<void> deleteConversation(String conversationId) async {
@@ -313,31 +305,65 @@ class AiProvider extends ChangeNotifier {
       _currentConversationId = null;
     }
     notifyListeners();
+
+    try {
+      await _repository.deleteConversation(conversationId);
+    } catch (e) {
+      debugPrint('Backend delete conversation failed: $e');
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
   }
 
   Future<void> renameConversation(String conversationId, String title) async {
-    final index = _conversations.indexWhere((c) => c.id == conversationId);
-    if (index < 0) return;
     final trimmed = title.trim();
     if (trimmed.isEmpty) return;
-    _conversations[index] = _conversations[index].copyWith(title: trimmed);
-    notifyListeners();
+    final index = _conversations.indexWhere((c) => c.id == conversationId);
+    if (index >= 0) {
+      _conversations[index] = _conversations[index].copyWith(title: trimmed);
+      notifyListeners();
+    }
+
+    try {
+      await _repository.updateConversation(conversationId, title: trimmed);
+    } catch (e) {
+      debugPrint('Backend rename conversation failed: $e');
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
   }
 
-  void togglePin(String conversationId) {
+  Future<void> togglePin(String conversationId) async {
     final index = _conversations.indexWhere((c) => c.id == conversationId);
     if (index < 0) return;
     final current = _conversations[index];
-    _conversations[index] = current.copyWith(isPinned: !current.isPinned);
+    final newPinned = !current.isPinned;
+    _conversations[index] = current.copyWith(isPinned: newPinned);
     notifyListeners();
+
+    try {
+      await _repository.updateConversation(conversationId, isPinned: newPinned);
+    } catch (e) {
+      debugPrint('Backend pin toggle failed: $e');
+      _conversations[index] = current;
+      _errorMessage = e.toString();
+      notifyListeners();
+    }
   }
 
   Future<void> clearAllConversations() async {
+    final ids = _conversations.map((c) => c.id).toList();
     _conversations.clear();
     _currentConversationId = null;
     _errorMessage = null;
     _lastFailedUserText = null;
     notifyListeners();
+
+    for (final id in ids) {
+      try {
+        await _repository.deleteConversation(id);
+      } catch (_) {}
+    }
   }
 
   List<Conversation> searchConversations(String query) {
@@ -367,16 +393,18 @@ class AiProvider extends ChangeNotifier {
       timestamp: now,
     );
 
-    if (_currentConversationId == null) {
+    if (_currentConversationId == null || _currentConversationId!.isEmpty) {
+      final backendSessionId = await _repository.createSession();
+      final sessionId = backendSessionId ?? _nextConversationId();
       final conversation = Conversation(
-        id: _nextConversationId(),
+        id: sessionId,
         title: _defaultTitle(trimmed),
         createdAt: now,
         updatedAt: now,
         messages: [userMessage],
       );
       _conversations.insert(0, conversation);
-      _currentConversationId = conversation.id;
+      _currentConversationId = sessionId;
     } else {
       _appendToCurrent(userMessage);
     }

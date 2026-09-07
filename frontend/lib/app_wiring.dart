@@ -60,7 +60,7 @@ List<SingleChildWidget> buildRootProviders({
     ),
     ChangeNotifierProvider(create: (_) => HomeProvider(HomeRepository(apiClient: apiClient))),
     ChangeNotifierProvider.value(value: mechanic),
-    ChangeNotifierProvider(create: (_) => AiProvider()),
+    ChangeNotifierProvider(create: (_) => AiProvider(apiClient: apiClient)),
     ChangeNotifierProvider.value(value: profile),
     ChangeNotifierProvider.value(value: fuel),
     ChangeNotifierProvider.value(value: marketplace),

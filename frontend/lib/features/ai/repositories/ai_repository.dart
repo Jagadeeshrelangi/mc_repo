@@ -299,8 +299,24 @@ class AiRepository {
 
   // ── API surface (all async, all latency/failure aware) ─────────────────
 
-  /// Returns the full seeded conversation list (newest activity first).
-  Future<List<Conversation>> fetchConversations() {
+  /// Returns the conversation list.
+  /// When [ApiClient] is provided, queries `GET /api/v1/conversation/sessions`.
+  /// Otherwise, falls back to seeded local conversations (offline/unit test).
+  Future<List<Conversation>> fetchConversations() async {
+    if (_apiClient != null) {
+      final res = await _apiClient.get(
+        '/api/v1/conversation/sessions',
+        requiresAuth: true,
+      );
+      if (res is List) {
+        return res
+            .whereType<Map<String, dynamic>>()
+            .map((json) => Conversation.fromJson(json))
+            .toList();
+      }
+      return const [];
+    }
+
     return _call(() {
       final sorted = [..._conversations]..sort((a, b) {
         if (a.isPinned != b.isPinned) return a.isPinned ? -1 : 1;
@@ -313,58 +329,128 @@ class AiRepository {
   /// Creates a session on the backend if [ApiClient] is available.
   Future<String?> createSession() async {
     if (_apiClient != null) {
-      try {
-        final res = await _apiClient.post(
-          '/api/v1/conversation/session',
-          body: {},
-          requiresAuth: true,
-        );
-        if (res is Map<String, dynamic> && res['session_id'] != null) {
-          _currentSessionId = res['session_id'].toString();
-          return _currentSessionId;
-        }
-      } catch (e) {
-        debugPrint('Backend session creation fell back to local: $e');
+      final res = await _apiClient.post(
+        '/api/v1/conversation/session',
+        body: {},
+        requiresAuth: true,
+      );
+      if (res is Map<String, dynamic> && res['session_id'] != null) {
+        _currentSessionId = res['session_id'].toString();
+        return _currentSessionId;
       }
     }
     return null;
   }
 
+  /// Fetches conversation metadata and message turns from `GET /api/v1/conversation/sessions/{id}`.
+  Future<Conversation> fetchConversationDetail(String sessionId) async {
+    if (_apiClient != null) {
+      final res = await _apiClient.get(
+        '/api/v1/conversation/sessions/$sessionId',
+        requiresAuth: true,
+      );
+      if (res is Map<String, dynamic>) {
+        return Conversation.fromJson(res);
+      }
+    }
+
+    return _call(() {
+      final match = _conversations.firstWhere(
+        (c) => c.id == sessionId,
+        orElse: () => Conversation(
+          id: sessionId,
+          title: 'Conversation',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        ),
+      );
+      return match;
+    });
+  }
+
+  /// Renames or pins/unpins a conversation via `PATCH /api/v1/conversation/sessions/{id}`.
+  Future<Conversation?> updateConversation(
+    String sessionId, {
+    String? title,
+    bool? isPinned,
+  }) async {
+    if (_apiClient != null) {
+      final body = <String, dynamic>{};
+      if (title != null) body['title'] = title;
+      if (isPinned != null) body['is_pinned'] = isPinned;
+
+      final res = await _apiClient.patch(
+        '/api/v1/conversation/sessions/$sessionId',
+        body: body,
+        requiresAuth: true,
+      );
+      if (res is Map<String, dynamic>) {
+        return Conversation.fromJson(res);
+      }
+    }
+
+    return _call(() {
+      final index = _conversations.indexWhere((c) => c.id == sessionId);
+      if (index >= 0) {
+        final current = _conversations[index];
+        final updated = current.copyWith(
+          title: title ?? current.title,
+          isPinned: isPinned ?? current.isPinned,
+          updatedAt: DateTime.now(),
+        );
+        _conversations[index] = updated;
+        return updated;
+      }
+      return null;
+    });
+  }
+
+  /// Deletes a conversation session via `DELETE /api/v1/conversation/sessions/{id}`.
+  Future<void> deleteConversation(String sessionId) async {
+    if (_apiClient != null) {
+      await _apiClient.delete(
+        '/api/v1/conversation/sessions/$sessionId',
+        requiresAuth: true,
+      );
+    }
+
+    _conversations.removeWhere((c) => c.id == sessionId);
+    if (_currentSessionId == sessionId) {
+      _currentSessionId = null;
+    }
+  }
+
   /// Sends a message to the conversation engine and returns the assistant reply.
   Future<String> sendMessage(String conversationId, String message) async {
     if (_apiClient != null) {
-      try {
-        String sessionId = conversationId;
-        if (sessionId.isEmpty || sessionId.startsWith('ai-')) {
-          if (_currentSessionId != null) {
-            sessionId = _currentSessionId!;
-          } else {
-            final sessionRes = await _apiClient.post(
-              '/api/v1/conversation/session',
-              body: {},
-              requiresAuth: true,
-            );
-            if (sessionRes is Map<String, dynamic> && sessionRes['session_id'] != null) {
-              sessionId = sessionRes['session_id'].toString();
-              _currentSessionId = sessionId;
-            }
+      String sessionId = conversationId;
+      if (sessionId.isEmpty || sessionId.startsWith('ai-')) {
+        if (_currentSessionId != null) {
+          sessionId = _currentSessionId!;
+        } else {
+          final sessionRes = await _apiClient.post(
+            '/api/v1/conversation/session',
+            body: {},
+            requiresAuth: true,
+          );
+          if (sessionRes is Map<String, dynamic> && sessionRes['session_id'] != null) {
+            sessionId = sessionRes['session_id'].toString();
+            _currentSessionId = sessionId;
           }
         }
+      }
 
-        final res = await _apiClient.post(
-          '/api/v1/conversation/chat',
-          body: {
-            'message': message,
-            'session_id': sessionId,
-          },
-          requiresAuth: true,
-        );
+      final res = await _apiClient.post(
+        '/api/v1/conversation/chat',
+        body: {
+          'message': message,
+          'session_id': sessionId,
+        },
+        requiresAuth: true,
+      );
 
-        if (res is Map<String, dynamic> && res['response'] != null) {
-          return res['response'] as String;
-        }
-      } catch (e) {
-        debugPrint('Backend chat call fell back to local engine: $e');
+      if (res is Map<String, dynamic> && res['response'] != null) {
+        return res['response'] as String;
       }
     }
 
