@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:mecha_connect/features/orders/orders.dart';
 import 'package:mecha_connect/parts/order_data.dart';
 import '../widgets/order_card.dart';
 import '../theme/app_colors.dart';
@@ -28,11 +30,27 @@ class _OrderscreenState extends State<Orderscreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController.addListener(_onTabChanged);
     _rebuildTrigger = Listenable.merge([_tabController, orderStore]);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        try {
+          Provider.of<OrdersProvider>(context, listen: false).loadOrders();
+        } catch (_) {}
+      }
+    });
+  }
+
+  void _onTabChanged() {
+    try {
+      Provider.of<OrdersProvider>(context, listen: false).setTabIndex(_tabController.index);
+    } catch (_) {}
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
@@ -95,7 +113,12 @@ class _OrderscreenState extends State<Orderscreen>
 
   Future<void> _refresh() async {
     setState(() => _isRefreshing = true);
-    await Future.delayed(const Duration(milliseconds: 600));
+    try {
+      final provider = Provider.of<OrdersProvider>(context, listen: false);
+      await provider.refresh();
+    } catch (_) {
+      await Future.delayed(const Duration(milliseconds: 600));
+    }
     if (mounted) setState(() => _isRefreshing = false);
   }
 
@@ -114,20 +137,31 @@ class _OrderscreenState extends State<Orderscreen>
                 child: const Text('Keep Order'),
               ),
               TextButton(
-                onPressed: () {
+                onPressed: () async {
                   Navigator.pop(ctx);
-                  ordersList.removeWhere((o) => _sameOrder(o, order));
-                  orderStore.notify();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Order cancelled'),
-                      backgroundColor: AppColors.error,
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                  bool cancelled = false;
+                  try {
+                    final provider = Provider.of<OrdersProvider>(context, listen: false);
+                    final uOrder = UnifiedOrder.fromJson(order);
+                    cancelled = await provider.cancelOrder(uOrder);
+                  } catch (_) {
+                    ordersList.removeWhere((o) => _sameOrder(o, order));
+                    orderStore.notify();
+                    cancelled = true;
+                  }
+
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(cancelled ? 'Order cancelled' : 'Could not cancel order'),
+                        backgroundColor: cancelled ? AppColors.error : AppColors.brandOrange,
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
                       ),
-                    ),
-                  );
+                    );
+                  }
                 },
                 child: const Text(
                   'Cancel Order',
@@ -340,7 +374,12 @@ class _OrderscreenState extends State<Orderscreen>
                             fontSize: 13,
                             color: context.textPrimary,
                           ),
-                          onChanged: (v) => setState(() => _searchQuery = v),
+                          onChanged: (v) {
+                            setState(() => _searchQuery = v);
+                            try {
+                              Provider.of<OrdersProvider>(context, listen: false).setSearchQuery(v);
+                            } catch (_) {}
+                          },
                         ),
                       ),
                       if (_searchQuery.isNotEmpty)
@@ -355,6 +394,9 @@ class _OrderscreenState extends State<Orderscreen>
                           onPressed: () {
                             _searchController.clear();
                             setState(() => _searchQuery = '');
+                            try {
+                              Provider.of<OrdersProvider>(context, listen: false).setSearchQuery('');
+                            } catch (_) {}
                           },
                         ),
                     ],
@@ -388,14 +430,34 @@ class _OrderscreenState extends State<Orderscreen>
       body: AnimatedBuilder(
         animation: _rebuildTrigger,
         builder: (context, _) {
-          final orders = _filteredOrders;
-          return _isRefreshing
-              ? const Center(
-                child: CircularProgressIndicator(color: AppColors.brandOrange),
-              )
-              : orders.isEmpty
-              ? _buildEmptyState()
-              : RefreshIndicator(
+          OrdersProvider? ordersProvider;
+          try {
+            ordersProvider = Provider.of<OrdersProvider>(context);
+          } catch (_) {}
+
+          final isBusy = _isRefreshing || (ordersProvider?.isLoading ?? false);
+          final errorMessage = ordersProvider?.errorMessage;
+          final orders = ordersProvider != null
+              ? ordersProvider.filteredOrders.map((o) => o.toMap()).toList()
+              : _filteredOrders;
+
+          if (isBusy) {
+            return const Center(
+              child: CircularProgressIndicator(color: AppColors.brandOrange),
+            );
+          }
+
+          if (errorMessage != null && orders.isEmpty) {
+            return _buildErrorState(errorMessage, () {
+              ordersProvider?.loadOrders();
+            });
+          }
+
+          if (orders.isEmpty) {
+            return _buildEmptyState();
+          }
+
+          return RefreshIndicator(
                 onRefresh: _refresh,
                 color: AppColors.brandOrange,
                 child: ListView.separated(
@@ -509,6 +571,61 @@ class _OrderscreenState extends State<Orderscreen>
                 ),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorState(String message, VoidCallback onRetry) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: context.bgTertiary,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.error_outline_rounded,
+                size: 40,
+                color: AppColors.error,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Unable to Load Orders',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                fontFamily: 'Space Grotesk',
+                color: context.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: TextStyle(fontSize: 13, color: context.textTertiary),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded, size: 18),
+              label: const Text('Retry'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.brandOrange,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
           ],
         ),
       ),

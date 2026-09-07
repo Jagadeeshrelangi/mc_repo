@@ -47,11 +47,17 @@ Ratings (D6-3, recon §12/§17)
   the backend capability bound to the frozen contract surface.
 """
 
+from decimal import Decimal
 from typing import List, Optional
 
+from sqlalchemy import update
+
 from app.core.exceptions import EntityNotFoundException, InvalidInputException
+from app.models.mechanic import Mechanic
 from app.models.mechanic_booking import MechanicBooking
+from app.models.mechanic_service import MechanicService
 from app.models.mechanic_status import BookingStatus
+from app.models.order_entry import OrderEntry
 from app.repositories.mechanics import (
     BookingEventRepository,
     MechanicBookingRepository,
@@ -214,6 +220,35 @@ class MechanicService:
             await self.event_repo.append(
                 booking_id=booking.id, status=BookingStatus.REQUESTED.value
             )
+
+            # Persist unified cross-domain OrderEntry
+            service_name = "Mechanic Service"
+            service_price = Decimal("499.00")
+            if payload.service_id:
+                svc = await self.session.get(MechanicService, payload.service_id)
+                if svc:
+                    service_name = svc.name
+                    if svc.price:
+                        service_price = svc.price
+
+            mech_name = "Mecha Partner"
+            mech = await self.session.get(Mechanic, payload.mechanic_id)
+            if mech:
+                mech_name = mech.name
+
+            entry = OrderEntry(
+                id=str(booking.id),
+                user_id=str(user_id),
+                name=service_name,
+                brand=mech_name,
+                quantity=1,
+                price=service_price,
+                type="mechanic",
+                status="In Progress",
+                source="Mechanic Booking",
+            )
+            self.session.add(entry)
+
             await self.session.commit()
             return BookingOut.model_validate(booking)
         except Exception:
@@ -234,6 +269,12 @@ class MechanicService:
             await self.event_repo.append(
                 booking_id=booking_id, status=BookingStatus.CANCELLED.value
             )
+            # Sync unified cross-domain OrderEntry status
+            await self.session.execute(
+                update(OrderEntry)
+                .where(OrderEntry.id == str(booking_id))
+                .values(status="Cancelled")
+            )
             await self.session.commit()
             return BookingOut.model_validate(booking)
         except Exception:
@@ -253,6 +294,12 @@ class MechanicService:
             await self.booking_repo.complete(booking)
             await self.event_repo.append(
                 booking_id=booking_id, status=BookingStatus.COMPLETED.value
+            )
+            # Sync unified cross-domain OrderEntry status
+            await self.session.execute(
+                update(OrderEntry)
+                .where(OrderEntry.id == str(booking_id))
+                .values(status="Completed")
             )
             await self.session.commit()
             return BookingOut.model_validate(booking)

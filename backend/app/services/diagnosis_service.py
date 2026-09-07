@@ -93,6 +93,23 @@ class DiagnosisService:
             vehicle_name=vehicle_name,
             vehicle_type=vehicle_type,
         )
+
+        from decimal import Decimal
+        from app.models.order_entry import OrderEntry
+        diag_entry = OrderEntry(
+            id=obj.id,
+            user_id=user_id,
+            name=predicted_fault or "Vehicle Diagnostic Report",
+            brand=vehicle_name or "AI Diagnosis",
+            quantity=1,
+            price=Decimal(str(estimated_cost)) if estimated_cost else Decimal("0.00"),
+            type="aiReport",
+            status="Completed",
+            source="AI Assistant",
+        )
+        session.add(diag_entry)
+        await session.flush()
+
         return obj
 
     @staticmethod

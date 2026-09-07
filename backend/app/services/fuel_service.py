@@ -16,12 +16,14 @@ from decimal import Decimal, ROUND_HALF_UP
 from typing import List, Optional, Sequence
 import uuid
 
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import EntityNotFoundException, InvalidInputException
 from app.models.fuel_order import FuelOrder
 from app.models.fuel_station import FuelStation
 from app.models.invoice import Invoice
+from app.models.order_entry import OrderEntry
 from app.models.price_estimate import PriceEstimate
 from app.models.tracking_event import TrackingEvent
 from app.repositories.fuel import (
@@ -229,6 +231,20 @@ class FuelService:
             )
             await self.tracking_repo.create(initial_event)
 
+            # Persist unified cross-domain OrderEntry
+            fuel_entry = OrderEntry(
+                id=order_id,
+                user_id=user_id,
+                name=f"Fuel Delivery · {int(payload.quantity)}L {payload.fuel_type.capitalize()}",
+                brand=brand or station_name or "Fuel Partner",
+                quantity=int(payload.quantity),
+                price=estimate_data.grand_total,
+                type="fuel",
+                status="In Progress",
+                source="Fuel Delivery",
+            )
+            self.session.add(fuel_entry)
+
             await self.session.commit()
 
             # Return loaded order with relations
@@ -302,6 +318,19 @@ class FuelService:
                         grand_total=order.price_estimate.grand_total,
                     )
                     await self.invoice_repo.create(invoice)
+
+            # Update unified cross-domain OrderEntry if exists
+            mapped_entry_status = "In Progress"
+            if new_status == "delivered":
+                mapped_entry_status = "Delivered"
+            elif new_status == "cancelled":
+                mapped_entry_status = "Cancelled"
+
+            await self.session.execute(
+                update(OrderEntry)
+                .where(OrderEntry.id == order_id)
+                .values(status=mapped_entry_status)
+            )
 
             await self.session.commit()
             return order

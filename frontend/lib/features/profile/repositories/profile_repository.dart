@@ -603,26 +603,22 @@ class ProfileRepository {
   Future<List<Map<String, dynamic>>> fetchOrders() => _call(() async {
     if (_apiClient != null) {
       try {
-        final res = await _apiClient.get('/api/v1/marketplace/orders', requiresAuth: true);
+        final res = await _apiClient.get('/api/v1/orders', requiresAuth: true);
         if (res is List) {
           final list = <Map<String, dynamic>>[];
           for (final o in res) {
             if (o is Map<String, dynamic>) {
-              final items = o['items'] as List? ?? [];
-              final firstItem = items.isNotEmpty && items.first is Map<String, dynamic>
-                  ? items.first as Map<String, dynamic>
-                  : <String, dynamic>{};
               list.add({
-                'id': o['external_id'] ?? o['id'] ?? '',
-                'name': firstItem['product_name'] ?? 'Marketplace Item',
-                'brand': firstItem['brand'] ?? '',
-                'quantity': firstItem['quantity'] ?? 1,
-                'price': (o['total'] as num?)?.toDouble() ?? 0.0,
-                'image': firstItem['image'],
-                'type': 'parts',
+                'id': o['id'] ?? '',
+                'name': o['name'] ?? 'Order',
+                'brand': o['brand'] ?? '',
+                'quantity': o['quantity'] ?? 1,
+                'price': (o['price'] as num?)?.toDouble() ?? 0.0,
+                'image': o['image'],
+                'type': o['type'] ?? 'parts',
                 'status': o['status'] ?? 'Pending',
-                'date': o['created_at'] != null
-                    ? o['created_at'].toString().split('T').first
+                'date': o['occurred_at'] != null
+                    ? o['occurred_at'].toString().split('T').first
                     : 'Recent',
               });
             }

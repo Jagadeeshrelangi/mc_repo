@@ -9,6 +9,7 @@ from app.api.v1 import (
     marketplace,
     mechanic,
     notification_settings,
+    orders,
     users,
     vehicles,
     wallet,
@@ -81,3 +82,10 @@ api_router.include_router(
     prefix="/marketplace",
     tags=["Marketplace"]
 )
+
+api_router.include_router(
+    orders.router,
+    prefix="/orders",
+    tags=["Orders"]
+)
+

@@ -14,6 +14,7 @@ import 'package:mecha_connect/features/mechanic/providers/mechanic_provider.dart
 import 'package:mecha_connect/features/mechanic/repositories/mechanic_repository.dart';
 import 'package:mecha_connect/features/profile/providers/profile_provider.dart';
 import 'package:mecha_connect/features/profile/repositories/profile_repository.dart';
+import 'package:mecha_connect/features/orders/orders.dart';
 import 'package:mecha_connect/services/location_provider.dart';
 import 'package:mecha_connect/theme/theme_provider.dart';
 
@@ -51,6 +52,9 @@ List<SingleChildWidget> buildRootProviders({
   final mechanic = MechanicProvider(
     repository: MechanicRepository(apiClient: apiClient),
   );
+  final orders = OrdersProvider(
+    repository: OrdersRepository(apiClient: apiClient),
+  );
 
   return [
     ChangeNotifierProvider(create: (_) => ThemeProvider()),
@@ -64,5 +68,6 @@ List<SingleChildWidget> buildRootProviders({
     ChangeNotifierProvider.value(value: profile),
     ChangeNotifierProvider.value(value: fuel),
     ChangeNotifierProvider.value(value: marketplace),
+    ChangeNotifierProvider.value(value: orders),
   ];
 }
