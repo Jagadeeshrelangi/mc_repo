@@ -45,11 +45,16 @@ class Reward {
       displayDate = dateStr.substring(0, 10);
     }
 
+    final rawPoints = json['points'];
+    final points = rawPoints is num
+        ? rawPoints.toInt()
+        : (int.tryParse(rawPoints?.toString() ?? '') ?? 0);
+
     return Reward(
       id: json['id'] as String? ?? '',
       title: json['title'] as String? ?? (type == RewardType.earned ? 'Earned' : 'Redeemed'),
       subtitle: json['subtitle'] as String? ?? '',
-      points: (json['points'] as num?)?.toInt() ?? 0,
+      points: points,
       type: type,
       date: displayDate,
     );

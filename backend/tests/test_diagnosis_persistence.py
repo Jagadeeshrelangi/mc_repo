@@ -21,6 +21,7 @@ from app.api.v1.diagnosis import router as diagnosis_router
 from app.core import security
 from app.core.config import settings
 from app.models.diagnosis import Diagnosis
+from app.models.order_entry import OrderEntry
 from app.models.user import User
 from app.repositories.diagnosis import DiagnosisRepository
 from app.schemas.diagnosis import DiagnosisInput, DiagnosisResponse
@@ -103,9 +104,11 @@ async def test_confidence_scaling_in_diagnosis_service(
         diagnosis_mode="telemetry",
     )
 
-    assert len(session.added) == 1
-    diag = session.added[0]
-    assert isinstance(diag, Diagnosis)
+    diagnoses = [o for o in session.added if isinstance(o, Diagnosis)]
+    order_entries = [o for o in session.added if isinstance(o, OrderEntry)]
+    assert len(diagnoses) == 1
+    assert len(order_entries) == 1
+    diag = diagnoses[0]
     assert diag.confidence == expected_stored
     assert session.flushed is True
     assert session.committed is False  # Flush only; no repo-level commit
@@ -215,8 +218,11 @@ def test_diagnose_route_field_mapping_symptoms_and_vehicle_name(test_app: FastAP
 
     # Verify what was persisted in the session
     session: FakeAsyncSession = test_app.state.fake_session
-    assert len(session.added) == 1
-    persisted: Diagnosis = session.added[0]
+    diagnoses = [o for o in session.added if isinstance(o, Diagnosis)]
+    order_entries = [o for o in session.added if isinstance(o, OrderEntry)]
+    assert len(diagnoses) == 1
+    assert len(order_entries) == 1
+    persisted: Diagnosis = diagnoses[0]
 
     assert persisted.user_id == USER_ID
     assert persisted.problem == "Flat Tyre / Puncture"
@@ -273,8 +279,11 @@ def test_vehicle_name_synthesis_combinations(
 
     assert res.status_code == status.HTTP_200_OK
     session: FakeAsyncSession = test_app.state.fake_session
-    assert len(session.added) == 1
-    persisted: Diagnosis = session.added[0]
+    diagnoses = [o for o in session.added if isinstance(o, Diagnosis)]
+    order_entries = [o for o in session.added if isinstance(o, OrderEntry)]
+    assert len(diagnoses) == 1
+    assert len(order_entries) == 1
+    persisted: Diagnosis = diagnoses[0]
     assert persisted.vehicle_name == expected_vehicle_name
 
 
@@ -313,8 +322,11 @@ def test_telemetry_mode_null_symptoms(test_app: FastAPI, monkeypatch) -> None:
 
     assert res.status_code == status.HTTP_200_OK
     session: FakeAsyncSession = test_app.state.fake_session
-    assert len(session.added) == 1
-    persisted: Diagnosis = session.added[0]
+    diagnoses = [o for o in session.added if isinstance(o, Diagnosis)]
+    order_entries = [o for o in session.added if isinstance(o, OrderEntry)]
+    assert len(diagnoses) == 1
+    assert len(order_entries) == 1
+    persisted: Diagnosis = diagnoses[0]
 
     assert persisted.symptoms is None  # Telemetry without symptoms persists NULL
     assert persisted.confidence == 95

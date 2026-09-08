@@ -91,7 +91,14 @@ class AuthRepository {
 
   Future<void> logout() async {
     try {
-      await _apiClient.post('/api/v1/auth/logout', requiresAuth: true);
+      final refreshToken = await _apiClient.getRefreshToken();
+      if (refreshToken != null && refreshToken.isNotEmpty) {
+        await _apiClient.post(
+          '/api/v1/auth/logout',
+          body: {'refresh_token': refreshToken},
+          requiresAuth: false,
+        );
+      }
     } catch (_) {
       // Best-effort logout
     } finally {

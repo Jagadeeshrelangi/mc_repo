@@ -8,9 +8,14 @@ import 'package:mecha_connect/features/home/providers/home_provider.dart';
 import 'package:mecha_connect/features/home/repositories/home_repository.dart';
 import 'package:mecha_connect/features/home/screens/home_screen.dart';
 import 'package:mecha_connect/features/home/screens/home_search_screen.dart';
+import 'package:mecha_connect/features/auth/providers/auth_provider.dart';
+import 'package:mecha_connect/features/auth/repositories/auth_repository.dart';
+import 'package:mecha_connect/features/auth/services/auth_service.dart';
 import 'package:mecha_connect/services/api_client.dart';
 import 'package:mecha_connect/services/geocoding_service.dart';
 import 'package:mecha_connect/services/location_provider.dart';
+import 'package:mecha_connect/homescreen/drawerscreen.dart';
+import 'package:mecha_connect/starting_screen/home.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -272,5 +277,30 @@ void main() {
     expect(find.text('95%'), findsOneWidget);
     expect(find.text('No vehicle added yet'), findsNothing);
   });
+
+  testWidgets('ServiceSelectionScreen opens ProfileDrawer on avatar tap without Scaffold.of exception', (tester) async {
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: (_) => AuthProvider(AuthService(AuthRepository())),
+          ),
+          ChangeNotifierProvider<LocationProvider>(create: (_) => _FakeLocationProvider()),
+        ],
+        child: const MaterialApp(home: ServiceSelectionScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final avatarFinder = find.text('JG');
+    expect(avatarFinder, findsOneWidget);
+
+    await tester.tap(avatarFinder);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ProfileDrawer), findsOneWidget);
+    expect(find.text('Jagadeesh Gowda'), findsOneWidget);
+  });
 }
+
 

@@ -93,6 +93,13 @@ class FakeSession:
         self.users = users if users is not None else {}
         self.commits = 0
         self.rollbacks = 0
+        self.added: list = []
+
+    def add(self, obj: Any) -> None:
+        self.added.append(obj)
+
+    async def execute(self, statement: Any, *args: Any, **kwargs: Any) -> Any:
+        return None
 
     async def get(self, model, entity_id) -> Optional[Any]:
         if model is User:

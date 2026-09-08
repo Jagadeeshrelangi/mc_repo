@@ -56,37 +56,39 @@ class _ServiceSelectionScreenState extends State<ServiceSelectionScreen>
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBg : AppColors.grey50,
       endDrawer: const ProfileDrawer(),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildPremiumHeader(context, isDark),
-              const LocationHeader(),
-              _buildSearchBar(context, isDark),
-              FadeTransition(
-                opacity: _fadeAnimations[0],
-                child: _buildSosCard(context, isDark),
-              ),
-              FadeTransition(
-                opacity: _fadeAnimations[1],
-                child: _buildVehicleHealthCard(context, isDark),
-              ),
-              FadeTransition(
-                opacity: _fadeAnimations[2],
-                child: _buildQuickServices(context, isDark),
-              ),
-              FadeTransition(
-                opacity: _fadeAnimations[3],
-                child: _buildRecentActivity(context, isDark),
-              ),
-              FadeTransition(
-                opacity: _fadeAnimations[4],
-                child: _buildPromoBanner(context, isDark),
-              ),
-              const SizedBox(height: 24),
-            ],
+      body: Builder(
+        builder: (scaffoldContext) => SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildPremiumHeader(scaffoldContext, isDark),
+                const LocationHeader(),
+                _buildSearchBar(scaffoldContext, isDark),
+                FadeTransition(
+                  opacity: _fadeAnimations[0],
+                  child: _buildSosCard(scaffoldContext, isDark),
+                ),
+                FadeTransition(
+                  opacity: _fadeAnimations[1],
+                  child: _buildVehicleHealthCard(scaffoldContext, isDark),
+                ),
+                FadeTransition(
+                  opacity: _fadeAnimations[2],
+                  child: _buildQuickServices(scaffoldContext, isDark),
+                ),
+                FadeTransition(
+                  opacity: _fadeAnimations[3],
+                  child: _buildRecentActivity(scaffoldContext, isDark),
+                ),
+                FadeTransition(
+                  opacity: _fadeAnimations[4],
+                  child: _buildPromoBanner(scaffoldContext, isDark),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),

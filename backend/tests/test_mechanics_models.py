@@ -387,8 +387,11 @@ def test_migration_revision_chain() -> None:
     """0005 must be the single head after 0004, additive-only."""
     import alembic.config
     import alembic.script
+    from pathlib import Path
 
-    cfg = alembic.config.Config("alembic.ini")
+    here = Path(__file__).resolve().parent.parent
+    cfg = alembic.config.Config(str(here / "alembic.ini"))
+    cfg.set_main_option("script_location", str(here / "alembic"))
     script = alembic.script.ScriptDirectory.from_config(cfg)
 
     heads = set(script.get_heads())

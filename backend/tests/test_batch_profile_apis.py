@@ -297,3 +297,58 @@ def test_notification_settings_get_and_patch() -> None:
     patch_res = client.patch("/api/v1/notification-settings", json={"push": False})
     assert patch_res.status_code == 200
     assert patch_res.json()["push"] is False
+
+
+def test_rewards_missing_wallet_initializes_and_repeated_get_is_idempotent() -> None:
+    """Missing wallet is initialized with 0 balance, and repeated GET /rewards is safe/idempotent."""
+    session = FakeBatchSession()
+    user = User(
+        id=uuid.uuid4(),
+        name="Test User",
+        email="test@example.com",
+        phone="+919999999999",
+        role=UserRole.CUSTOMER,
+    )
+    client = create_batch_test_app(session, user)
+
+    # First call: missing wallet initialized
+    res1 = client.get("/api/v1/rewards")
+    assert res1.status_code == 200
+    data1 = res1.json()
+    assert data1["redeemable_points"] == 0
+    assert data1["total_earned"] == 0
+
+    # Second call: repeated GET is idempotent
+    res2 = client.get("/api/v1/rewards")
+    assert res2.status_code == 200
+    data2 = res2.json()
+    assert data2["redeemable_points"] == 0
+    assert data2["total_earned"] == 0
+
+
+def test_rewards_preserves_existing_wallet_balance_and_points() -> None:
+    """Existing wallet records are preserved on GET /rewards without duplicate insert."""
+    session = FakeBatchSession()
+    user = User(
+        id=uuid.uuid4(),
+        name="Test User",
+        email="test@example.com",
+        phone="+919999999999",
+        role=UserRole.CUSTOMER,
+    )
+    session.wallets.append(Wallet(
+        user_id=user.id,
+        balance=Decimal("250.75"),
+        reward_points=120,
+    ))
+    client = create_batch_test_app(session, user)
+
+    res = client.get("/api/v1/rewards")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["redeemable_points"] == 120
+    assert data["total_earned"] == 120
+    # Confirm wallet balance was not overwritten
+    assert len(session.wallets) == 1
+    assert session.wallets[0].balance == Decimal("250.75")
+

@@ -38,6 +38,64 @@ void main() {
       expect(await client.getRefreshToken(), isNull);
     });
 
+    test('AuthRepository.logout sends refresh_token in body and clears tokens', () async {
+      late http.BaseRequest capturedRequest;
+      String? capturedBody;
+
+      final mockHttp = MockClient((request) async {
+        capturedRequest = request;
+        capturedBody = request.body;
+        return http.Response(jsonEncode({'message': 'Successfully logged out'}), 200);
+      });
+
+      final client = ApiClient(baseUrl: 'http://test-server.local', client: mockHttp);
+      await client.saveTokens(
+        accessToken: 'test-access-token',
+        refreshToken: 'valid-refresh-token-xyz',
+      );
+
+      final repo = AuthRepository(apiClient: client);
+      await repo.logout();
+
+      expect(capturedRequest.url.path, '/api/v1/auth/logout');
+      expect(capturedRequest.method, 'POST');
+      expect(jsonDecode(capturedBody!), {'refresh_token': 'valid-refresh-token-xyz'});
+      expect(await client.getAccessToken(), isNull);
+      expect(await client.getRefreshToken(), isNull);
+    });
+
+    test('AuthRepository.logout clears local tokens even on server error', () async {
+      final mockHttp = MockClient((request) async {
+        return http.Response(jsonEncode({'detail': 'Server error'}), 500);
+      });
+
+      final client = ApiClient(baseUrl: 'http://test-server.local', client: mockHttp);
+      await client.saveTokens(
+        accessToken: 'test-access-token',
+        refreshToken: 'valid-refresh-token-xyz',
+      );
+
+      final repo = AuthRepository(apiClient: client);
+      await repo.logout();
+
+      expect(await client.getAccessToken(), isNull);
+      expect(await client.getRefreshToken(), isNull);
+    });
+
+    test('AuthRepository.logout handles repeated logout without tokens safely', () async {
+      final mockHttp = MockClient((request) async {
+        return http.Response(jsonEncode({'message': 'ok'}), 200);
+      });
+
+      final client = ApiClient(baseUrl: 'http://test-server.local', client: mockHttp);
+      final repo = AuthRepository(apiClient: client);
+
+      expect(await client.getRefreshToken(), isNull);
+      await repo.logout();
+      expect(await client.getAccessToken(), isNull);
+      expect(await client.getRefreshToken(), isNull);
+    });
+
     test('injects Bearer token in authenticated requests', () async {
       late http.BaseRequest capturedRequest;
 

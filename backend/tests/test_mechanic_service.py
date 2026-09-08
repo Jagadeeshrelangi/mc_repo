@@ -24,7 +24,7 @@ No commits, pushes, resets, or reverts are performed.
 
 from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Any, Dict
+from typing import Any, Dict, List, Optional
 from unittest.mock import AsyncMock
 
 import pytest
@@ -70,6 +70,16 @@ class FakeSession:
     def __init__(self) -> None:
         self.commits = 0
         self.rollbacks = 0
+        self.added: list = []
+
+    def add(self, obj: Any) -> None:
+        self.added.append(obj)
+
+    async def get(self, model: Any, ident: Any) -> Optional[Any]:
+        return None
+
+    async def execute(self, statement: Any, *args: Any, **kwargs: Any) -> Any:
+        return None
 
     async def commit(self) -> None:
         self.commits += 1

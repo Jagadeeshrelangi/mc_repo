@@ -5,6 +5,7 @@ from typing import List, Optional
 import uuid
 
 from sqlalchemy import func, select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.wallet import RewardLedger, Wallet, WalletTransaction
@@ -21,10 +22,24 @@ class WalletRepository(BaseRepository[Wallet]):
         query = select(Wallet).where(Wallet.user_id == user_id)
         result = await self.session.execute(query)
         wallet = result.scalar_one_or_none()
-        if wallet is None:
-            wallet = Wallet(user_id=user_id, balance=Decimal("0.0"), reward_points=0)
-            self.session.add(wallet)
+        if wallet is not None:
+            return wallet
+
+        bind = getattr(self.session, "bind", None) or getattr(getattr(self.session, "sync_session", None), "bind", None)
+        if bind and getattr(bind, "dialect", None) and getattr(bind.dialect, "name", "") == "postgresql":
+            stmt = (
+                pg_insert(Wallet)
+                .values(user_id=user_id, balance=Decimal("0.0"), reward_points=0)
+                .on_conflict_do_nothing(index_elements=[Wallet.user_id])
+            )
+            await self.session.execute(stmt)
             await self.session.flush()
+            result = await self.session.execute(query)
+            return result.scalar_one()
+
+        wallet = Wallet(user_id=user_id, balance=Decimal("0.0"), reward_points=0)
+        self.session.add(wallet)
+        await self.session.flush()
         return wallet
 
     async def list_transactions(self, user_id: uuid.UUID, limit: int = 50) -> List[WalletTransaction]:

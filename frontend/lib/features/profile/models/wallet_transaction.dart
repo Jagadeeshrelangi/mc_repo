@@ -37,11 +37,16 @@ class WalletTransaction {
       displayDate = dateStr.substring(0, 10);
     }
 
+    final rawAmount = json['amount'];
+    final amount = rawAmount is num
+        ? rawAmount.toDouble()
+        : (double.tryParse(rawAmount?.toString() ?? '') ?? 0.0);
+
     return WalletTransaction(
       id: json['id'] as String? ?? '',
       title: json['title'] as String? ?? (type == WalletTransactionType.credit ? 'Credit' : 'Debit'),
       subtitle: json['subtitle'] as String? ?? '',
-      amount: (json['amount'] as num?)?.toDouble() ?? 0.0,
+      amount: amount,
       type: type,
       date: displayDate,
     );

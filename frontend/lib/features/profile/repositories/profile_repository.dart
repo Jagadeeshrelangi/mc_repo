@@ -400,8 +400,14 @@ class ProfileRepository {
     if (_apiClient != null) {
       final res = await _apiClient.get('/api/v1/wallet', requiresAuth: true);
       if (res is Map<String, dynamic>) {
-        final balance = (res['balance'] as num?)?.toDouble() ?? 0.0;
-        final rewardPoints = (res['reward_points'] as num?)?.toInt() ?? 0;
+        final rawBalance = res['balance'];
+        final balance = rawBalance is num
+            ? rawBalance.toDouble()
+            : (double.tryParse(rawBalance?.toString() ?? '') ?? 0.0);
+        final rawRewardPoints = res['reward_points'];
+        final rewardPoints = rawRewardPoints is num
+            ? rawRewardPoints.toInt()
+            : (int.tryParse(rawRewardPoints?.toString() ?? '') ?? 0);
         final rawTxns = res['transactions'] as List? ?? [];
         final txns = rawTxns
             .map((t) => WalletTransaction.fromJson(t as Map<String, dynamic>))
@@ -492,8 +498,14 @@ class ProfileRepository {
     if (_apiClient != null) {
       final res = await _apiClient.get('/api/v1/rewards', requiresAuth: true);
       if (res is Map<String, dynamic>) {
-        final redeemable = (res['redeemable_points'] as num?)?.toInt() ?? 0;
-        final totalEarned = (res['total_earned'] as num?)?.toInt() ?? redeemable;
+        final rawRedeemable = res['redeemable_points'];
+        final redeemable = rawRedeemable is num
+            ? rawRedeemable.toInt()
+            : (int.tryParse(rawRedeemable?.toString() ?? '') ?? 0);
+        final rawTotalEarned = res['total_earned'];
+        final totalEarned = rawTotalEarned is num
+            ? rawTotalEarned.toInt()
+            : (int.tryParse(rawTotalEarned?.toString() ?? '') ?? redeemable);
         final rawLedger = res['ledger'] as List? ?? [];
         final rewards = rawLedger
             .map((r) => Reward.fromJson(r as Map<String, dynamic>))
