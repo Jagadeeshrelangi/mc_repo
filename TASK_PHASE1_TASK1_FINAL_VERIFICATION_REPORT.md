@@ -190,12 +190,41 @@ Manual interactive verification performed on real Android emulator (`emulator-55
 
 ---
 
-### 14. Known Issues
+### 14. BUGS DISCOVERED & FIXED
+
+| Bug | Layer | Root Cause | Fix | Regression Test | Manual Verified |
+|---|---|---|---|---|---|
+| Marketplace products endpoint serialized ORM relationship objects instead of string lists | Backend (`backend/app/schemas/marketplace.py`) | SQLAlchemy 2.x `vehicle_types` and `compatibility` relationships return instances of `ProductVehicleType` and `ProductCompatibility`. Pydantic V2 fails to coerce these into `List[str]` without explicit before-mode field validators. | Added `@field_validator("vehicle_types", mode="before")` and `@field_validator("compatibility", mode="before")` on `ProductResponse` to extract `.vehicle_type` and `.compatible_with` strings. | `tests/test_marketplace_api.py` + live serialization checks | PASS (Android emulator `emu_screen_p_chain_kit_specs.png`) |
+| Product model deserialization failed when `brand` is a nested JSON object | Frontend (`frontend/lib/features/marketplace/models/product.dart`) | `Product.fromJson` expected `brand` as a primitive `String` (`json['brand'] as String? ?? ''`), but `ProductResponse` returns `brand: Optional[BrandResponse]` which serializes to `{"id": "...", "name": "..."}`. | In `Product.fromJson`, safely extracted `brandName` and `brandId` from either a nested `Map<String, dynamic>` or a raw `String`. | `test/marketplace_module_test.dart` (238/238 passed) | PASS (Android emulator `emu_screen_marketplace_products.png`, `emu_screen_p_chain_kit.png`) |
+
+---
+
+### 15. REPOSITORY HEALTH REVIEW
+
+#### Backend Health:
+- **Issues Discovered:** Pydantic V2 schema serialization mismatch for relationship child lists (`vehicle_types`, `compatibility`) when reading directly from SQLAlchemy models.
+- **Issues Fixed:** Pre-validators added to `ProductResponse` to reliably extract string values from ORM relationship instances.
+- **Issues Intentionally Not Changed:** Deprecation warnings from third-party libraries (e.g., `langchain-community`, `HuggingFaceEmbeddings`, Starlette `422` constants). Preserved as-is to avoid unintended breaking changes in production AI/FastAPI runtimes.
+- **Unresolved Blockers:** None.
+- **Technical Debt Noticed:** Some older Pydantic schemas still use `example` keyword argument on `Field` instead of `json_schema_extra`. Does not block runtime.
+- **Regression Risks:** Zero. Full suite 700/700 passed.
+
+#### Frontend Health:
+- **Issues Discovered:** `Product.fromJson` was fragile when `brand` was returned as a structured object rather than a flat string.
+- **Issues Fixed:** Flexible decoding in `Product.fromJson` accommodating both representations.
+- **Issues Intentionally Not Changed:** `HomeRepository.fetchHomeData` mock fallback catch blocks for missing local mock routes during widget testing. Preserved intentional error handling.
+- **Unresolved Blockers:** None.
+- **Technical Debt Noticed:** `VehicleServiceRequest` form requires full manual entry of vehicle details before navigating to mechanics list, whereas `AiHomeScreen` quick action enables direct navigation to `MechanicHomeScreen`. Both paths work cleanly.
+- **Regression Risks:** Zero. 238/238 tests passing, 0 analyzer issues.
+
+---
+
+### 16. Known Issues
 - None. All catalog views, API endpoints, serialization layers, and frontend screens operate without errors or regressions.
 
 ---
 
-### 15. MANUALLY VERIFIED
+### 17. MANUALLY VERIFIED
 - [x] Fuel Delivery home, selection, live rates, station list, order review on Android emulator.
 - [x] Marketplace home, banners, category browsing, products grid on Android emulator.
 - [x] `p-chain-kit` product details, verified local image asset display, specs, vehicle compatibility on Android emulator.
@@ -208,12 +237,12 @@ Manual interactive verification performed on real Android emulator (`emulator-55
 
 ---
 
-### 16. NOT VERIFIED
+### 18. NOT VERIFIED
 - None. (Every requirement across automated tests, live DB idempotency, API contracts, and real Android UI was manually verified).
 
 ---
 
-### 17. Final Acceptance Criteria Checklist
+### 19. Final Acceptance Criteria Checklist
 - [x] Seeder script implemented in `backend/scripts/seed_pilot_catalog.py`
 - [x] Async SQLAlchemy with native PostgreSQL upserts inside a single transaction
 - [x] Safe, deterministic, and 100% idempotent
@@ -228,3 +257,4 @@ Manual interactive verification performed on real Android emulator (`emulator-55
 - [x] Flutter analyze: 0 issues
 - [x] Android emulator journeys visually verified
 - [x] Final verification report compiled and read
+
