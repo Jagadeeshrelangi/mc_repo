@@ -141,6 +141,36 @@ class ProductResponse(_DecimalJsonMixin):
     compatibility: List[str] = []
     reviews: List[ProductReviewResponse] = []
 
+    @field_validator("vehicle_types", mode="before")
+    @classmethod
+    def _extract_vehicle_types(cls, v: Any) -> Any:
+        if isinstance(v, list):
+            res = []
+            for item in v:
+                if hasattr(item, "vehicle_type"):
+                    res.append(item.vehicle_type)
+                elif isinstance(item, dict) and "vehicle_type" in item:
+                    res.append(item["vehicle_type"])
+                else:
+                    res.append(item)
+            return res
+        return v
+
+    @field_validator("compatibility", mode="before")
+    @classmethod
+    def _extract_compatibility(cls, v: Any) -> Any:
+        if isinstance(v, list):
+            res = []
+            for item in v:
+                if hasattr(item, "compatible_with"):
+                    res.append(item.compatible_with)
+                elif isinstance(item, dict) and "compatible_with" in item:
+                    res.append(item["compatible_with"])
+                else:
+                    res.append(item)
+            return res
+        return v
+
 
 # ---------------------------------------------------------------------------
 # Promotional Offers & Coupons

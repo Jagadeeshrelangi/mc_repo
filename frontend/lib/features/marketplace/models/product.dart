@@ -165,11 +165,17 @@ class Product {
             ?.map((s) => ProductSpecification.fromJson(s as Map<String, dynamic>))
             .toList() ??
         const [];
+    final rawBrand = json['brand'];
+    final String brandName = rawBrand is Map
+        ? (rawBrand['name'] as String? ?? '')
+        : (rawBrand is String ? rawBrand : '');
+    final String brandId = json['brand_id'] as String? ??
+        (rawBrand is Map ? (rawBrand['id'] as String? ?? '') : '');
     return Product(
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
-      brand: json['brand'] as String? ?? '',
-      brandId: json['brand_id'] as String? ?? '',
+      brand: brandName,
+      brandId: brandId,
       categoryId: json['category_id'] as String? ?? '',
       price: (json['price'] as num?)?.toDouble() ?? 0.0,
       mrp: (json['mrp'] as num?)?.toDouble() ?? 0.0,
