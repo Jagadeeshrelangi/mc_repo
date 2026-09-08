@@ -50,7 +50,9 @@ class JobCompletedScreen extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context).pushReplacement(MaterialPageRoute(
                       builder: (_) => RatingReviewScreen(
+                        bookingId: booking.bookingId,
                         mechanic: booking.mechanic,
+                        serviceName: booking.service.name,
                       ),
                     ));
                   },

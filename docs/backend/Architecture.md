@@ -100,30 +100,202 @@ class Mechanic(Base):
     updated_at: datetime
 ```
 
-### 3.4 Order
+### 3.4 Order & Activity
 ```python
 class Order(Base):
     id: UUID (PK)
-    user_id: UUID (FK)
-    type: Enum (mechanic, fuel, marketplace)
-    status: Enum (pending, accepted, in_progress, completed, cancelled)
-    total_amount: float
-    payment_status: Enum (pending, paid, failed)
-    created_at: datetime
-    updated_at: datetime
+    user_id: UUID (FK -> users.id)
+    external_id: str (unique)
+    source_domain: str (mechanic, fuel, marketplace, etc.)
+    domain_order_id: str
+    order_type: str
+    status: str (pending, confirmed, in_progress, completed, cancelled)
+    total_amount: Decimal (10, 2)
+    currency: str (default 'INR')
+    notes: Optional[str]
+    created_at: datetime (timezone-aware)
+    updated_at: datetime (timezone-aware)
 ```
 
-### 3.5 Product
+### 3.5 Fuel Delivery Domain Models
+
 ```python
-class Product(Base):
+class FuelOrder(Base):
+    id: UUID (PK)
+    user_id: UUID (FK -> users.id)
+    fuel_type: str (petrol, diesel, cng, etc.)
+    quantity_litres: Decimal (10, 2)
+    unit_price: Decimal (10, 2)
+    total_amount: Decimal (10, 2)
+    delivery_latitude: Decimal (10, 7)
+    delivery_longitude: Decimal (10, 7)
+    delivery_address: str
+    vehicle_registration: Optional[str]
+    time_slot: Optional[str]
+    contact_phone: Optional[str]
+    payment_method: Optional[str]
+    status: str (pending, assigned, in_transit, completed, cancelled)
+    assigned_partner_id: Optional[UUID]
+    created_at: datetime (timezone-aware)
+    updated_at: datetime (timezone-aware)
+
+class PriceEstimate(Base):
+    id: UUID (PK)
+    fuel_order_id: UUID (FK -> fuel_orders.id)
+    base_fuel_cost: Decimal (10, 2)
+    delivery_fee: Decimal (10, 2)
+    tax_amount: Decimal (10, 2)
+    total_estimated: Decimal (10, 2)
+    created_at: datetime (timezone-aware)
+
+class FuelStation(Base):
     id: UUID (PK)
     name: str
-    category: str
-    price: float
-    stock: int
-    image_url: str
-    created_at: datetime
-    updated_at: datetime
+    brand: str
+    latitude: Decimal (10, 7)
+    longitude: Decimal (10, 7)
+    address: str
+    city: str
+    state: str
+    phone: Optional[str]
+    is_active: bool
+    created_at: datetime (timezone-aware)
+    updated_at: datetime (timezone-aware)
+
+class FuelPartner(Base):
+    id: UUID (PK)
+    user_id: Optional[UUID]
+    company_name: str
+    contact_name: str
+    contact_phone: str
+    service_radius_km: Decimal (5, 2)
+    is_active: bool
+    created_at: datetime (timezone-aware)
+    updated_at: datetime (timezone-aware)
+
+class TrackingEvent(Base):
+    id: UUID (PK)
+    order_id: UUID (FK -> fuel_orders.id)
+    event_type: str
+    latitude: Optional[Decimal (10, 7)]
+    longitude: Optional[Decimal (10, 7)]
+    description: Optional[str]
+    event_time: datetime (timezone-aware)
+    created_at: datetime (timezone-aware)
+
+class Invoice(Base):
+    id: UUID (PK)
+    order_id: UUID (FK -> fuel_orders.id, unique)
+    invoice_number: str
+    subtotal: Decimal (10, 2)
+    tax_rate: Decimal (5, 2)
+    tax_amount: Decimal (10, 2)
+    total: Decimal (10, 2)
+    pdf_url: Optional[str]
+    issued_at: datetime (timezone-aware)
+    created_at: datetime (timezone-aware)
+```
+
+### 3.6 Marketplace Domain Models
+
+```python
+class Category(Base):
+    id: UUID (PK)
+    name: str
+    description: Optional[str]
+    image_url: Optional[str]
+
+class Brand(Base):
+    id: UUID (PK)
+    name: str
+
+class Product(Base):
+    id: UUID (PK)
+    category_id: UUID (FK -> categories.id)
+    brand_id: UUID (FK -> brands.id)
+    title: str
+    sku: Optional[str]
+    part_number: Optional[str]
+    short_description: Optional[str]
+    long_description: Optional[str]
+    price: Decimal (10, 2)
+    list_price: Optional[Decimal (10, 2)]
+    in_stock: bool
+    stock_quantity: int
+    rating: Decimal (3, 2)
+    reviews_count: int
+    image_urls: list[str]
+    created_at: datetime (timezone-aware)
+    updated_at: datetime (timezone-aware)
+
+class ProductSpecification(Base):
+    id: UUID (PK)
+    product_id: UUID (FK -> products.id)
+    spec_key: str
+    spec_value: str
+    display_order: int
+
+class ProductVehicleType(Base):
+    product_id: UUID (PK, FK -> products.id)
+    vehicle_type: str (PK)
+
+class ProductCompatibility(Base):
+    product_id: UUID (PK, FK -> products.id)
+    make_model: str (PK)
+
+class ProductReview(Base):
+    id: UUID (PK)
+    product_id: UUID (FK -> products.id)
+    author_name: str
+    rating: int (1..5)
+    review_title: Optional[str]
+    review_body: Optional[str]
+    is_verified_purchase: bool
+    created_at: datetime (timezone-aware)
+
+class Offer(Base):
+    id: UUID (PK)
+    title: str
+    banner_url: Optional[str]
+    deeplink: Optional[str]
+    badge_text: Optional[str]
+    category_id: Optional[UUID] (FK -> categories.id)
+    is_active: bool
+
+class Coupon(Base):
+    id: UUID (PK)
+    code: str (unique)
+    title: str
+    description: Optional[str]
+    discount_type: str (percentage, fixed)
+    discount_value: Decimal (10, 2)
+    min_order_amount: Optional[Decimal (10, 2)]
+    max_discount_amount: Optional[Decimal (10, 2)]
+    is_active: bool
+    expires_at: Optional[datetime]
+
+class OrderItem(Base):
+    id: UUID (PK)
+    order_id: UUID (FK -> orders.id)
+    product_id: Optional[UUID]
+    product_name: str
+    unit_price: Decimal (10, 2)
+    quantity: int
+    line_total: Decimal (10, 2)
+    image_url: Optional[str]
+    created_at: datetime (timezone-aware)
+
+class OrderEntry(Base):
+    id: UUID (PK)
+    user_id: UUID (FK -> users.id)
+    status: str
+    total_price: Decimal (10, 2)
+    total_tax: Decimal (10, 2)
+    subtotal: Decimal (10, 2)
+    delivery_address: Optional[str]
+    payment_method: Optional[str]
+    created_at: datetime (timezone-aware)
+    updated_at: datetime (timezone-aware)
 ```
 
 ## 4. API Endpoints
@@ -194,34 +366,72 @@ class Product(Base):
 
 ## 5. Database Schema
 
-### 5.1 Tables
-- users
-- vehicles
-- mechanics
-- orders
-- order_items
-- products
-- categories
-- addresses
-- payments
-- reviews
-- conversations
-- messages
+### 5.1 Live Domain Tables (Supabase PostgreSQL)
+- **Core / Auth / User**:
+  - `users` — User profiles, credentials, role
+  - `user_profiles` — Extended profile attributes
+  - `vehicles` — Registered customer vehicles
+  - `addresses` — Saved delivery/service addresses
+- **Mechanics & Bookings**:
+  - `mechanics` — Mechanic directory & credentials
+  - `bookings` — Scheduled mechanic service bookings
+- **Fuel Delivery Domain**:
+  - `fuel_orders` — Fuel delivery requests & tracking status
+  - `price_estimates` — Itemized price estimates per fuel order
+  - `fuel_stations` — Fuel station locations & inventory metadata
+  - `fuel_partners` — Verified fuel delivery partners
+  - `tracking_events` — Real-time delivery status & coordinate telemetry
+  - `invoices` — Tax invoices with subtotal, tax rate, and total amounts
+- **Marketplace Domain**:
+  - `categories` — Product taxonomy & navigation
+  - `brands` — Manufacturer/brand entities
+  - `products` — Auto-parts catalogue, pricing, and inventory
+  - `product_specifications` — Key-value technical specifications
+  - `product_vehicle_types` — Vehicle type association (Car, Bike, etc.)
+  - `product_compatibility` — Specific make/model compatibility
+  - `product_reviews` — Verified customer ratings & reviews
+  - `offers` — Promotional banners & active campaigns
+  - `coupons` — Discount codes, rules, and expiry
+  - `orders` — Unified activity & cross-domain order records
+  - `order_items` — Itemized line items per marketplace order
+  - `order_entries` — Customer checkout entries & history
+- **Wallet & Loyalty**:
+  - `wallet_transactions` — Transaction ledgers & balances
+  - `reward_points` — Reward points & loyalty ledgers
+- **AI & Messaging**:
+  - `conversations` — AI chat session lifecycle
+  - `messages` — Chat message history
+  - `diagnoses` — AI diagnostic runs & OBD analysis
 
-### 5.2 Indexes
-- users(email)
-- users(phone)
-- vehicles(user_id)
-- mechanics(location)
-- orders(user_id, status)
-- products(category)
-
-### 5.3 Constraints
-- UUID primary keys
-- Foreign key constraints
-- Unique constraints
-- Check constraints
-- Soft delete (deleted_at IS NULL)
+### 5.2 Indexes & Performance Constraints
+- **Primary Keys**: UUID v4 on all entities.
+- **Foreign Keys**:
+  - `fuel_orders.user_id` -> `users.id`
+  - `invoices.order_id` -> `fuel_orders.id` (unique)
+  - `price_estimates.fuel_order_id` -> `fuel_orders.id`
+  - `tracking_events.order_id` -> `fuel_orders.id`
+  - `products.category_id` -> `categories.id`
+  - `products.brand_id` -> `brands.id`
+  - `product_specifications.product_id` -> `products.id`
+  - `product_vehicle_types.product_id` -> `products.id`
+  - `product_compatibility.product_id` -> `products.id`
+  - `product_reviews.product_id` -> `products.id`
+  - `offers.category_id` -> `categories.id`
+  - `orders.user_id` -> `users.id`
+  - `order_items.order_id` -> `orders.id`
+  - `order_entries.user_id` -> `users.id`
+- **Performance Indexes (Alembic Head `0006`)**:
+  - `ix_fuel_orders_user_id`, `ix_fuel_orders_status`
+  - `ix_tracking_events_order_id`
+  - `ix_products_category_id`, `ix_products_brand_id`
+  - `ix_product_specifications_product_id`
+  - `ix_product_reviews_product_id`
+  - `ix_orders_user_id`, `ix_orders_status`
+  - `ix_order_items_order_id`
+  - `ix_order_entries_user_id`
+  - `coupons_code_key` (unique)
+  - `orders_external_id_key` (unique)
+  - `invoices_order_id_key` (unique)
 
 ## 6. Security
 

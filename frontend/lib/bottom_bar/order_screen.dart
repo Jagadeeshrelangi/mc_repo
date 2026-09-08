@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mecha_connect/features/orders/orders.dart';
+import 'package:mecha_connect/features/mechanic/screens/rating_review_screen.dart';
 import 'package:mecha_connect/parts/order_data.dart';
 import '../widgets/order_card.dart';
 import '../theme/app_colors.dart';
@@ -264,6 +265,42 @@ class _OrderscreenState extends State<Orderscreen>
                       ),
                     ],
                   ),
+                  if (order['type'] == 'mechanic' &&
+                      order['status']?.toString().toLowerCase() == 'completed' &&
+                      order['id'] != null) ...[
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => RatingReviewScreen(
+                                bookingId: order['id'].toString(),
+                                serviceName: order['name']?.toString(),
+                              ),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.star_rounded, color: Colors.white),
+                        label: const Text(
+                          'Rate / Review Service',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.brandOrange,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 16),
                 ],
               ),

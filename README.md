@@ -52,6 +52,15 @@ uvicorn app.main:app --reload
 
 See [docs/common/INSTALLATION.md](docs/common/INSTALLATION.md) for details.
 
+## Backend Capabilities & Domain Status
+
+The Mecha Connect backend is powered by FastAPI, SQLAlchemy async, and Supabase PostgreSQL.
+- **Task 8 Stage 1 — Fuel Delivery & Marketplace Models & Schemas**:
+  - **Fuel Domain**: 6 SQLAlchemy ORM models (`FuelOrder`, `PriceEstimate`, `FuelStation`, `FuelPartner`, `TrackingEvent`, `Invoice`) and corresponding Pydantic v2 schemas.
+  - **Marketplace Domain**: 12 SQLAlchemy ORM models (`Category`, `Brand`, `Product`, `ProductSpecification`, `ProductVehicleType`, `ProductCompatibility`, `ProductReview`, `Offer`, `Coupon`, `Order`, `OrderItem`, `OrderEntry`) and corresponding Pydantic v2 schemas.
+  - **Database Foundation**: 18 live PostgreSQL tables, 14 foreign keys, 32 indexes verified against live Supabase PostgreSQL (Alembic head `0006`).
+  - **API Contract**: Pydantic v2 schemas integrated with OpenAPI components (80 schemas, `/health` database: ok).
+
 ## Documentation Index
 
 - **[docs/README.md](docs/README.md)** — documentation map and reading order.

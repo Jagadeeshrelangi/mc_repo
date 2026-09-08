@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:mecha_connect/services/api_client.dart';
 import '../models/models.dart';
 import '../repositories/mechanic_repository.dart';
 
@@ -200,6 +201,62 @@ class MechanicProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool _isSubmittingRating = false;
+  bool get isSubmittingRating => _isSubmittingRating;
+
+  String? _ratingError;
+  String? get ratingError => _ratingError;
+
+  final Map<String, BookingRating?> _ratings = {};
+  BookingRating? getRating(String bookingId) => _ratings[bookingId];
+
+  Future<BookingRating?> fetchRating(String bookingId) async {
+    try {
+      final rating = await _repository.fetchRating(bookingId);
+      _ratings[bookingId] = rating;
+      notifyListeners();
+      return rating;
+    } catch (e) {
+      debugPrint('Failed to fetch rating for booking $bookingId: $e');
+      rethrow;
+    }
+  }
+
+  Future<BookingRating> submitRating(
+    String bookingId, {
+    required double rating,
+    String? review,
+  }) async {
+    _isSubmittingRating = true;
+    _ratingError = null;
+    notifyListeners();
+
+    try {
+      final result = await _repository.submitRating(
+        bookingId,
+        rating: rating,
+        review: review,
+      );
+      _ratings[bookingId] = result;
+      return result;
+    } catch (e) {
+      if (e is ApiException) {
+        _ratingError = e.message;
+      } else {
+        _ratingError = 'Could not submit rating. Please try again.';
+      }
+      rethrow;
+    } finally {
+      _isSubmittingRating = false;
+      notifyListeners();
+    }
+  }
+
+  void clearRatingError() {
+    _ratingError = null;
+    notifyListeners();
+  }
+
   void clearError() {
     _errorMessage = null;
     notifyListeners();
@@ -220,6 +277,9 @@ class MechanicProvider extends ChangeNotifier {
     _requestStatus = null;
     _isSubmitting = false;
     _isRefreshing = false;
+    _isSubmittingRating = false;
+    _ratingError = null;
+    _ratings.clear();
     notifyListeners();
   }
 }

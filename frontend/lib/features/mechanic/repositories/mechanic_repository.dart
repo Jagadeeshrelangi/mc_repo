@@ -282,6 +282,65 @@ class MechanicRepository {
 
   List<Booking> getBookingHistory() => List.unmodifiable(_bookings);
 
+  final Map<String, BookingRating> _ratings = {};
+
+  /// Submits a post-service rating for a completed booking.
+  Future<BookingRating> submitRating(
+    String bookingId, {
+    required double rating,
+    String? review,
+  }) async {
+    if (_apiClient != null) {
+      final res = await _apiClient.post(
+        '/api/v1/mechanic/bookings/$bookingId/rating',
+        body: {
+          'rating': rating,
+          if (review != null && review.trim().isNotEmpty) 'review': review.trim(),
+        },
+        requiresAuth: true,
+      );
+      if (res is Map<String, dynamic>) {
+        final bRating = BookingRating.fromJson(res);
+        _ratings[bookingId] = bRating;
+        return bRating;
+      }
+      throw Exception('Failed to submit rating: unexpected response format');
+    }
+
+    await _delay();
+    final bRating = BookingRating(
+      bookingId: bookingId,
+      rating: rating,
+      review: review?.trim().isEmpty == true ? null : review?.trim(),
+    );
+    _ratings[bookingId] = bRating;
+    return bRating;
+  }
+
+  /// Fetches an existing rating for a booking (returns null if unrated).
+  Future<BookingRating?> fetchRating(String bookingId) async {
+    if (_apiClient != null) {
+      try {
+        final res = await _apiClient.get(
+          '/api/v1/mechanic/bookings/$bookingId/rating',
+          requiresAuth: true,
+        );
+        if (res is Map<String, dynamic>) {
+          final bRating = BookingRating.fromJson(res);
+          _ratings[bookingId] = bRating;
+          return bRating;
+        }
+        return null;
+      } on ApiException catch (e) {
+        if (e.statusCode == 404) return null;
+        rethrow;
+      }
+    }
+
+    await _delay();
+    return _ratings[bookingId];
+  }
+
   Future<void> _delay([Duration duration = const Duration(milliseconds: 700)]) {
     return Future.delayed(duration);
   }
