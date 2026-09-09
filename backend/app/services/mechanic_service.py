@@ -47,12 +47,17 @@ Ratings (D6-3, recon §12/§17)
   the backend capability bound to the frozen contract surface.
 """
 
+import logging
+import uuid
 from decimal import Decimal
 from typing import List, Optional
 
 from sqlalchemy import update
 
 from app.core.exceptions import EntityNotFoundException, InvalidInputException
+from app.services.notification_service import NotificationService
+
+logger = logging.getLogger("mecha_connect.mechanic")
 from app.models.mechanic import Mechanic
 from app.models.mechanic_booking import MechanicBooking
 from app.models.mechanic_service import MechanicService as MechanicServiceModel
@@ -123,6 +128,7 @@ class MechanicService:
         booking_repository: Optional[MechanicBookingRepository] = None,
         event_repository: Optional[BookingEventRepository] = None,
         rating_repository: Optional[RatingRepository] = None,
+        notification_service: Optional[NotificationService] = None,
     ) -> None:
         self.session = session
         self.mechanic_repo = mechanic_repository or MechanicRepository(session)
@@ -132,6 +138,7 @@ class MechanicService:
         self.booking_repo = booking_repository or MechanicBookingRepository(session)
         self.event_repo = event_repository or BookingEventRepository(session)
         self.rating_repo = rating_repository or RatingRepository(session)
+        self.notification_service = notification_service or NotificationService(session)
 
     # ---------------------------------------------------------------------------
     # Catalog reads (public, never commit)
@@ -319,6 +326,28 @@ class MechanicService:
             )
 
             await self.session.commit()
+
+            # POST-COMMIT: Dispatch push notification safely (isolated)
+            try:
+                mech_name = None
+                if booking.mechanic_id:
+                    mech = await self.mechanic_repo.get_by_id(booking.mechanic_id)
+                    if mech:
+                        mech_name = mech.name
+                customer_uuid = uuid.UUID(str(booking.customer_id))
+                await self.notification_service.dispatch_booking_notification(
+                    user_id=customer_uuid,
+                    booking_id=str(booking.id),
+                    new_status=new_status.value,
+                    mechanic_name=mech_name,
+                )
+            except Exception as exc:
+                logger.error(
+                    "Failed to dispatch push notification for booking %s: %s",
+                    booking_id,
+                    exc,
+                )
+
             return BookingOut.model_validate(booking)
         except Exception:
             await self.session.rollback()
@@ -345,6 +374,22 @@ class MechanicService:
                 .values(status="Cancelled")
             )
             await self.session.commit()
+
+            # POST-COMMIT: Dispatch push notification safely (isolated)
+            try:
+                customer_uuid = uuid.UUID(str(booking.customer_id))
+                await self.notification_service.dispatch_booking_notification(
+                    user_id=customer_uuid,
+                    booking_id=str(booking.id),
+                    new_status=BookingStatus.CANCELLED.value,
+                )
+            except Exception as exc:
+                logger.error(
+                    "Failed to dispatch cancel push notification for booking %s: %s",
+                    booking_id,
+                    exc,
+                )
+
             return BookingOut.model_validate(booking)
         except Exception:
             await self.session.rollback()
@@ -371,6 +416,22 @@ class MechanicService:
                 .values(status="Completed")
             )
             await self.session.commit()
+
+            # POST-COMMIT: Dispatch push notification safely (isolated)
+            try:
+                customer_uuid = uuid.UUID(str(booking.customer_id))
+                await self.notification_service.dispatch_booking_notification(
+                    user_id=customer_uuid,
+                    booking_id=str(booking.id),
+                    new_status=BookingStatus.COMPLETED.value,
+                )
+            except Exception as exc:
+                logger.error(
+                    "Failed to dispatch complete push notification for booking %s: %s",
+                    booking_id,
+                    exc,
+                )
+
             return BookingOut.model_validate(booking)
         except Exception:
             await self.session.rollback()

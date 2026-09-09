@@ -46,6 +46,7 @@ from app.models.order_entry import OrderEntry
 from app.models.address import Address
 from app.models.wallet import Wallet, WalletTransaction, RewardLedger
 from app.models.notification_setting import NotificationSetting
+from app.models.device_token import DeviceToken
 
 __all__ = [
     "User",
@@ -93,4 +94,5 @@ __all__ = [
     "WalletTransaction",
     "RewardLedger",
     "NotificationSetting",
+    "DeviceToken",
 ]

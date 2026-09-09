@@ -19,6 +19,7 @@ import 'package:mecha_connect/services/location_provider.dart';
 import 'package:mecha_connect/theme/theme_provider.dart';
 
 import 'package:mecha_connect/services/api_client.dart';
+import 'package:mecha_connect/services/push_notification_service.dart';
 
 /// Single source of truth for the app's root provider graph.
 ///
@@ -30,6 +31,7 @@ List<SingleChildWidget> buildRootProviders({
   FuelProvider? fuelProvider,
   MarketplaceProvider? marketplaceProvider,
   ProfileProvider? profileProvider,
+  PushNotificationService? pushNotificationService,
 }) {
   final apiClient = ApiClient();
   final location = locationProvider ?? LocationProvider();
@@ -55,6 +57,8 @@ List<SingleChildWidget> buildRootProviders({
   final orders = OrdersProvider(
     repository: OrdersRepository(apiClient: apiClient),
   );
+  final pushNotification = pushNotificationService ??
+      PushNotificationService(apiClient: apiClient);
 
   return [
     ChangeNotifierProvider(create: (_) => ThemeProvider()),
@@ -69,5 +73,6 @@ List<SingleChildWidget> buildRootProviders({
     ChangeNotifierProvider.value(value: fuel),
     ChangeNotifierProvider.value(value: marketplace),
     ChangeNotifierProvider.value(value: orders),
+    ChangeNotifierProvider.value(value: pushNotification),
   ];
 }

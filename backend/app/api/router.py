@@ -3,6 +3,7 @@ from app.api.v1 import (
     addresses,
     auth,
     conversation,
+    device_tokens,
     diagnosis,
     fuel,
     knowledge,
@@ -64,6 +65,11 @@ api_router.include_router(
 api_router.include_router(
     notification_settings.router,
     tags=["Notification Settings"]
+)
+
+api_router.include_router(
+    device_tokens.router,
+    tags=["Device Tokens"]
 )
 
 api_router.include_router(

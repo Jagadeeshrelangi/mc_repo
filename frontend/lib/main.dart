@@ -12,6 +12,7 @@ import 'package:mecha_connect/features/marketplace/providers/marketplace_provide
 import 'package:mecha_connect/app_wiring.dart';
 import 'package:provider/provider.dart';
 import 'dart:async';
+import 'package:mecha_connect/services/push_notification_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -27,6 +28,8 @@ void main() async {
   final locationProvider = LocationProvider();
   final fuelProvider = FuelProvider(locationProvider: locationProvider);
   final marketplaceProvider = MarketplaceProvider();
+  final pushNotificationService = PushNotificationService();
+  unawaited(pushNotificationService.initialize());
 
   runApp(
     MultiProvider(
@@ -34,6 +37,7 @@ void main() async {
         locationProvider: locationProvider,
         fuelProvider: fuelProvider,
         marketplaceProvider: marketplaceProvider,
+        pushNotificationService: pushNotificationService,
       ),
       child: const MyApp(),
     ),
@@ -57,6 +61,7 @@ class MyApp extends StatelessWidget {
       enabled: enableDevicePreview,
       builder:
           (context) => MaterialApp(
+            navigatorKey: PushNotificationService.navigatorKey,
             // ignore: deprecated_member_use — required by DevicePreview
             useInheritedMediaQuery: true,
             locale: DevicePreview.locale(context),

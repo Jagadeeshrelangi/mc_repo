@@ -395,10 +395,10 @@ def test_migration_revision_chain() -> None:
     script = alembic.script.ScriptDirectory.from_config(cfg)
 
     heads = set(script.get_heads())
-    assert heads == {"0006"}
+    assert heads == {"0007"}
 
     revisions = list(script.walk_revisions())
-    assert [r.revision for r in revisions] == ["0006", "0005", "0004", "0003", "0002", "0001"]
+    assert [r.revision for r in revisions] == ["0007", "0006", "0005", "0004", "0003", "0002", "0001"]
 
     assert script.get_base() == "0001"
 
