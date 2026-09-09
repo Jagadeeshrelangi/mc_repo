@@ -21,6 +21,7 @@ class LiveTrackingScreen extends StatefulWidget {
 
 class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   bool _hasError = false;
+  bool _isAdvancing = false;
 
   @override
   void initState() {
@@ -30,9 +31,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
 
   Future<void> _startTracking() async {
     try {
-      await context.read<MechanicProvider>().loadActiveBooking(
-        widget.bookingId,
-      );
+      final provider = context.read<MechanicProvider>();
+      await provider.loadActiveBooking(widget.bookingId);
+      await provider.fetchActiveBookingEvents();
       if (!mounted) return;
       setState(() => _hasError = false);
     } catch (_) {
@@ -41,9 +42,55 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
     }
   }
 
-  @override
-  void dispose() {
-    super.dispose();
+  Future<void> _advanceNextStatus(Booking booking) async {
+    BookingStatus? nextStatus;
+    switch (booking.status) {
+      case BookingStatus.requested:
+        nextStatus = BookingStatus.accepted;
+        break;
+      case BookingStatus.accepted:
+        nextStatus = BookingStatus.mechanicAssigned;
+        break;
+      case BookingStatus.mechanicAssigned:
+        nextStatus = BookingStatus.enRoute;
+        break;
+      case BookingStatus.enRoute:
+        nextStatus = BookingStatus.arrived;
+        break;
+      case BookingStatus.arrived:
+        nextStatus = BookingStatus.completed;
+        break;
+      default:
+        return;
+    }
+
+    setState(() => _isAdvancing = true);
+    try {
+      final provider = context.read<MechanicProvider>();
+      if (nextStatus == BookingStatus.completed) {
+        await provider.completeActiveBooking();
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (_) => JobCompletedScreen(booking: provider.activeBooking ?? booking),
+          ),
+        );
+      } else {
+        await provider.updateActiveBookingStatus(nextStatus);
+        await provider.fetchActiveBookingEvents();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update status: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isAdvancing = false);
+    }
   }
 
   @override
@@ -56,7 +103,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
     if (booking == null) {
       return Scaffold(
         backgroundColor: context.bgPrimary,
-        body: Center(
+        body: const Center(
           child: CircularProgressIndicator(color: AppColors.brandOrange),
         ),
       );
@@ -177,7 +224,11 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.successLight,
+                      color: booking.status == BookingStatus.completed
+                          ? AppColors.successLight
+                          : (booking.status == BookingStatus.cancelled
+                              ? AppColors.errorLight
+                              : AppColors.brandOrangeSoft),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Row(
@@ -186,18 +237,26 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                         Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(
-                            color: AppColors.success,
+                          decoration: BoxDecoration(
+                            color: booking.status == BookingStatus.completed
+                                ? AppColors.success
+                                : (booking.status == BookingStatus.cancelled
+                                    ? AppColors.error
+                                    : AppColors.brandOrange),
                             shape: BoxShape.circle,
                           ),
                         ),
-                        SizedBox(width: 4),
+                        const SizedBox(width: 6),
                         Text(
-                          '${booking.mechanic.etaMinutes} min',
+                          booking.status.label,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.successDark,
+                            color: booking.status == BookingStatus.completed
+                                ? AppColors.successDark
+                                : (booking.status == BookingStatus.cancelled
+                                    ? AppColors.error
+                                    : AppColors.brandOrange),
                           ),
                         ),
                       ],
@@ -213,23 +272,28 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   }
 
   Widget _buildBottomPanel(BuildContext context, Booking booking) {
-    return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(
-        AppResponsive.horizontalPadding(context),
-        AppSpacing.lg,
-        AppResponsive.horizontalPadding(context),
-        0,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildMechanicInfoCard(context, booking),
-          SizedBox(height: AppSpacing.lg),
-          _ProgressTimeline(initialStatus: booking.status),
-          SizedBox(height: AppSpacing.lg),
-          _buildActionButtons(context, booking),
-          SizedBox(height: AppSpacing.xxxl),
-        ],
+    return RefreshIndicator(
+      onRefresh: _startTracking,
+      color: AppColors.brandOrange,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(
+          AppResponsive.horizontalPadding(context),
+          AppSpacing.lg,
+          AppResponsive.horizontalPadding(context),
+          AppSpacing.xxxl,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildMechanicInfoCard(context, booking),
+            SizedBox(height: AppSpacing.lg),
+            _ProgressTimeline(booking: booking),
+            SizedBox(height: AppSpacing.lg),
+            _buildActionButtons(context, booking),
+            SizedBox(height: AppSpacing.xxxl),
+          ],
+        ),
       ),
     );
   }
@@ -272,7 +336,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                     color: context.textPrimary,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Row(
                   children: [
                     Icon(
@@ -280,7 +344,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                       size: 14,
                       color: context.textTertiary,
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Text(
                       booking.vehicle,
                       style: TextStyle(
@@ -294,7 +358,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                       size: 14,
                       color: context.textTertiary,
                     ),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Text(
                       mechanic.phone,
                       style: TextStyle(
@@ -313,6 +377,85 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   }
 
   Widget _buildActionButtons(BuildContext context, Booking booking) {
+    final isTerminal = booking.status == BookingStatus.completed ||
+        booking.status == BookingStatus.cancelled;
+
+    if (booking.status == BookingStatus.cancelled) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppSpacing.base),
+        decoration: BoxDecoration(
+          color: AppColors.errorLight,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+        ),
+        child: Column(
+          children: [
+            const Row(
+              children: [
+                Icon(Icons.cancel_rounded, color: AppColors.error),
+                SizedBox(width: 8),
+                Text(
+                  'Booking Cancelled',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.error,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              height: 44,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.error,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Back to Home'),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (booking.status == BookingStatus.completed) {
+      return SizedBox(
+        width: double.infinity,
+        height: 48,
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (_) => JobCompletedScreen(booking: booking),
+              ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.success,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          ),
+          child: const Text('View Invoice & Rating', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+        ),
+      );
+    }
+
+    String advanceLabel = 'Acknowledge Request (Pilot)';
+    if (booking.status == BookingStatus.accepted) {
+      advanceLabel = 'Assign Mechanic (Pilot)';
+    } else if (booking.status == BookingStatus.mechanicAssigned) {
+      advanceLabel = 'Mechanic En Route (Pilot)';
+    } else if (booking.status == BookingStatus.enRoute) {
+      advanceLabel = 'Mark Arrived (Pilot)';
+    } else if (booking.status == BookingStatus.arrived) {
+      advanceLabel = 'Complete Service';
+    }
+
     return Column(
       children: [
         Row(
@@ -337,7 +480,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.phone_rounded, size: 18),
@@ -354,7 +497,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                 ),
               ),
             ),
-            SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: SizedBox(
                 height: 48,
@@ -376,7 +519,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                       side: BorderSide(color: context.border),
                     ),
                   ),
-                  child: Row(
+                  child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.chat_rounded, size: 18),
@@ -393,12 +536,12 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                 ),
               ),
             ),
-            SizedBox(width: AppSpacing.sm),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: SizedBox(
                 height: 48,
                 child: ElevatedButton(
-                  onPressed: () => _showCancelDialog(),
+                  onPressed: isTerminal ? null : () => _showCancelDialog(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.errorLight,
                     foregroundColor: AppColors.error,
@@ -407,7 +550,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                   ),
-                  child: FittedBox(
+                  child: const FittedBox(
                     child: Text(
                       'Cancel',
                       style: TextStyle(
@@ -421,32 +564,32 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
             ),
           ],
         ),
-        SizedBox(height: AppSpacing.md),
+        const SizedBox(height: AppSpacing.md),
         SizedBox(
           width: double.infinity,
           height: 48,
           child: ElevatedButton(
-            onPressed: () async {
-              await context.read<MechanicProvider>().completeActiveBooking();
-              if (!context.mounted) return;
-              Navigator.of(context).pushReplacement(
-                MaterialPageRoute(
-                  builder: (_) => JobCompletedScreen(booking: booking),
-                ),
-              );
-            },
+            onPressed: _isAdvancing ? null : () => _advanceNextStatus(booking),
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.success,
+              backgroundColor: booking.status == BookingStatus.arrived
+                  ? AppColors.success
+                  : AppColors.brandOrange,
               foregroundColor: Colors.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),
             ),
-            child: const Text(
-              'Service Completed',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-            ),
+            child: _isAdvancing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                : Text(
+                    advanceLabel,
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                  ),
           ),
         ),
       ],
@@ -492,60 +635,30 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   }
 }
 
-/// Self-contained status timeline that advances on its own 3s timer. Keeps the
-/// ticking isolated so the map placeholder and mechanic card do not rebuild.
-class _ProgressTimeline extends StatefulWidget {
-  final BookingStatus initialStatus;
+/// Truthful status timeline bound directly to the active booking lifecycle state.
+class _ProgressTimeline extends StatelessWidget {
+  final Booking booking;
 
-  const _ProgressTimeline({required this.initialStatus});
+  const _ProgressTimeline({required this.booking});
 
-  @override
-  State<_ProgressTimeline> createState() => _ProgressTimelineState();
-}
-
-class _ProgressTimelineState extends State<_ProgressTimeline> {
-  static const List<BookingStatus> _progressStatuses = [
+  static const List<BookingStatus> _orderedMilestones = [
     BookingStatus.requested,
     BookingStatus.accepted,
     BookingStatus.mechanicAssigned,
     BookingStatus.enRoute,
     BookingStatus.arrived,
+    BookingStatus.completed,
   ];
 
-  late int _currentStep;
-  Timer? _progressTimer;
-
-  @override
-  void initState() {
-    super.initState();
-    _currentStep =
-        widget.initialStatus == BookingStatus.completed
-            ? _progressStatuses.length - 1
-            : _progressStatuses
-                .indexWhere((s) => s == widget.initialStatus)
-                .clamp(0, _progressStatuses.length - 1);
-    _startProgressTimer();
-  }
-
-  void _startProgressTimer() {
-    _progressTimer = Timer.periodic(const Duration(seconds: 3), (_) {
-      if (_currentStep < _progressStatuses.length - 1) {
-        setState(() => _currentStep++);
-      } else {
-        _progressTimer?.cancel();
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _progressTimer?.cancel();
-    super.dispose();
+  int _currentIndex() {
+    if (booking.status == BookingStatus.cancelled) return -1;
+    final idx = _orderedMilestones.indexOf(booking.status);
+    return idx >= 0 ? idx : 0;
   }
 
   @override
   Widget build(BuildContext context) {
-    final activeStatus = _progressStatuses[_currentStep];
+    final curIdx = _currentIndex();
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
@@ -560,7 +673,7 @@ class _ProgressTimelineState extends State<_ProgressTimeline> {
           Row(
             children: [
               Text(
-                'Status',
+                'Live Service Status',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
@@ -568,69 +681,70 @@ class _ProgressTimelineState extends State<_ProgressTimeline> {
                   color: context.textPrimary,
                 ),
               ),
-              Spacer(),
+              const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.brandOrangeSoft,
+                  color: booking.status == BookingStatus.cancelled
+                      ? AppColors.errorLight
+                      : (booking.status == BookingStatus.completed
+                          ? AppColors.successLight
+                          : AppColors.brandOrangeSoft),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  activeStatus.label,
+                  booking.status.label,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.brandOrange,
+                    color: booking.status == BookingStatus.cancelled
+                        ? AppColors.error
+                        : (booking.status == BookingStatus.completed
+                            ? AppColors.successDark
+                            : AppColors.brandOrange),
                   ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: AppSpacing.base),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            child: Column(
-              key: ValueKey(_currentStep),
-              children: [
-                for (int i = 0; i < _progressStatuses.length; i++)
-                  TimelineTile(
-                    title: _progressStatuses[i].label,
-                    subtitle: _subtitleFor(i),
-                    isCompleted: i < _currentStep,
-                    isActive: i == _currentStep,
-                    isFirst: i == 0,
-                    isLast: i == _progressStatuses.length - 1,
-                  ),
-              ],
-            ),
+          const SizedBox(height: AppSpacing.base),
+          Column(
+            children: [
+              for (int i = 0; i < _orderedMilestones.length; i++)
+                TimelineTile(
+                  title: _orderedMilestones[i].label,
+                  subtitle: _subtitleFor(_orderedMilestones[i], curIdx >= 0 && i <= curIdx),
+                  isCompleted: curIdx >= 0 && (booking.status == BookingStatus.completed || i < curIdx),
+                  isActive: curIdx >= 0 && i == curIdx && booking.status != BookingStatus.completed,
+                  isFirst: i == 0,
+                  isLast: i == _orderedMilestones.length - 1,
+                ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  String _subtitleFor(int index) {
-    switch (_progressStatuses[index]) {
+  String _subtitleFor(BookingStatus status, bool isPassedOrActive) {
+    switch (status) {
       case BookingStatus.requested:
-        return 'Booking has been requested';
+        return 'Booking placed and sent to mechanic';
       case BookingStatus.accepted:
-        return 'Mechanic accepted your request';
+        return isPassedOrActive ? 'Mechanic accepted your request' : 'Awaiting mechanic acceptance';
       case BookingStatus.mechanicAssigned:
-        return 'Mechanic assigned to your job';
+        return isPassedOrActive ? 'Mechanic assigned to your job' : 'Assignment pending';
       case BookingStatus.enRoute:
-        return index == _currentStep
-            ? 'Mechanic is heading to you now'
-            : 'Mechanic is en route';
+        return isPassedOrActive ? 'Mechanic is on the way' : 'Dispatched after assignment';
       case BookingStatus.arrived:
-        return index == _currentStep
-            ? 'Mechanic has arrived'
-            : 'Mechanic has reached your location';
+        return isPassedOrActive ? 'Mechanic reached vehicle location' : 'Pending arrival';
       case BookingStatus.completed:
+        return isPassedOrActive ? 'Job completed and verified' : 'Service in progress';
       case BookingStatus.cancelled:
-        return '';
+        return 'Booking cancelled';
     }
   }
 }

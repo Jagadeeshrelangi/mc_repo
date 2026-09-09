@@ -78,6 +78,14 @@ def _mechanic_catalog_options():
     )
 
 
+def _booking_eager_options():
+    """Eager-loads mechanic and service relationships for ``BookingOut``."""
+    return (
+        selectinload(MechanicBooking.mechanic).options(*_mechanic_catalog_options()),
+        selectinload(MechanicBooking.service),
+    )
+
+
 class MechanicRepository(BaseRepository[Mechanic]):
     """Data access for the ``mechanics`` catalog (reads only)."""
 
@@ -245,7 +253,12 @@ class MechanicBookingRepository(BaseRepository[MechanicBooking]):
         established ownership/authorization at a higher layer. Never call this
         directly from a user-facing route with an unverified user.
         """
-        return await self.get(booking_id)
+        stmt = (
+            select(MechanicBooking)
+            .where(MechanicBooking.id == booking_id)
+            .options(*_booking_eager_options())
+        )
+        return await self.session.scalar(stmt)
 
     async def get_owned(self, booking_id: str, user_id: str) -> Optional[MechanicBooking]:
         """Fetch a booking ONLY if it belongs to ``user_id``.
@@ -254,9 +267,13 @@ class MechanicBookingRepository(BaseRepository[MechanicBooking]):
         someone else" — the caller maps ``None`` to a generic 404 so no
         ownership information ever leaks (Task 4 conversation pattern).
         """
-        stmt = select(MechanicBooking).where(
-            MechanicBooking.id == booking_id,
-            MechanicBooking.user_id == user_id,
+        stmt = (
+            select(MechanicBooking)
+            .where(
+                MechanicBooking.id == booking_id,
+                MechanicBooking.user_id == user_id,
+            )
+            .options(*_booking_eager_options())
         )
         return await self.session.scalar(stmt)
 
@@ -265,6 +282,7 @@ class MechanicBookingRepository(BaseRepository[MechanicBooking]):
         stmt = (
             select(MechanicBooking)
             .where(MechanicBooking.user_id == user_id)
+            .options(*_booking_eager_options())
             .order_by(MechanicBooking.created_at.desc())
         )
         result = await self.session.scalars(stmt)

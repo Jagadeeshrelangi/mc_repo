@@ -48,6 +48,7 @@ from app.schemas.mechanic import (
     BookingCreate,
     BookingEventOut,
     BookingOut,
+    BookingStatusUpdate,
     MechanicCategoryOut,
     MechanicOut,
     MechanicReviewOut,
@@ -773,6 +774,82 @@ async def test_default_constructor_uses_real_repositories() -> None:
     assert isinstance(svc.booking_repo, MechanicBookingRepository)
     assert isinstance(svc.event_repo, BookingEventRepository)
     assert isinstance(svc.rating_repo, RatingRepository)
+
+
+
+# ---------------------------------------------------------------------------
+# Booking status update (lifecycle state machine)
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_update_booking_status_valid_transitions() -> None:
+    booking = make_booking(status=BookingStatus.REQUESTED.value)
+    svc, session = make_service_instance(
+        booking_repository=AsyncMock(
+            get_owned=AsyncMock(return_value=booking),
+        ),
+        event_repository=AsyncMock(append=AsyncMock(return_value=make_event(status="accepted"))),
+    )
+    result = await svc.update_booking_status(
+        B_ID,
+        USER_A,
+        new_status=BookingStatus.ACCEPTED,
+        payload={"notes": "Mechanic confirmed"},
+    )
+    assert result.status == BookingStatus.ACCEPTED
+    assert booking.status == BookingStatus.ACCEPTED.value
+    svc.event_repo.append.assert_awaited_once()
+    assert session.commits == 1
+
+
+@pytest.mark.asyncio
+async def test_update_booking_status_invalid_transition_raises_400() -> None:
+    booking = make_booking(status=BookingStatus.REQUESTED.value)
+    svc, session = make_service_instance(
+        booking_repository=AsyncMock(get_owned=AsyncMock(return_value=booking)),
+        event_repository=AsyncMock(append=AsyncMock()),
+    )
+    with pytest.raises(InvalidInputException) as exc:
+        await svc.update_booking_status(
+            B_ID,
+            USER_A,
+            new_status=BookingStatus.COMPLETED,
+        )
+    assert exc.value.code == "BAD_REQUEST"
+    assert session.rollbacks == 1
+
+
+@pytest.mark.asyncio
+async def test_update_booking_status_terminal_state_cannot_transition() -> None:
+    booking = make_booking(status=BookingStatus.COMPLETED.value)
+    svc, session = make_service_instance(
+        booking_repository=AsyncMock(get_owned=AsyncMock(return_value=booking)),
+        event_repository=AsyncMock(append=AsyncMock()),
+    )
+    with pytest.raises(InvalidInputException) as exc:
+        await svc.update_booking_status(
+            B_ID,
+            USER_A,
+            new_status=BookingStatus.REQUESTED,
+        )
+    assert exc.value.code == "BAD_REQUEST"
+    assert session.rollbacks == 1
+
+
+@pytest.mark.asyncio
+async def test_update_booking_status_foreign_user_raises_404() -> None:
+    svc, session = make_service_instance(
+        booking_repository=AsyncMock(get_owned=AsyncMock(return_value=None)),
+        event_repository=AsyncMock(append=AsyncMock()),
+    )
+    with pytest.raises(EntityNotFoundException):
+        await svc.update_booking_status(
+            B_ID,
+            USER_B,
+            new_status=BookingStatus.ACCEPTED,
+        )
+    assert session.rollbacks == 1
 
 
 @pytest.mark.asyncio

@@ -60,6 +60,36 @@ enum BookingStatus {
     }
     return BookingStatus.requested;
   }
+
+  String get toBackendValue => name;
+}
+
+class BookingEventModel {
+  final String id;
+  final String bookingId;
+  final String status;
+  final DateTime occurredAt;
+  final Map<String, dynamic> payload;
+
+  const BookingEventModel({
+    required this.id,
+    required this.bookingId,
+    required this.status,
+    required this.occurredAt,
+    this.payload = const {},
+  });
+
+  factory BookingEventModel.fromJson(Map<String, dynamic> json) {
+    return BookingEventModel(
+      id: json['id']?.toString() ?? '',
+      bookingId: json['booking_id']?.toString() ?? '',
+      status: json['status']?.toString() ?? '',
+      occurredAt: DateTime.tryParse(json['occurred_at']?.toString() ?? '') ?? DateTime.now(),
+      payload: json['payload'] is Map<String, dynamic>
+          ? Map<String, dynamic>.from(json['payload'] as Map)
+          : const {},
+    );
+  }
 }
 
 class MechanicInfo {
@@ -315,6 +345,7 @@ class Booking {
   final double estimatedCost;
   final BookingStatus status;
   final DateTime bookingTime;
+  final List<BookingEventModel> events;
 
   const Booking({
     required this.bookingId,
@@ -326,6 +357,7 @@ class Booking {
     required this.estimatedCost,
     required this.status,
     required this.bookingTime,
+    this.events = const [],
   });
 
   factory Booking.fromJson(
@@ -334,20 +366,33 @@ class Booking {
     MechanicService? service,
   }) {
     final mech = mechanic ??
-        MechanicInfo(
-          id: json['mechanic_id']?.toString() ?? 'm1',
-          name: 'Verified Mechanic',
-          rating: 4.8,
-        );
+        (json['mechanic'] is Map<String, dynamic>
+            ? MechanicInfo.fromJson(json['mechanic'] as Map<String, dynamic>)
+            : MechanicInfo(
+                id: json['mechanic_id']?.toString() ?? 'm1',
+                name: 'Verified Mechanic',
+                rating: 4.8,
+              ));
 
     final svc = service ??
-        MechanicService(
-          id: json['service_id']?.toString() ?? 'svc_general',
-          name: 'General Service',
-          icon: Icons.build_rounded,
-          price: (json['estimated_cost'] as num?)?.toDouble() ?? 299.0,
-          estimatedMinutes: 30,
-        );
+        (json['service'] is Map<String, dynamic>
+            ? MechanicService.fromJson(json['service'] as Map<String, dynamic>)
+            : MechanicService(
+                id: json['service_id']?.toString() ?? 'svc_general',
+                name: 'General Service',
+                icon: Icons.build_rounded,
+                price: (json['estimated_cost'] as num?)?.toDouble() ?? 299.0,
+                estimatedMinutes: 30,
+              ));
+
+    final eventsList = <BookingEventModel>[];
+    if (json['events'] is List) {
+      for (final e in json['events']) {
+        if (e is Map<String, dynamic>) {
+          eventsList.add(BookingEventModel.fromJson(e));
+        }
+      }
+    }
 
     return Booking(
       bookingId: json['id']?.toString() ?? json['bookingId']?.toString() ?? 'MEC-${DateTime.now().millisecondsSinceEpoch}',
@@ -360,10 +405,14 @@ class Booking {
       estimatedCost: (json['estimated_cost'] as num?)?.toDouble() ?? svc.price,
       status: BookingStatus.fromString(json['status']?.toString()),
       bookingTime: DateTime.tryParse(json['created_at']?.toString() ?? '') ?? DateTime.now(),
+      events: eventsList,
     );
   }
 
-  Booking copyWith({BookingStatus? status}) {
+  Booking copyWith({
+    BookingStatus? status,
+    List<BookingEventModel>? events,
+  }) {
     return Booking(
       bookingId: bookingId,
       mechanic: mechanic,
@@ -374,6 +423,7 @@ class Booking {
       estimatedCost: estimatedCost,
       status: status ?? this.status,
       bookingTime: bookingTime,
+      events: events ?? this.events,
     );
   }
 }

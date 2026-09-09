@@ -196,8 +196,37 @@ class MechanicProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadBookingHistory() async {
+  Future<Booking?> updateActiveBookingStatus(
+    BookingStatus status, {
+    Map<String, dynamic>? payload,
+  }) async {
+    final booking = _activeBooking;
+    if (booking == null) return null;
+    final updated = await _repository.updateBookingStatus(
+      booking.bookingId,
+      status,
+      payload: payload,
+    );
+    _activeBooking = updated;
+    _requestStatus = updated.status;
     _bookingHistory = _repository.getBookingHistory();
+    notifyListeners();
+    return updated;
+  }
+
+  Future<List<BookingEventModel>> fetchActiveBookingEvents() async {
+    final booking = _activeBooking;
+    if (booking == null) return const [];
+    final events = await _repository.fetchBookingEvents(booking.bookingId);
+    if (_activeBooking != null) {
+      _activeBooking = _activeBooking!.copyWith(events: events);
+      notifyListeners();
+    }
+    return events;
+  }
+
+  Future<void> loadBookingHistory() async {
+    _bookingHistory = await _repository.refreshHistory();
     notifyListeners();
   }
 

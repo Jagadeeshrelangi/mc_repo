@@ -259,13 +259,23 @@ class BookingCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+class BookingStatusUpdate(BaseModel):
+    """Input for transitioning a booking's lifecycle status."""
+
+    status: BookingStatus = Field(..., description="Target lifecycle status.")
+    payload: Optional[Dict[str, Any]] = Field(None, description="Optional metadata (location, notes).")
+
+    model_config = ConfigDict(extra="forbid")
+
+
 class BookingOut(_DecimalJsonMixin):
     """Booking response (``mechanic_bookings``).
 
     Owner-scoped reads only (the route uses ``get_owned``/``list_for_user``).
     ``user_id`` is deliberately NOT exposed — it is the authenticated caller's
     own identity and the client does not need it echoed back. ``status`` uses
-    the canonical ``BookingStatus`` (no second enum).
+    the canonical ``BookingStatus`` (no second enum). Eagerly loads mechanic
+    and service summaries when available.
     """
 
     id: UUID = Field(..., description="Authoritative booking UUID.")
@@ -339,6 +349,7 @@ __all__ = [
     "BookingCreate",
     "BookingEventOut",
     "BookingOut",
+    "BookingStatusUpdate",
     "MechanicCategoryOut",
     "MechanicOut",
     "MechanicReviewOut",

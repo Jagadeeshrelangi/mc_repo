@@ -24,9 +24,14 @@ class BookingConfirmationScreen extends StatelessWidget {
                 const SizedBox(height: 24),
                 _buildSuccessIcon(context),
                 SizedBox(height: AppSpacing.xl),
-                Text('Booking Confirmed!', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, fontFamily: 'Space Grotesk', color: context.textPrimary)),
+                Text('Booking Placed!', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700, fontFamily: 'Space Grotesk', color: context.textPrimary)),
                 SizedBox(height: AppSpacing.sm),
-                Text('Your mechanic is on the way', style: TextStyle(fontSize: 15, color: context.textTertiary)),
+                Text(
+                  booking.status == BookingStatus.requested
+                      ? 'Request received — awaiting confirmation'
+                      : 'Your mechanic is on the way',
+                  style: TextStyle(fontSize: 15, color: context.textTertiary),
+                ),
                 SizedBox(height: AppSpacing.xxxl),
                 _buildDetailsCard(context, booking),
                 SizedBox(height: AppSpacing.xxxl),
@@ -82,15 +87,15 @@ class BookingConfirmationScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: AppColors.successLight,
+              color: AppColors.brandOrangeSoft,
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.success, shape: BoxShape.circle)),
+                Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.brandOrange, shape: BoxShape.circle)),
                 SizedBox(width: 6),
-                Text('Mechanic Assigned', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.successDark)),
+                Text(booking.status.label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.brandOrange)),
               ],
             ),
           ),

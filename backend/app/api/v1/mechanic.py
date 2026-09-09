@@ -45,6 +45,7 @@ from app.schemas.mechanic import (
     BookingCreate,
     BookingEventOut,
     BookingOut,
+    BookingStatusUpdate,
     MechanicCategoryOut,
     MechanicOut,
     MechanicReviewOut,
@@ -252,6 +253,35 @@ async def complete_booking(
     """Mark the authenticated user's booking ``completed`` (owner-guarded)."""
     service = MechanicService(session)
     return await service.complete_booking(booking_id, user_id=user.id)
+
+
+@router.patch(
+    "/bookings/{booking_id}",
+    response_model=BookingOut,
+    status_code=status.HTTP_200_OK,
+    summary="Update booking status along lifecycle (owner-guarded)",
+)
+@router.patch(
+    "/bookings/{booking_id}/status",
+    response_model=BookingOut,
+    status_code=status.HTTP_200_OK,
+    summary="Update booking status along lifecycle (owner-guarded)",
+    include_in_schema=False,
+)
+async def update_booking_status(
+    booking_id: str,
+    payload: BookingStatusUpdate,
+    user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+) -> BookingOut:
+    """Update a booking's lifecycle status according to canonical transition rules."""
+    service = MechanicService(session)
+    return await service.update_booking_status(
+        booking_id=booking_id,
+        user_id=user.id,
+        new_status=payload.status,
+        payload=payload.payload,
+    )
 
 
 @router.get(

@@ -441,6 +441,125 @@ void main() {
       final cancelled = await repo.cancelBooking('b101');
       expect(cancelled.status, BookingStatus.cancelled);
     });
+
+    test('updateBookingStatus dispatches PATCH /api/v1/mechanic/bookings/{id}/status', () async {
+      late http.Request captured;
+      final mockHttp = MockClient((request) async {
+        if (request.url.path == '/api/v1/mechanic/bookings/b101/status') {
+          captured = request;
+          return http.Response(
+            jsonEncode({
+              'id': 'b101',
+              'mechanic_id': 'm101',
+              'service_id': 'svc_1',
+              'status': 'enRoute',
+              'address': '123 Main Street',
+              'scheduled_at': '2026-08-19T14:00:00Z',
+              'created_at': '2026-08-19T12:00:00Z',
+            }),
+            200,
+          );
+        }
+        return http.Response('Not Found', 404);
+      });
+
+      final apiClient = ApiClient(baseUrl: 'http://test-server.local', client: mockHttp);
+      await apiClient.saveTokens(accessToken: 'user-token', refreshToken: 'refresh-token');
+      final repo = MechanicRepository(apiClient: apiClient);
+
+      final updated = await repo.updateBookingStatus(
+        'b101',
+        BookingStatus.enRoute,
+        payload: {'eta_minutes': 10},
+      );
+
+      expect(updated.status, BookingStatus.enRoute);
+      expect(captured.method, 'PATCH');
+      expect(jsonDecode(captured.body)['status'], 'enRoute');
+      expect(jsonDecode(captured.body)['payload']['eta_minutes'], 10);
+    });
+
+    test('fetchBookingEvents dispatches GET /api/v1/mechanic/bookings/{id}/events', () async {
+      final mockHttp = MockClient((request) async {
+        if (request.url.path == '/api/v1/mechanic/bookings/b101/events') {
+          return http.Response(
+            jsonEncode([
+              {
+                'id': 'ev-1',
+                'booking_id': 'b101',
+                'status': 'requested',
+                'occurred_at': '2026-08-19T12:00:00Z',
+                'payload': {},
+              },
+              {
+                'id': 'ev-2',
+                'booking_id': 'b101',
+                'status': 'accepted',
+                'occurred_at': '2026-08-19T12:05:00Z',
+                'payload': {'note': 'Accepted by workshop'},
+              },
+            ]),
+            200,
+          );
+        }
+        return http.Response('Not Found', 404);
+      });
+
+      final apiClient = ApiClient(baseUrl: 'http://test-server.local', client: mockHttp);
+      await apiClient.saveTokens(accessToken: 'user-token', refreshToken: 'refresh-token');
+      final repo = MechanicRepository(apiClient: apiClient);
+
+      final events = await repo.fetchBookingEvents('b101');
+      expect(events.length, 2);
+      expect(events.first.status, 'requested');
+      expect(events.last.status, 'accepted');
+      expect(events.last.payload['note'], 'Accepted by workshop');
+    });
+
+    test('createBooking with custom service omits service_id', () async {
+      late http.Request captured;
+      final mockHttp = MockClient((request) async {
+        if (request.url.path == '/api/v1/mechanic/bookings') {
+          captured = request;
+          return http.Response(
+            jsonEncode({
+              'id': 'b-custom-1',
+              'mechanic_id': 'm101',
+              'service_id': null,
+              'status': 'requested',
+              'address': 'Koramangala, Bengaluru',
+              'scheduled_at': '2026-08-19T14:00:00Z',
+              'created_at': '2026-08-19T12:00:00Z',
+            }),
+            201,
+          );
+        }
+        return http.Response('Not Found', 404);
+      });
+
+      final apiClient = ApiClient(baseUrl: 'http://test-server.local', client: mockHttp);
+      await apiClient.saveTokens(accessToken: 'user-token', refreshToken: 'refresh-token');
+      final repo = MechanicRepository(apiClient: apiClient);
+
+      final booking = await repo.createBooking(
+        mechanic: const MechanicInfo(id: 'm101', name: 'Speedy Garage', rating: 4.8),
+        service: const MechanicService(
+          id: 'svc_custom',
+          name: 'Custom Issue',
+          icon: Icons.build_rounded,
+          price: 199.0,
+          estimatedMinutes: 30,
+        ),
+        vehicle: 'Hyundai i20',
+        address: 'Koramangala, Bengaluru',
+        estimatedCost: 199.0,
+      );
+
+      expect(booking.bookingId, 'b-custom-1');
+      expect(booking.status, BookingStatus.requested);
+      final body = jsonDecode(captured.body);
+      expect(body.containsKey('service_id'), isFalse);
+    });
   });
 
   group('AiRepository & Chat API Integration', () {

@@ -55,7 +55,7 @@ from sqlalchemy import update
 from app.core.exceptions import EntityNotFoundException, InvalidInputException
 from app.models.mechanic import Mechanic
 from app.models.mechanic_booking import MechanicBooking
-from app.models.mechanic_service import MechanicService
+from app.models.mechanic_service import MechanicService as MechanicServiceModel
 from app.models.mechanic_status import BookingStatus
 from app.models.order_entry import OrderEntry
 from app.repositories.mechanics import (
@@ -84,6 +84,25 @@ from app.schemas.mechanic import (
 TERMINAL_STATUSES = frozenset(
     {BookingStatus.CANCELLED.value, BookingStatus.COMPLETED.value}
 )
+
+# Canonical state machine transition matrix (Task 2 Stage 2).
+ALLOWED_TRANSITIONS = {
+    BookingStatus.REQUESTED.value: frozenset(
+        {BookingStatus.ACCEPTED.value, BookingStatus.CANCELLED.value}
+    ),
+    BookingStatus.ACCEPTED.value: frozenset(
+        {BookingStatus.MECHANIC_ASSIGNED.value, BookingStatus.CANCELLED.value}
+    ),
+    BookingStatus.MECHANIC_ASSIGNED.value: frozenset(
+        {BookingStatus.EN_ROUTE.value, BookingStatus.CANCELLED.value}
+    ),
+    BookingStatus.EN_ROUTE.value: frozenset(
+        {BookingStatus.ARRIVED.value, BookingStatus.CANCELLED.value}
+    ),
+    BookingStatus.ARRIVED.value: frozenset(
+        {BookingStatus.COMPLETED.value, BookingStatus.CANCELLED.value}
+    ),
+}
 
 
 class MechanicService:
@@ -225,7 +244,7 @@ class MechanicService:
             service_name = "Mechanic Service"
             service_price = Decimal("499.00")
             if payload.service_id:
-                svc = await self.session.get(MechanicService, payload.service_id)
+                svc = await self.session.get(MechanicServiceModel, payload.service_id)
                 if svc:
                     service_name = svc.name
                     if svc.price:
@@ -248,6 +267,56 @@ class MechanicService:
                 source="Mechanic Booking",
             )
             self.session.add(entry)
+
+            await self.session.commit()
+            return BookingOut.model_validate(booking)
+        except Exception:
+            await self.session.rollback()
+            raise
+
+    async def update_booking_status(
+        self,
+        booking_id: str,
+        user_id: str,
+        new_status: BookingStatus,
+        payload: Optional[dict] = None,
+    ) -> BookingOut:
+        """Advance or transition the authenticated user's booking status.
+
+        Validates the canonical state machine transitions:
+        requested → accepted → mechanicAssigned → enRoute → arrived → completed.
+        Rejects modifications to terminal states or invalid step jumps.
+        """
+        try:
+            booking = await self._get_owned_or_404(booking_id, user_id)
+            self._assert_mutable(booking)
+
+            allowed = ALLOWED_TRANSITIONS.get(booking.status, frozenset())
+            if new_status.value not in allowed:
+                raise InvalidInputException(
+                    f"Cannot transition booking from '{booking.status}' to '{new_status.value}'."
+                )
+
+            await self.booking_repo.update_status(booking, new_status.value)
+            booking.status = new_status.value
+            await self.event_repo.append(
+                booking_id=booking_id,
+                status=new_status.value,
+                payload=payload,
+            )
+
+            # Sync unified cross-domain OrderEntry status
+            order_status = "In Progress"
+            if new_status == BookingStatus.COMPLETED:
+                order_status = "Completed"
+            elif new_status == BookingStatus.CANCELLED:
+                order_status = "Cancelled"
+
+            await self.session.execute(
+                update(OrderEntry)
+                .where(OrderEntry.id == str(booking_id))
+                .values(status=order_status)
+            )
 
             await self.session.commit()
             return BookingOut.model_validate(booking)
@@ -370,4 +439,4 @@ class MechanicService:
             )
 
 
-__all__ = ["TERMINAL_STATUSES", "MechanicService"]
+__all__ = ["ALLOWED_TRANSITIONS", "TERMINAL_STATUSES", "MechanicService"]
