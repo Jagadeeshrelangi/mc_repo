@@ -118,17 +118,25 @@ class MechanicProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setActiveBooking(Booking booking) {
+    _activeBooking = booking;
+    _requestStatus = booking.status;
+    notifyListeners();
+  }
+
   /// Creates a booking via the repository and records it as active.
   Future<Booking> createBooking({
     required MechanicInfo mechanic,
     required MechanicService service,
+    BookingRequest? request,
+    DateTime? scheduledAt,
   }) async {
     _isSubmitting = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final request =
+      final req = request ??
           _bookingRequest ??
           const BookingRequest(
             vehicleType: 'Bike',
@@ -140,12 +148,18 @@ class MechanicProvider extends ChangeNotifier {
             address: '123, Main Road, Surampalem',
           );
 
+      if (request != null) {
+        _bookingRequest = request;
+        _selectedVehicle = request.vehicleSummary;
+      }
+
       final booking = await _repository.createBooking(
         mechanic: mechanic,
         service: service,
-        vehicle: request.vehicleSummary,
-        address: request.address,
+        vehicle: req.vehicleSummary,
+        address: req.address,
         estimatedCost: service.price + (mechanic.isAvailable ? 0 : 100),
+        scheduledAt: scheduledAt,
       );
 
       _activeBooking = booking;
@@ -153,7 +167,11 @@ class MechanicProvider extends ChangeNotifier {
       _bookingHistory = _repository.getBookingHistory();
       return booking;
     } catch (e) {
-      _errorMessage = 'Could not create booking. Please try again.';
+      if (e is ApiException) {
+        _errorMessage = e.message;
+      } else {
+        _errorMessage = 'Could not create booking. Please try again.';
+      }
       rethrow;
     } finally {
       _isSubmitting = false;

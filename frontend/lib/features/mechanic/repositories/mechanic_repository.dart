@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:mecha_connect/services/api_client.dart';
 import '../models/models.dart';
 
@@ -141,35 +140,33 @@ class MechanicRepository {
     required String vehicle,
     required String address,
     required double estimatedCost,
+    DateTime? scheduledAt,
   }) async {
     if (_apiClient != null) {
-      try {
-        final isCustomService = service.id.isEmpty || service.id == 'svc_custom';
-        final payload = {
-          'mechanic_id': mechanic.id,
-          if (!isCustomService) 'service_id': service.id,
-          'address': address,
-          'scheduled_at': DateTime.now().toUtc().toIso8601String(),
-        };
+      final isCustomService = service.id.isEmpty || service.id == 'svc_custom';
+      final payload = {
+        'mechanic_id': mechanic.id,
+        if (!isCustomService) 'service_id': service.id,
+        'address': address,
+        'scheduled_at': (scheduledAt ?? DateTime.now()).toUtc().toIso8601String(),
+      };
 
-        final res = await _apiClient.post(
-          '/api/v1/mechanic/bookings',
-          body: payload,
-          requiresAuth: true,
-        );
+      final res = await _apiClient.post(
+        '/api/v1/mechanic/bookings',
+        body: payload,
+        requiresAuth: true,
+      );
 
-        if (res is Map<String, dynamic>) {
-          final booking = Booking.fromJson(
-            res,
-            mechanic: mechanic,
-            service: service,
-          ).copyWith(status: BookingStatus.requested);
-          _bookings.insert(0, booking);
-          return booking;
-        }
-      } catch (e) {
-        debugPrint('Backend booking creation fell back to local store: $e');
+      if (res is Map<String, dynamic>) {
+        final booking = Booking.fromJson(
+          res,
+          mechanic: mechanic,
+          service: service,
+        ).copyWith(status: BookingStatus.requested);
+        _bookings.insert(0, booking);
+        return booking;
       }
+      throw Exception('Unexpected server response while creating booking');
     }
 
     await _delay();
@@ -182,7 +179,7 @@ class MechanicRepository {
       estimatedArrival: DateTime.now().add(Duration(minutes: mechanic.etaMinutes)),
       estimatedCost: estimatedCost,
       status: BookingStatus.requested,
-      bookingTime: DateTime.now(),
+      bookingTime: scheduledAt ?? DateTime.now(),
     );
     _bookings.insert(0, booking);
     return booking;
@@ -190,14 +187,16 @@ class MechanicRepository {
 
   Future<Booking> getBookingById(String bookingId) async {
     if (_apiClient != null) {
-      try {
-        final res = await _apiClient.get('/api/v1/mechanic/bookings/$bookingId', requiresAuth: true);
-        if (res is Map<String, dynamic>) {
-          return Booking.fromJson(res);
-        }
-      } catch (e) {
-        debugPrint('Backend get booking fell back to local store: $e');
+      final res = await _apiClient.get('/api/v1/mechanic/bookings/$bookingId', requiresAuth: true);
+      if (res is Map<String, dynamic>) {
+        final existing = _bookings.where((b) => b.bookingId == bookingId).firstOrNull;
+        return Booking.fromJson(
+          res,
+          mechanic: existing?.mechanic,
+          service: existing?.service,
+        );
       }
+      throw Exception('Booking $bookingId not found on server');
     }
 
     await _delay();
@@ -215,33 +214,30 @@ class MechanicRepository {
     Map<String, dynamic>? payload,
   }) async {
     if (_apiClient != null) {
-      try {
-        final res = await _apiClient.patch(
-          '/api/v1/mechanic/bookings/$bookingId/status',
-          body: {
-            'status': status.toBackendValue,
-            if (payload != null) 'payload': payload,
-          },
-          requiresAuth: true,
+      final res = await _apiClient.patch(
+        '/api/v1/mechanic/bookings/$bookingId/status',
+        body: {
+          'status': status.toBackendValue,
+          if (payload != null) 'payload': payload,
+        },
+        requiresAuth: true,
+      );
+      if (res is Map<String, dynamic>) {
+        final existing = _bookings.where((b) => b.bookingId == bookingId).firstOrNull;
+        final updated = Booking.fromJson(
+          res,
+          mechanic: existing?.mechanic,
+          service: existing?.service,
         );
-        if (res is Map<String, dynamic>) {
-          final existing = _bookings.where((b) => b.bookingId == bookingId).firstOrNull;
-          final updated = Booking.fromJson(
-            res,
-            mechanic: existing?.mechanic,
-            service: existing?.service,
-          );
-          final index = _bookings.indexWhere((b) => b.bookingId == bookingId);
-          if (index >= 0) {
-            _bookings[index] = updated;
-          } else {
-            _bookings.insert(0, updated);
-          }
-          return updated;
+        final index = _bookings.indexWhere((b) => b.bookingId == bookingId);
+        if (index >= 0) {
+          _bookings[index] = updated;
+        } else {
+          _bookings.insert(0, updated);
         }
-      } catch (e) {
-        debugPrint('Backend update booking status fell back to local store: $e');
+        return updated;
       }
+      throw Exception('Unexpected response updating booking status');
     }
 
     await _delay();
@@ -255,45 +251,39 @@ class MechanicRepository {
   /// Fetches audit event logs for a booking.
   Future<List<BookingEventModel>> fetchBookingEvents(String bookingId) async {
     if (_apiClient != null) {
-      try {
-        final res = await _apiClient.get(
-          '/api/v1/mechanic/bookings/$bookingId/events',
-          requiresAuth: true,
-        );
-        if (res is List) {
-          return res
-              .whereType<Map<String, dynamic>>()
-              .map((e) => BookingEventModel.fromJson(e))
-              .toList();
-        }
-      } catch (e) {
-        debugPrint('Backend fetch events fell back to empty: $e');
+      final res = await _apiClient.get(
+        '/api/v1/mechanic/bookings/$bookingId/events',
+        requiresAuth: true,
+      );
+      if (res is List) {
+        return res
+            .whereType<Map<String, dynamic>>()
+            .map((e) => BookingEventModel.fromJson(e))
+            .toList();
       }
+      return const [];
     }
     return const [];
   }
 
   Future<Booking> cancelBooking(String bookingId) async {
     if (_apiClient != null) {
-      try {
-        final res = await _apiClient.post(
-          '/api/v1/mechanic/bookings/$bookingId/cancel',
-          requiresAuth: true,
+      final res = await _apiClient.post(
+        '/api/v1/mechanic/bookings/$bookingId/cancel',
+        requiresAuth: true,
+      );
+      if (res is Map<String, dynamic>) {
+        final existing = _bookings.where((b) => b.bookingId == bookingId).firstOrNull;
+        final updated = Booking.fromJson(
+          res,
+          mechanic: existing?.mechanic,
+          service: existing?.service,
         );
-        if (res is Map<String, dynamic>) {
-          final existing = _bookings.where((b) => b.bookingId == bookingId).firstOrNull;
-          final updated = Booking.fromJson(
-            res,
-            mechanic: existing?.mechanic,
-            service: existing?.service,
-          );
-          final index = _bookings.indexWhere((b) => b.bookingId == bookingId);
-          if (index >= 0) _bookings[index] = updated;
-          return updated;
-        }
-      } catch (e) {
-        debugPrint('Backend cancel booking fell back to local store: $e');
+        final index = _bookings.indexWhere((b) => b.bookingId == bookingId);
+        if (index >= 0) _bookings[index] = updated;
+        return updated;
       }
+      throw Exception('Unexpected response cancelling booking');
     }
 
     await _delay();
@@ -306,25 +296,22 @@ class MechanicRepository {
 
   Future<Booking> completeBooking(String bookingId) async {
     if (_apiClient != null) {
-      try {
-        final res = await _apiClient.post(
-          '/api/v1/mechanic/bookings/$bookingId/complete',
-          requiresAuth: true,
+      final res = await _apiClient.post(
+        '/api/v1/mechanic/bookings/$bookingId/complete',
+        requiresAuth: true,
+      );
+      if (res is Map<String, dynamic>) {
+        final existing = _bookings.where((b) => b.bookingId == bookingId).firstOrNull;
+        final updated = Booking.fromJson(
+          res,
+          mechanic: existing?.mechanic,
+          service: existing?.service,
         );
-        if (res is Map<String, dynamic>) {
-          final existing = _bookings.where((b) => b.bookingId == bookingId).firstOrNull;
-          final updated = Booking.fromJson(
-            res,
-            mechanic: existing?.mechanic,
-            service: existing?.service,
-          );
-          final index = _bookings.indexWhere((b) => b.bookingId == bookingId);
-          if (index >= 0) _bookings[index] = updated;
-          return updated;
-        }
-      } catch (e) {
-        debugPrint('Backend complete booking fell back to local store: $e');
+        final index = _bookings.indexWhere((b) => b.bookingId == bookingId);
+        if (index >= 0) _bookings[index] = updated;
+        return updated;
       }
+      throw Exception('Unexpected response completing booking');
     }
 
     await _delay();
@@ -337,36 +324,33 @@ class MechanicRepository {
 
   Future<List<Booking>> refreshHistory() async {
     if (_apiClient != null) {
-      try {
-        final res = await _apiClient.get('/api/v1/mechanic/bookings', requiresAuth: true);
-        if (res is List) {
-          final fetched = res
-              .whereType<Map<String, dynamic>>()
-              .map((j) {
-                final mechId = j['mechanic_id']?.toString();
-                final svcId = j['service_id']?.toString();
-                MechanicInfo? foundMech;
-                MechanicService? foundSvc;
+      final res = await _apiClient.get('/api/v1/mechanic/bookings', requiresAuth: true);
+      if (res is List) {
+        final fetched = res
+            .whereType<Map<String, dynamic>>()
+            .map((j) {
+              final mechId = j['mechanic_id']?.toString();
+              final svcId = j['service_id']?.toString();
+              MechanicInfo? foundMech;
+              MechanicService? foundSvc;
+              try {
+                foundMech = _bookings.where((b) => b.mechanic.id == mechId).map((b) => b.mechanic).firstOrNull ??
+                    mockMechanics.where((m) => m.id == mechId).firstOrNull;
+              } catch (_) {}
+              if (foundMech != null && svcId != null) {
                 try {
-                  foundMech = _bookings.where((b) => b.mechanic.id == mechId).map((b) => b.mechanic).firstOrNull ??
-                      mockMechanics.where((m) => m.id == mechId).firstOrNull;
+                  foundSvc = foundMech.services.where((s) => s.id == svcId).firstOrNull ??
+                      generalServices.where((s) => s.id == svcId).firstOrNull;
                 } catch (_) {}
-                if (foundMech != null && svcId != null) {
-                  try {
-                    foundSvc = foundMech.services.where((s) => s.id == svcId).firstOrNull ??
-                        generalServices.where((s) => s.id == svcId).firstOrNull;
-                  } catch (_) {}
-                }
-                return Booking.fromJson(j, mechanic: foundMech, service: foundSvc);
-              })
-              .toList();
-          _bookings.clear();
-          _bookings.addAll(fetched);
-          return List.unmodifiable(_bookings);
-        }
-      } catch (e) {
-        debugPrint('Backend bookings fetch fell back to mock: $e');
+              }
+              return Booking.fromJson(j, mechanic: foundMech, service: foundSvc);
+            })
+            .toList();
+        _bookings.clear();
+        _bookings.addAll(fetched);
+        return List.unmodifiable(_bookings);
       }
+      return List.unmodifiable(_bookings);
     }
     await _delay();
     return List.unmodifiable(_bookings);

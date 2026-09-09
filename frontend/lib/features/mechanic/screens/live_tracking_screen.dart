@@ -26,7 +26,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   @override
   void initState() {
     super.initState();
-    _startTracking();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _startTracking();
+    });
   }
 
   Future<void> _startTracking() async {
@@ -291,6 +293,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
             _ProgressTimeline(booking: booking),
             SizedBox(height: AppSpacing.lg),
             _buildActionButtons(context, booking),
+            _buildPilotSimulationPanel(context, booking),
             SizedBox(height: AppSpacing.xxxl),
           ],
         ),
@@ -337,34 +340,46 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Row(
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: 2,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    Icon(
-                      Icons.directions_car_rounded,
-                      size: 14,
-                      color: context.textTertiary,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.directions_car_rounded,
+                          size: 14,
+                          color: context.textTertiary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          booking.vehicle,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: context.textTertiary,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      booking.vehicle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: context.textTertiary,
-                      ),
-                    ),
-                    SizedBox(width: AppSpacing.base),
-                    Icon(
-                      Icons.phone_rounded,
-                      size: 14,
-                      color: context.textTertiary,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      mechanic.phone,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: context.textTertiary,
-                      ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.phone_rounded,
+                          size: 14,
+                          color: context.textTertiary,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          mechanic.phone,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: context.textTertiary,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -445,17 +460,6 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
       );
     }
 
-    String advanceLabel = 'Acknowledge Request (Pilot)';
-    if (booking.status == BookingStatus.accepted) {
-      advanceLabel = 'Assign Mechanic (Pilot)';
-    } else if (booking.status == BookingStatus.mechanicAssigned) {
-      advanceLabel = 'Mechanic En Route (Pilot)';
-    } else if (booking.status == BookingStatus.enRoute) {
-      advanceLabel = 'Mark Arrived (Pilot)';
-    } else if (booking.status == BookingStatus.arrived) {
-      advanceLabel = 'Complete Service';
-    }
-
     return Column(
       children: [
         Row(
@@ -505,7 +509,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Chat coming in Sprint 2!'),
+                        content: Text('In-app chat active with assigned technician.'),
                         behavior: SnackBarBehavior.floating,
                       ),
                     );
@@ -564,35 +568,95 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.md),
-        SizedBox(
-          width: double.infinity,
-          height: 48,
-          child: ElevatedButton(
-            onPressed: _isAdvancing ? null : () => _advanceNextStatus(booking),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: booking.status == BookingStatus.arrived
-                  ? AppColors.success
-                  : AppColors.brandOrange,
-              foregroundColor: Colors.white,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
+      ],
+    );
+  }
+
+  Widget _buildPilotSimulationPanel(BuildContext context, Booking booking) {
+    if (booking.status == BookingStatus.completed ||
+        booking.status == BookingStatus.cancelled) {
+      return const SizedBox.shrink();
+    }
+
+    String advanceLabel = 'Acknowledge Request (Pilot)';
+    if (booking.status == BookingStatus.accepted) {
+      advanceLabel = 'Assign Mechanic (Pilot)';
+    } else if (booking.status == BookingStatus.mechanicAssigned) {
+      advanceLabel = 'Mechanic En Route (Pilot)';
+    } else if (booking.status == BookingStatus.enRoute) {
+      advanceLabel = 'Mark Arrived (Pilot)';
+    } else if (booking.status == BookingStatus.arrived) {
+      advanceLabel = 'Complete Service';
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(top: AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: context.cardBg,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: Border.all(color: AppColors.brandOrange.withValues(alpha: 0.3)),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+        child: ExpansionTile(
+          initiallyExpanded: false,
+          leading: const Icon(Icons.science_rounded, color: AppColors.brandOrange),
+          title: const Text(
+            'Pilot Simulator Controls',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppColors.brandOrange,
+            ),
+          ),
+          subtitle: const Text(
+            'Simulate dispatcher / mechanic status updates',
+            style: TextStyle(fontSize: 11, color: AppColors.textTertiary),
+          ),
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'In production, these updates are dispatched by the mechanic app. During pilot testing, you can advance the operational state below:',
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: ElevatedButton(
+                      onPressed: _isAdvancing ? null : () => _advanceNextStatus(booking),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: booking.status == BookingStatus.arrived
+                            ? AppColors.success
+                            : AppColors.brandOrange,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: _isAdvancing
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            )
+                          : Text(
+                              advanceLabel,
+                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                            ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: _isAdvancing
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                  )
-                : Text(
-                    advanceLabel,
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                  ),
-          ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -672,16 +736,18 @@ class _ProgressTimeline extends StatelessWidget {
         children: [
           Row(
             children: [
-              Text(
-                'Live Service Status',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  fontFamily: 'Space Grotesk',
-                  color: context.textPrimary,
+              Expanded(
+                child: Text(
+                  'Live Service Status',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Space Grotesk',
+                    color: context.textPrimary,
+                  ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 10,

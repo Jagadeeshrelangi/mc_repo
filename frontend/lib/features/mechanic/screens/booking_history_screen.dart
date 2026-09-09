@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mecha_connect/features/mechanic/models/models.dart';
 import 'package:mecha_connect/features/mechanic/providers/mechanic_provider.dart';
 import 'package:mecha_connect/features/mechanic/screens/live_tracking_screen.dart';
+import 'package:mecha_connect/features/mechanic/screens/job_completed_screen.dart';
+import 'package:mecha_connect/features/mechanic/screens/rating_review_screen.dart';
 import 'package:mecha_connect/features/mechanic/widgets/booking_history_card.dart';
 import 'package:mecha_connect/features/mechanic/widgets/service_chip.dart';
 import 'package:mecha_connect/theme/app_colors.dart';
@@ -242,18 +244,15 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
   void _showDetailsSheet(BuildContext context, Booking booking) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       builder:
-          (ctx) => Padding(
-            padding: EdgeInsets.fromLTRB(
-              20,
-              20,
-              20,
-              MediaQuery.of(ctx).padding.bottom + 20,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          (ctx) => SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 Center(
                   child: Container(
                     width: 32,
@@ -290,10 +289,54 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
                   style: TextStyle(fontSize: 13, color: context.textSecondary),
                 ),
                 const SizedBox(height: 16),
+                if (booking.status == BookingStatus.completed) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => JobCompletedScreen(booking: booking),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.receipt_long_rounded, size: 18),
+                      label: const Text('View Invoice & Summary'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.brandOrange,
+                        foregroundColor: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => RatingReviewScreen(
+                              bookingId: booking.bookingId,
+                              mechanic: booking.mechanic,
+                              serviceName: booking.service.name,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.star_rate_rounded, size: 18),
+                      label: const Text('Rate Service'),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 SizedBox(
                   width: double.infinity,
                   height: 44,
-                  child: ElevatedButton(
+                  child: TextButton(
                     onPressed: () => Navigator.pop(ctx),
                     child: const Text('Close'),
                   ),
@@ -301,6 +344,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen> {
               ],
             ),
           ),
+        ),
     );
   }
 

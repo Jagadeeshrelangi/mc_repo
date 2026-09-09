@@ -15,50 +15,102 @@ class JobCompletedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: context.bgPrimary,
-      body: ConstrainedContent(
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: EdgeInsets.all(AppResponsive.horizontalPadding(context)),
-            child: Column(
-              children: [
-                SizedBox(height: AppSpacing.xxxl),
-                _buildCompletedIcon(context),
-                SizedBox(height: AppSpacing.lg),
-                Text('Service Completed!', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700, fontFamily: 'Space Grotesk', color: context.textPrimary)),
-                SizedBox(height: AppSpacing.xs),
-                Text('${booking.mechanic.name} has completed the service', style: TextStyle(fontSize: 14, color: context.textTertiary)),
-                SizedBox(height: AppSpacing.xxxl),
-                _buildInvoice(context),
-                SizedBox(height: AppSpacing.xl),
-                _buildPaymentStatus(context),
-                SizedBox(height: AppSpacing.xl),
-                PrimaryActionButton(
-                  label: 'Download Invoice',
-                  icon: Icons.download_rounded,
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Invoice download coming in Sprint 2!'), behavior: SnackBarBehavior.floating),
-                    );
-                  },
-                ),
-                SizedBox(height: AppSpacing.md),
-                PrimaryActionButton(
-                  label: 'Rate Service',
-                  backgroundColor: context.cardBg,
-                  onPressed: () {
-                    Navigator.of(context).pushReplacement(MaterialPageRoute(
-                      builder: (_) => RatingReviewScreen(
-                        bookingId: booking.bookingId,
-                        mechanic: booking.mechanic,
-                        serviceName: booking.service.name,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) {
+          Navigator.of(context).popUntil((r) => r.isFirst);
+        }
+      },
+      child: Scaffold(
+        backgroundColor: context.bgPrimary,
+        appBar: AppBar(
+          backgroundColor: context.bgSecondary,
+          surfaceTintColor: Colors.transparent,
+          elevation: 0,
+          title: Text(
+            'Job Summary & Invoice',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              fontFamily: 'Space Grotesk',
+              color: context.textPrimary,
+            ),
+          ),
+          actions: [
+            IconButton(
+              tooltip: 'Back to Home',
+              icon: Icon(Icons.home_rounded, color: context.textPrimary),
+              onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+            ),
+          ],
+        ),
+        body: ConstrainedContent(
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(AppResponsive.horizontalPadding(context)),
+              child: Column(
+                children: [
+                  SizedBox(height: AppSpacing.lg),
+                  _buildCompletedIcon(context),
+                  SizedBox(height: AppSpacing.lg),
+                  Text(
+                    'Service Completed!',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Space Grotesk',
+                      color: context.textPrimary,
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.xs),
+                  Text(
+                    '${booking.mechanic.name} has completed the service',
+                    style: TextStyle(fontSize: 14, color: context.textTertiary),
+                  ),
+                  SizedBox(height: AppSpacing.xxl),
+                  _buildInvoice(context),
+                  SizedBox(height: AppSpacing.lg),
+                  _buildPaymentStatus(context),
+                  SizedBox(height: AppSpacing.xl),
+                  PrimaryActionButton(
+                    label: 'Rate Service & Technician',
+                    icon: Icons.star_rate_rounded,
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(
+                          builder: (_) => RatingReviewScreen(
+                            bookingId: booking.bookingId,
+                            mechanic: booking.mechanic,
+                            serviceName: booking.service.name,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                  SizedBox(height: AppSpacing.md),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.of(context).popUntil((r) => r.isFirst),
+                      icon: const Icon(Icons.home_rounded, size: 20),
+                      label: const Text(
+                        'Back to Home',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
                       ),
-                    ));
-                  },
-                ),
-                SizedBox(height: AppSpacing.xxxl),
-              ],
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: context.textPrimary,
+                        side: BorderSide(color: context.borderSoft),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: AppSpacing.xxxl),
+                ],
+              ),
             ),
           ),
         ),
@@ -68,29 +120,36 @@ class JobCompletedScreen extends StatelessWidget {
 
   Widget _buildCompletedIcon(BuildContext context) {
     return Container(
-      width: 88,
-      height: 88,
+      width: 80,
+      height: 80,
       decoration: BoxDecoration(
         color: AppColors.successLight,
         shape: BoxShape.circle,
-        boxShadow: [BoxShadow(color: AppColors.success.withValues(alpha: 0.2), blurRadius: 24, offset: const Offset(0, 8))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.success.withValues(alpha: 0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
-      child: const Icon(Icons.check_circle_rounded, size: 48, color: AppColors.success),
+      child: const Icon(Icons.check_circle_rounded, size: 44, color: AppColors.success),
     );
   }
 
   Widget _buildInvoice(BuildContext context) {
     final total = booking.estimatedCost;
-    final gst = total * 0.18;
+    final basePrice = booking.service.price > 0 ? booking.service.price : (total > 0 ? total : 499.0);
+    final gst = basePrice * 0.18;
     return InvoiceCard(
       items: [
-        InvoiceItem(label: booking.service.name, amount: booking.service.price),
-        InvoiceItem(label: 'Platform Fee', amount: 0),
-        InvoiceItem(label: 'GST (18%)', amount: gst),
+        InvoiceItem(label: booking.service.name, amount: basePrice),
+        const InvoiceItem(label: 'Platform Booking Fee', amount: 0),
+        InvoiceItem(label: 'GST (18% included)', amount: gst),
       ],
-      total: total,
+      total: total > 0 ? total : basePrice,
       paymentStatus: 'Paid',
-      paymentMethod: 'Cash',
+      paymentMethod: 'Cash / Digital',
     );
   }
 
@@ -109,8 +168,18 @@ class JobCompletedScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Payment Successful', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.successDark)),
-                Text('Amount: ₹${booking.estimatedCost.toStringAsFixed(0)} • Cash', style: TextStyle(fontSize: 13, color: AppColors.successDark)),
+                const Text(
+                  'Payment Verified',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.successDark,
+                  ),
+                ),
+                Text(
+                  'Amount: ₹${booking.estimatedCost.toStringAsFixed(0)} • Reference: ${booking.bookingId}',
+                  style: const TextStyle(fontSize: 12, color: AppColors.successDark),
+                ),
               ],
             ),
           ),

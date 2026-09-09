@@ -39,12 +39,23 @@ class PrimaryActionButton extends StatelessWidget {
             ? SizedBox(width: AppResponsive.scale(context, 22), height: AppResponsive.scale(context, 22), child: const CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
             : Row(
                 mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   if (icon != null) ...[
                     Icon(icon, size: AppResponsive.scaleIcon(context, 20)),
                     SizedBox(width: AppSpacing.sm),
                   ],
-                  Text(label, style: TextStyle(fontSize: AppResponsive.scaleFont(context, 15), fontWeight: FontWeight.w700)),
+                  Flexible(
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: AppResponsive.scaleFont(context, 15),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
                 ],
               ),
       ),

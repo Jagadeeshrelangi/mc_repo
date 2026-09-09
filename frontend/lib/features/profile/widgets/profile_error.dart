@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:mecha_connect/features/auth/providers/auth_provider.dart';
+import 'package:mecha_connect/features/auth/screens/login_screen.dart';
 import 'package:mecha_connect/theme/app_colors.dart';
 import 'package:mecha_connect/theme/app_spacing.dart';
 import 'package:mecha_connect/theme/app_theme_helpers.dart';
@@ -62,6 +65,22 @@ class ProfileErrorState extends StatelessWidget {
                 ),
               ),
             ),
+            if (message.contains('401') ||
+                message.contains('Session expired') ||
+                message.contains('UNAUTHORIZED')) ...[
+              const SizedBox(height: AppSpacing.md),
+              TextButton.icon(
+                onPressed: () {
+                  context.read<AuthProvider>().logout();
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    (route) => false,
+                  );
+                },
+                icon: const Icon(Icons.login_rounded, size: 20),
+                label: const Text('Log In Again'),
+              ),
+            ],
           ],
         ),
       ),
