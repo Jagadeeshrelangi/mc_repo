@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mecha_connect/auth/auth_divider.dart';
 import 'package:mecha_connect/auth/auth_header.dart';
@@ -10,6 +11,7 @@ import 'package:mecha_connect/auth/social_button.dart';
 import 'package:mecha_connect/features/auth/providers/auth_provider.dart';
 import 'package:mecha_connect/features/auth/widgets/password_strength.dart';
 import 'package:mecha_connect/bottom_bar/bottom_navigation.dart';
+import 'package:mecha_connect/services/push_notification_service.dart';
 import 'package:mecha_connect/theme/app_colors.dart';
 import 'package:mecha_connect/theme/app_responsive.dart';
 import 'package:provider/provider.dart';
@@ -66,6 +68,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
     );
     if (!mounted) return;
     if (success) {
+      try {
+        final pushService = Provider.of<PushNotificationService>(context, listen: false);
+        unawaited(pushService.registerCurrentToken());
+        if (pushService.pendingPayload != null) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const BottomNavigation()),
+          );
+          pushService.consumePendingNotification(context);
+          return;
+        }
+      } catch (_) {
+        // Push service not present in widget tree
+      }
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (_) => const BottomNavigation()),
       );

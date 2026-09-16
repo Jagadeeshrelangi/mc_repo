@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mecha_connect/features/auth/screens/login_screen.dart';
 import 'package:mecha_connect/features/auth/providers/auth_provider.dart';
 import 'package:mecha_connect/features/profile/navigation.dart';
+import 'package:mecha_connect/services/push_notification_service.dart';
 import 'package:provider/provider.dart';
 import 'package:mecha_connect/theme/app_colors.dart';
 import 'package:mecha_connect/theme/app_theme_helpers.dart';
@@ -127,11 +128,19 @@ class ProfileDrawer extends StatelessWidget {
                     icon: Icons.logout_rounded,
                     title: 'Logout',
                     color: AppColors.error,
-                    onTap: () {
-                      // ignore: use_build_context_synchronously
-                      Provider.of<AuthProvider>(context, listen: false).logout();
-                      Navigator.pushReplacement(
-                        context,
+                    onTap: () async {
+                      final pushService = Provider.of<PushNotificationService?>(context, listen: false);
+                      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                      final navigator = Navigator.of(context);
+                      if (pushService != null) {
+                        try {
+                          await pushService.unregisterDeviceToken();
+                        } catch (_) {
+                          // Push service unregistration failure isolated
+                        }
+                      }
+                      authProvider.logout();
+                      navigator.pushReplacement(
                         MaterialPageRoute(builder: (_) => const LoginScreen()),
                       );
                     },

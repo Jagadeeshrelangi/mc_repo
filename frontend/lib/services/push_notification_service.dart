@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -169,6 +168,7 @@ class PushNotificationService extends ChangeNotifier {
         },
         requiresAuth: true,
       );
+      _currentFcmToken = fcmToken;
       debugPrint('Device token successfully registered with Mecha Connect backend.');
       return true;
     } catch (e) {
@@ -191,6 +191,8 @@ class PushNotificationService extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Device token unregistration error (isolated): $e');
+    } finally {
+      _currentFcmToken = null;
     }
   }
 
@@ -244,19 +246,23 @@ class PushNotificationService extends ChangeNotifier {
     if (!isLoggedIn) {
       // User is logged out: preserve payload and route to LoginScreen
       _pendingNotificationPayload = data;
-      Navigator.of(targetContext).push(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
+      if (targetContext.mounted) {
+        Navigator.of(targetContext).push(
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      }
       return;
     }
 
     // Authenticated deep-link resolution
     if (entityType == 'booking' && entityId != null && entityId.isNotEmpty) {
-      Navigator.of(targetContext).push(
-        MaterialPageRoute(
-          builder: (_) => LiveTrackingScreen(bookingId: entityId),
-        ),
-      );
+      if (targetContext.mounted) {
+        Navigator.of(targetContext).push(
+          MaterialPageRoute(
+            builder: (_) => LiveTrackingScreen(bookingId: entityId),
+          ),
+        );
+      }
       _pendingNotificationPayload = null;
     }
   }

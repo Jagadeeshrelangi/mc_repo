@@ -4,6 +4,7 @@ import 'package:mecha_connect/features/auth/providers/auth_provider.dart';
 import 'package:mecha_connect/features/auth/screens/login_screen.dart';
 import 'package:mecha_connect/features/profile/navigation.dart';
 import 'package:mecha_connect/features/profile/providers/profile_provider.dart';
+import 'package:mecha_connect/services/push_notification_service.dart';
 import 'package:mecha_connect/features/profile/widgets/widgets.dart';
 import 'package:mecha_connect/theme/app_colors.dart';
 import 'package:mecha_connect/theme/app_spacing.dart';
@@ -415,6 +416,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Future<void> _confirmLogout(BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final pushService = Provider.of<PushNotificationService?>(context, listen: false);
     final navigator = Navigator.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
@@ -440,6 +442,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
     );
     if (confirmed != true || !mounted) return;
+
+    if (pushService != null) {
+      try {
+        await pushService.unregisterDeviceToken();
+      } catch (_) {
+        // Push service unregistration failure isolated
+      }
+    }
 
     authProvider.logout();
     navigator.pushAndRemoveUntil(
