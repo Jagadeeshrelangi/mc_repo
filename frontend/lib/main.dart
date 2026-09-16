@@ -11,6 +11,8 @@ import 'package:mecha_connect/features/fuel_delivery/providers/fuel_provider.dar
 import 'package:mecha_connect/features/marketplace/providers/marketplace_provider.dart';
 import 'package:mecha_connect/app_wiring.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:mecha_connect/firebase_options.dart';
 import 'dart:async';
 import 'package:mecha_connect/services/push_notification_service.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -23,6 +25,14 @@ void main() async {
     await dotenv.load(fileName: ".env");
   } catch (e) {
     debugPrint("ENV LOAD FAILED: $e");
+  }
+
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    debugPrint("Firebase.initializeApp notice: $e");
   }
 
   final locationProvider = LocationProvider();

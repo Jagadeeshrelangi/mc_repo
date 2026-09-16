@@ -71,6 +71,25 @@ class FirebaseAdminAdapter:
         self._initialized = False
         self._init_lock = asyncio.Lock()
 
+    def _resolve_path(self) -> Optional[str]:
+        path = self._credentials_path
+        if not path:
+            backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+            candidate = os.path.join(backend_dir, "firebase_credentials.json")
+            if os.path.exists(candidate):
+                return candidate
+            return None
+        if os.path.exists(path):
+            return os.path.abspath(path)
+        backend_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+        candidate = os.path.join(backend_dir, path)
+        if os.path.exists(candidate):
+            return candidate
+        candidate_base = os.path.join(backend_dir, os.path.basename(path))
+        if os.path.exists(candidate_base):
+            return candidate_base
+        return path
+
     def _ensure_initialized_sync(self) -> bool:
         """Idempotently initialize the Firebase Admin default app.
 
@@ -79,7 +98,8 @@ class FirebaseAdminAdapter:
         if self._initialized:
             return True
 
-        if not self._credentials_path or not os.path.exists(self._credentials_path):
+        resolved_path = self._resolve_path()
+        if not resolved_path or not os.path.exists(resolved_path):
             logger.warning(
                 "Firebase credentials not configured or file not found at '%s'. "
                 "Push notifications cannot be delivered.",
@@ -92,7 +112,7 @@ class FirebaseAdminAdapter:
             from firebase_admin import credentials
 
             if not firebase_admin._apps:
-                cred = credentials.Certificate(self._credentials_path)
+                cred = credentials.Certificate(resolved_path)
                 firebase_admin.initialize_app(cred)
             self._initialized = True
             return True

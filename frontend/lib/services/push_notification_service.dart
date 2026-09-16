@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -6,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:mecha_connect/features/auth/screens/login_screen.dart';
 import 'package:mecha_connect/features/mechanic/screens/live_tracking_screen.dart';
+import 'package:mecha_connect/firebase_options.dart';
 import 'package:mecha_connect/services/api_client.dart';
 
 /// Top-level background message entry point required by Firebase Messaging.
@@ -15,7 +15,11 @@ import 'package:mecha_connect/services/api_client.dart';
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
-    await Firebase.initializeApp();
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
   } catch (_) {
     // If already initialized or credentials missing
   }
@@ -51,7 +55,11 @@ class PushNotificationService extends ChangeNotifier {
     try {
       // 1. Initialize core if needed
       try {
-        await Firebase.initializeApp();
+        if (Firebase.apps.isEmpty) {
+          await Firebase.initializeApp(
+            options: DefaultFirebaseOptions.currentPlatform,
+          );
+        }
       } catch (e) {
         debugPrint('PushNotificationService: Firebase.initializeApp notice: $e');
       }
