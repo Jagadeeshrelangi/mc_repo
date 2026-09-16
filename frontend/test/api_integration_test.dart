@@ -8,6 +8,7 @@ import 'package:mecha_connect/features/ai/repositories/ai_repository.dart';
 import 'package:mecha_connect/features/ai/services/ai_service.dart';
 import 'package:mecha_connect/features/ai/services/diagnosis_service.dart';
 import 'package:mecha_connect/features/auth/repositories/auth_repository.dart';
+import 'package:mecha_connect/features/auth/services/auth_service.dart';
 import 'package:mecha_connect/features/mechanic/models/models.dart';
 import 'package:mecha_connect/features/mechanic/repositories/mechanic_repository.dart';
 import 'package:mecha_connect/features/profile/models/models.dart';
@@ -223,9 +224,49 @@ void main() {
       expect(await apiClient.getAccessToken(), 'test-access-jwt');
     });
 
-    test('register dispatches new user data and stores tokens', () async {
+    test('validatePhone enforces non-empty, format, and 10-15 digit limits', () {
+      final authService = AuthService(AuthRepository());
+      expect(authService.validatePhone(null), 'Enter your phone number');
+      expect(authService.validatePhone(''), 'Enter your phone number');
+      expect(authService.validatePhone('   '), 'Enter your phone number');
+      expect(authService.validatePhone('abc1234567890'), 'Enter a valid phone number');
+      expect(authService.validatePhone('+'), 'Enter a valid phone number');
+      expect(authService.validatePhone('123456789'), 'Phone number must be at least 10 digits');
+      expect(authService.validatePhone('+91987654321000000'), 'Phone number must not exceed 15 digits');
+      expect(authService.validatePhone('9876543210'), isNull);
+      expect(authService.validatePhone('+919876543210'), isNull);
+      expect(authService.validatePhone('+123456789012345'), isNull);
+    });
+
+    test('register dispatches UserOut 201, auto-authenticates via login 200, and stores tokens', () async {
+      final requests = <http.Request>[];
       final mockHttp = MockClient((request) async {
+        requests.add(request);
         if (request.url.path == '/api/v1/auth/register') {
+          final body = jsonDecode(request.body) as Map<String, dynamic>;
+          expect(body['name'], 'Ramesh Kumar');
+          expect(body['email'], 'ramesh@example.com');
+          expect(body['phone'], '+919876543210');
+          expect(body['password'], 'Pass@1234');
+          return http.Response(
+            jsonEncode({
+              'id': 'user-uuid-1234',
+              'name': 'Ramesh Kumar',
+              'email': 'ramesh@example.com',
+              'phone': '+919876543210',
+              'role': 'customer',
+              'is_active': true,
+              'is_verified': false,
+              'created_at': '2026-09-16T10:00:00Z',
+            }),
+            201,
+            headers: {'content-type': 'application/json'},
+          );
+        }
+        if (request.url.path == '/api/v1/auth/login') {
+          final body = jsonDecode(request.body) as Map<String, dynamic>;
+          expect(body['identifier'], 'ramesh@example.com');
+          expect(body['password'], 'Pass@1234');
           return http.Response(
             jsonEncode({
               'access_token': 'reg-access-jwt',
@@ -234,6 +275,7 @@ void main() {
               'expires_in': 900,
             }),
             200,
+            headers: {'content-type': 'application/json'},
           );
         }
         return http.Response('Not Found', 404);
@@ -244,7 +286,93 @@ void main() {
 
       final success = await repo.register('Ramesh Kumar', 'ramesh@example.com', '+919876543210', 'Pass@1234');
       expect(success, isTrue);
+      expect(requests.length, 2);
+      expect(requests[0].url.path, '/api/v1/auth/register');
+      expect(requests[1].url.path, '/api/v1/auth/login');
       expect(await apiClient.getAccessToken(), 'reg-access-jwt');
+      expect(await apiClient.getRefreshToken(), 'reg-refresh-jwt');
+    });
+
+    test('register returns false when auto-login fails after successful registration', () async {
+      final mockHttp = MockClient((request) async {
+        if (request.url.path == '/api/v1/auth/register') {
+          return http.Response(
+            jsonEncode({
+              'id': 'user-uuid-5678',
+              'name': 'Test User',
+              'email': 'test@example.com',
+              'phone': '+919876543210',
+              'role': 'customer',
+              'is_active': true,
+              'is_verified': false,
+              'created_at': '2026-09-16T10:00:00Z',
+            }),
+            201,
+            headers: {'content-type': 'application/json'},
+          );
+        }
+        if (request.url.path == '/api/v1/auth/login') {
+          return http.Response(
+            jsonEncode({'detail': 'Invalid email/phone or password'}),
+            401,
+            headers: {'content-type': 'application/json'},
+          );
+        }
+        return http.Response('Not Found', 404);
+      });
+
+      final apiClient = ApiClient(baseUrl: 'http://test-server.local', client: mockHttp);
+      final repo = AuthRepository(apiClient: apiClient);
+
+      expect(
+        () => repo.register('Test User', 'test@example.com', '+919876543210', 'Pass@1234'),
+        throwsA(isA<ApiException>().having((e) => e.statusCode, 'statusCode', 401)),
+      );
+      expect(await apiClient.getAccessToken(), isNull);
+    });
+
+    test('register throws ApiException when backend returns duplicate email 400', () async {
+      final mockHttp = MockClient((request) async {
+        if (request.url.path == '/api/v1/auth/register') {
+          return http.Response(
+            jsonEncode({'detail': 'An account with this email already exists.'}),
+            400,
+            headers: {'content-type': 'application/json'},
+          );
+        }
+        return http.Response('Not Found', 404);
+      });
+
+      final apiClient = ApiClient(baseUrl: 'http://test-server.local', client: mockHttp);
+      final repo = AuthRepository(apiClient: apiClient);
+
+      expect(
+        () => repo.register('Duplicate User', 'existing@example.com', '+919876543210', 'Pass@1234'),
+        throwsA(isA<ApiException>().having((e) => e.statusCode, 'statusCode', 400)),
+      );
+      expect(await apiClient.getAccessToken(), isNull);
+    });
+
+    test('register throws ApiException when backend returns duplicate phone 400', () async {
+      final mockHttp = MockClient((request) async {
+        if (request.url.path == '/api/v1/auth/register') {
+          return http.Response(
+            jsonEncode({'detail': 'An account with this phone number already exists.'}),
+            400,
+            headers: {'content-type': 'application/json'},
+          );
+        }
+        return http.Response('Not Found', 404);
+      });
+
+      final apiClient = ApiClient(baseUrl: 'http://test-server.local', client: mockHttp);
+      final repo = AuthRepository(apiClient: apiClient);
+
+      expect(
+        () => repo.register('Duplicate Phone', 'unique@example.com', '+919876543210', 'Pass@1234'),
+        throwsA(isA<ApiException>().having((e) => e.statusCode, 'statusCode', 400)),
+      );
+      expect(await apiClient.getAccessToken(), isNull);
     });
   });
 

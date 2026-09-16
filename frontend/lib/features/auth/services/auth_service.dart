@@ -22,9 +22,20 @@ class AuthService {
   }
 
   String? validatePhone(String? value) {
-    if (value == null || value.trim().isEmpty) return null;
-    final digitsOnly = value.replaceAll(RegExp(r'\D'), '');
-    if (digitsOnly.length < 10) return 'Enter a valid phone number';
+    if (value == null || value.trim().isEmpty) {
+      return 'Enter your phone number';
+    }
+    final trimmed = value.trim();
+    final digits = trimmed.startsWith('+') ? trimmed.substring(1) : trimmed;
+    if (!RegExp(r'^[0-9]+$').hasMatch(digits)) {
+      return 'Enter a valid phone number';
+    }
+    if (digits.length < 10) {
+      return 'Phone number must be at least 10 digits';
+    }
+    if (digits.length > 15) {
+      return 'Phone number must not exceed 15 digits';
+    }
     return null;
   }
 

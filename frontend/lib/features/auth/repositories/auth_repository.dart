@@ -48,18 +48,14 @@ class AuthRepository {
         body: {
           'name': name.trim(),
           'email': email.trim(),
-          'phone': phone.trim().isNotEmpty ? phone.trim() : null,
+          'phone': phone.trim(),
           'password': password,
         },
         requiresAuth: false,
       );
 
-      if (res is Map<String, dynamic> && res['access_token'] != null) {
-        await _apiClient.saveTokens(
-          accessToken: res['access_token'].toString(),
-          refreshToken: (res['refresh_token'] ?? '').toString(),
-        );
-        return true;
+      if (res is Map<String, dynamic> && res['id'] != null) {
+        return await login(email, password);
       }
       return false;
     } catch (e) {

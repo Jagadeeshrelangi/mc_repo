@@ -147,7 +147,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 SizedBox(height: AppResponsive.scale(context, 14)),
                 AuthTextField(
                   controller: _phoneController,
-                  hintText: 'Phone Number (optional)',
+                  hintText: 'Phone Number',
                   prefixIcon: Icons.phone_outlined,
                   textInputAction: TextInputAction.next,
                   keyboardType: TextInputType.phone,
